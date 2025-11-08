@@ -27,30 +27,16 @@ export default function Page() {
 
   const fetchFoods = async () => {
     try {
-      console.log("[v0] fetchFoods - Starting fetch from /api/foods")
       const response = await fetch("/api/foods")
-      console.log("[v0] fetchFoods - Response received:", {
-        ok: response.ok,
-        status: response.status,
-        statusText: response.statusText,
-        headers: Object.fromEntries(response.headers.entries()),
-      })
 
       if (response.ok) {
         const data = await response.json()
-        console.log("[v0] fetchFoods - Data parsed successfully:", { count: data.length })
         setFoods(data)
       } else {
-        const errorText = await response.text()
-        console.error("[v0] fetchFoods - Failed with status:", response.status)
-        console.error("[v0] fetchFoods - Error response body:", errorText)
+        console.error("Failed to fetch foods")
       }
     } catch (error) {
-      console.error("[v0] fetchFoods - Exception caught:")
-      console.error("[v0] fetchFoods - Error type:", error?.constructor?.name)
-      console.error("[v0] fetchFoods - Error message:", error instanceof Error ? error.message : String(error))
-      console.error("[v0] fetchFoods - Error stack:", error instanceof Error ? error.stack : undefined)
-      console.error("[v0] fetchFoods - Full error object:", error)
+      console.error("Error fetching foods:", error)
     } finally {
       setIsLoading(false)
     }
@@ -69,10 +55,10 @@ export default function Page() {
         setFoods((prev) => [newFood, ...prev])
         setIsAddDialogOpen(false)
       } else {
-        console.error("[v0] Failed to add food:", response.statusText)
+        console.error("Failed to add food")
       }
     } catch (error) {
-      console.error("[v0] Error adding food:", error)
+      console.error("Error adding food:", error)
     }
   }
 
@@ -87,10 +73,10 @@ export default function Page() {
       if (response.ok) {
         setFoods((prev) => prev.map((food) => (food.id === id ? { ...food, ...updates } : food)))
       } else {
-        console.error("[v0] Failed to update food:", response.statusText)
+        console.error("Failed to update food")
       }
     } catch (error) {
-      console.error("[v0] Error updating food:", error)
+      console.error("Error updating food:", error)
     }
   }
 
@@ -103,10 +89,10 @@ export default function Page() {
       if (response.ok) {
         setFoods((prev) => prev.filter((food) => food.id !== id))
       } else {
-        console.error("[v0] Failed to delete food:", response.statusText)
+        console.error("Failed to delete food")
       }
     } catch (error) {
-      console.error("[v0] Error deleting food:", error)
+      console.error("Error deleting food:", error)
     }
   }
 

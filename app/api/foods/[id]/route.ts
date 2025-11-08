@@ -1,40 +1,29 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getTursoClient } from "@/lib/db"
+import { createClient } from "@/lib/supabase/server"
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
     const body = await request.json()
 
-    const updates: string[] = []
-    const args: any[] = []
+    const updates: Record<string, any> = {}
 
-    if (body.name !== undefined) {
-      updates.push("name = ?")
-      args.push(body.name)
-    }
-    if (body.preference !== undefined) {
-      updates.push("preference = ?")
-      args.push(body.preference)
-    }
-    if (body.notes !== undefined) {
-      updates.push("notes = ?")
-      args.push(body.notes)
-    }
-    if (body.inStock !== undefined) {
-      updates.push("in_stock = ?")
-      args.push(body.inStock ? 1 : 0)
-    }
+    if (body.name !== undefined) updates.name = body.name
+    if (body.preference !== undefined) updates.preference = body.preference
+    if (body.notes !== undefined) updates.notes = body.notes
+    if (body.inStock !== undefined) updates.in_stock = body.inStock
 
-    if (updates.length === 0) {
+    if (Object.keys(updates).length === 0) {
       return NextResponse.json({ error: "No fields to update" }, { status: 400 })
     }
 
-    args.push(id)
+    // Add updated_at timestamp
+    updates.updated_at = new Date().toISOString()
 
-    const sql = `UPDATE foods SET ${updates.join(", ")} WHERE id = ?`
-    const db = getTursoClient()
-    await db.execute({ sql, args })
+    const supabase = await createClient()
+    const { error } = await supabase.from("foods").update(updates).eq("id", id)
+
+    if (error) throw error
 
     return NextResponse.json({ success: true })
   } catch (error) {
@@ -49,8 +38,10 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
-    const db = getTursoClient()
-    await db.execute({ sql: "DELETE FROM foods WHERE id = ?", args: [id] })
+    const supabase = await createClient()
+    const { error } = await supabase.from("foods").delete().eq("id", id)
+
+    if (error) throw error
 
     return NextResponse.json({ success: true })
   } catch (error) {

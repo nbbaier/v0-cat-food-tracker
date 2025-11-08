@@ -1,21 +1,24 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getTursoClient } from "@/lib/db"
+import { createClient } from "@/lib/supabase/server"
 
 export async function GET() {
   try {
-    const db = getTursoClient()
-    const result = await db.execute("SELECT * FROM foods ORDER BY added_at DESC")
+    const supabase = await createClient()
+    const { data: foods, error } = await supabase.from("foods").select("*").order("created_at", { ascending: false })
 
-    const foods = result.rows.map((row: any) => ({
-      id: row.id,
-      name: row.name,
-      preference: row.preference,
-      notes: row.notes,
-      inStock: Boolean(row.in_stock),
-      addedAt: Number(row.added_at),
+    if (error) throw error
+
+    // Map Supabase response to match frontend expectations
+    const formattedFoods = foods.map((food) => ({
+      id: food.id,
+      name: food.name,
+      preference: food.preference,
+      notes: food.notes || "",
+      inStock: food.in_stock,
+      addedAt: new Date(food.created_at).getTime(),
     }))
 
-    return NextResponse.json(foods)
+    return NextResponse.json(formattedFoods)
   } catch (error) {
     console.error("[v0] GET /api/foods error:", error)
     return NextResponse.json(
@@ -34,22 +37,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
-    const id = crypto.randomUUID()
-    const addedAt = Date.now()
+    const supabase = await createClient()
+    const { data: food, error } = await supabase
+      .from("foods")
+      .insert({
+        name,
+        preference,
+        notes: notes || "",
+        in_stock: inStock,
+      })
+      .select()
+      .single()
 
-    const db = getTursoClient()
-    await db.execute({
-      sql: "INSERT INTO foods (id, name, preference, notes, in_stock, added_at) VALUES (?, ?, ?, ?, ?, ?)",
-      args: [id, name, preference, notes || "", inStock ? 1 : 0, addedAt],
-    })
+    if (error) throw error
 
+    // Format response to match frontend expectations
     const newFood = {
-      id,
-      name,
-      preference,
-      notes: notes || "",
-      inStock,
-      addedAt,
+      id: food.id,
+      name: food.name,
+      preference: food.preference,
+      notes: food.notes || "",
+      inStock: food.in_stock,
+      addedAt: new Date(food.created_at).getTime(),
     }
 
     return NextResponse.json(newFood, { status: 201 })
