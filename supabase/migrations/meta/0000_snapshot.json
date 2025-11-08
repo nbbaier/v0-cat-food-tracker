@@ -1,0 +1,112 @@
+{
+	"id": "00000000-0000-0000-0000-000000000000",
+	"prevId": "",
+	"version": "7",
+	"dialect": "postgresql",
+	"tables": {
+		"public.foods": {
+			"name": "foods",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"name": {
+					"name": "name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"notes": {
+					"name": "notes",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"preference": {
+					"name": "preference",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"in_stock": {
+					"name": "in_stock",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true,
+					"default": true
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"checkConstraints": {
+				"foods_preference_check": {
+					"name": "foods_preference_check",
+					"value": "preference = ANY (ARRAY['likes'::text, 'dislikes'::text, 'unknown'::text])"
+				}
+			},
+			"policies": {
+				"Allow public to delete foods": {
+					"name": "Allow public to delete foods",
+					"as": "PERMISSIVE",
+					"for": "DELETE",
+					"to": ["public"],
+					"using": "true"
+				},
+				"Allow public to update foods": {
+					"name": "Allow public to update foods",
+					"as": "PERMISSIVE",
+					"for": "UPDATE",
+					"to": ["public"]
+				},
+				"Allow public to insert foods": {
+					"name": "Allow public to insert foods",
+					"as": "PERMISSIVE",
+					"for": "INSERT",
+					"to": ["public"]
+				},
+				"Allow public to view foods": {
+					"name": "Allow public to view foods",
+					"as": "PERMISSIVE",
+					"for": "SELECT",
+					"to": ["public"]
+				}
+			},
+			"isRLSEnabled": true
+		}
+	},
+	"enums": {},
+	"schemas": {},
+	"sequences": {},
+	"roles": {},
+	"policies": {},
+	"views": {},
+	"_meta": {
+		"schemas": {},
+		"tables": {},
+		"columns": {}
+	},
+	"internal": {
+		"tables": {}
+	}
+}
