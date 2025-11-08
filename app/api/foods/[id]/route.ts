@@ -3,8 +3,11 @@ import { getDbClient } from "@/lib/db"
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    console.log("[v0] PATCH /api/foods/[id] - Starting request")
     const { id } = await params
+    console.log("[v0] Food ID:", id)
     const body = await request.json()
+    console.log("[v0] Request body:", body)
 
     const updates: string[] = []
     const args: any[] = []
@@ -33,30 +36,55 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     args.push(id)
 
     const db = getDbClient()
-    await db.execute({
-      sql: `UPDATE foods SET ${updates.join(", ")} WHERE id = ?`,
-      args,
-    })
+    const sql = `UPDATE foods SET ${updates.join(", ")} WHERE id = ?`
+    console.log("[v0] Executing UPDATE:", { sql, args })
+
+    const result = await db.execute({ sql, args })
+    console.log("[v0] UPDATE successful, result:", result)
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("[v0] Error updating food:", error)
-    return NextResponse.json({ error: "Failed to update food" }, { status: 500 })
+    console.error("[v0] PATCH /api/foods/[id] - Error caught:")
+    console.error("[v0] Error type:", error?.constructor?.name)
+    console.error("[v0] Error message:", error instanceof Error ? error.message : String(error))
+    console.error("[v0] Error stack:", error instanceof Error ? error.stack : undefined)
+    return NextResponse.json(
+      {
+        error: "Failed to update food",
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 },
+    )
   }
 }
 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    console.log("[v0] DELETE /api/foods/[id] - Starting request")
     const { id } = await params
+    console.log("[v0] Food ID:", id)
+
     const db = getDbClient()
-    await db.execute({
+    console.log("[v0] Executing DELETE for id:", id)
+
+    const result = await db.execute({
       sql: "DELETE FROM foods WHERE id = ?",
       args: [id],
     })
+    console.log("[v0] DELETE successful, result:", result)
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("[v0] Error deleting food:", error)
-    return NextResponse.json({ error: "Failed to delete food" }, { status: 500 })
+    console.error("[v0] DELETE /api/foods/[id] - Error caught:")
+    console.error("[v0] Error type:", error?.constructor?.name)
+    console.error("[v0] Error message:", error instanceof Error ? error.message : String(error))
+    console.error("[v0] Error stack:", error instanceof Error ? error.stack : undefined)
+    return NextResponse.json(
+      {
+        error: "Failed to delete food",
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 },
+    )
   }
 }

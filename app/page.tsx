@@ -27,15 +27,30 @@ export default function Page() {
 
   const fetchFoods = async () => {
     try {
+      console.log("[v0] fetchFoods - Starting fetch from /api/foods")
       const response = await fetch("/api/foods")
+      console.log("[v0] fetchFoods - Response received:", {
+        ok: response.ok,
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries()),
+      })
+
       if (response.ok) {
         const data = await response.json()
+        console.log("[v0] fetchFoods - Data parsed successfully:", { count: data.length })
         setFoods(data)
       } else {
-        console.error("[v0] Failed to fetch foods:", response.statusText)
+        const errorText = await response.text()
+        console.error("[v0] fetchFoods - Failed with status:", response.status)
+        console.error("[v0] fetchFoods - Error response body:", errorText)
       }
     } catch (error) {
-      console.error("[v0] Error fetching foods:", error)
+      console.error("[v0] fetchFoods - Exception caught:")
+      console.error("[v0] fetchFoods - Error type:", error?.constructor?.name)
+      console.error("[v0] fetchFoods - Error message:", error instanceof Error ? error.message : String(error))
+      console.error("[v0] fetchFoods - Error stack:", error instanceof Error ? error.stack : undefined)
+      console.error("[v0] fetchFoods - Full error object:", error)
     } finally {
       setIsLoading(false)
     }
