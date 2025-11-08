@@ -10,23 +10,9 @@ import {
 	Source_Serif_4 as V0_Font_Source_Serif_4,
 } from "next/font/google";
 
-// Initialize fonts
-const _geist = V0_Font_Geist({
-	subsets: ["latin"],
-	weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
-});
-const _geistMono = V0_Font_Geist_Mono({
-	subsets: ["latin"],
-	weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
-});
-const _sourceSerif_4 = V0_Font_Source_Serif_4({
-	subsets: ["latin"],
-	weight: ["200", "300", "400", "500", "600", "700", "800", "900"],
-});
-
 export const metadata: Metadata = {
-	title: "Feed Ygritte",
-	description: "Feed Ygritte like a queen",
+	title: "Ygritte's Picky Picks",
+	// description: "Feed Ygritte like a queen",
 	generator: "v0.app",
 	icons: {
 		icon: [
@@ -46,6 +32,20 @@ export const metadata: Metadata = {
 		apple: "/apple-icon.png",
 	},
 };
+
+// Initialize fonts
+const _geist = V0_Font_Geist({
+	subsets: ["latin"],
+	weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+});
+const _geistMono = V0_Font_Geist_Mono({
+	subsets: ["latin"],
+	weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+});
+const _sourceSerif_4 = V0_Font_Source_Serif_4({
+	subsets: ["latin"],
+	weight: ["200", "300", "400", "500", "600", "700", "800", "900"],
+});
 
 export default function RootLayout({
 	children,
