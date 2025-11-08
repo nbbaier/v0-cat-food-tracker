@@ -25,8 +25,8 @@ const _sourceSerif_4 = V0_Font_Source_Serif_4({
 });
 
 export const metadata: Metadata = {
-	title: "Cat Food Tracker",
-	description: "Track your cat's food preferences and inventory",
+	title: "Feed Ygritte",
+	description: "Feed Ygritte like a queen",
 	generator: "v0.app",
 	icons: {
 		icon: [
