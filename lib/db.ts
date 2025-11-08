@@ -1,17 +1,19 @@
-import { createClient } from "@libsql/client"
+import { createClient } from "@libsql/client";
 
-let client: ReturnType<typeof createClient> | null = null
+let client: ReturnType<typeof createClient> | null = null;
 
 export function getDbClient() {
-  if (!client) {
-    if (!process.env.TURSO_DATABASE_URL || !process.env.TURSO_AUTH_TOKEN) {
-      throw new Error("Missing Turso environment variables: TURSO_DATABASE_URL and TURSO_AUTH_TOKEN")
-    }
+	if (!client) {
+		if (!process.env.TURSO_DATABASE_URL || !process.env.TURSO_AUTH_TOKEN) {
+			throw new Error(
+				"Missing Turso environment variables: TURSO_DATABASE_URL and TURSO_AUTH_TOKEN",
+			);
+		}
 
-    client = createClient({
-      url: process.env.TURSO_DATABASE_URL,
-      authToken: process.env.TURSO_AUTH_TOKEN,
-    })
-  }
-  return client
+		client = createClient({
+			url: process.env.TURSO_DATABASE_URL,
+			authToken: process.env.TURSO_AUTH_TOKEN,
+		});
+	}
+	return client;
 }
