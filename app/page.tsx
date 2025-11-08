@@ -103,7 +103,7 @@ export default function Page() {
 	if (isLoading) {
 		return (
 			<div className="flex justify-center items-center min-h-screen bg-background">
-				<p className="text-muted-foreground">Loading...</p>
+				<p className="text-muted-foreground">Loading!!!</p>
 			</div>
 		);
 	}
