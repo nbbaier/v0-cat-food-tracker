@@ -11,7 +11,7 @@ export type Food = {
   name: string
   preference: "likes" | "dislikes" | "unknown"
   notes: string
-  inStock: boolean
+  inventoryQuantity: number
   addedAt: number
 }
 

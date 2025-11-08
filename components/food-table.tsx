@@ -69,8 +69,8 @@ export function FoodTable({ foods, onUpdate, onDelete }: FoodTableProps) {
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  <Badge variant={food.inStock ? "default" : "secondary"}>
-                    {food.inStock ? "In Stock" : "Out of Stock"}
+                  <Badge variant={food.inventoryQuantity > 0 ? "default" : "secondary"}>
+                    {food.inventoryQuantity > 0 ? `${food.inventoryQuantity} in stock` : "Out of stock"}
                   </Badge>
                 </td>
                 <td className="px-4 py-3 max-w-xs">
@@ -92,7 +92,7 @@ export function FoodTable({ foods, onUpdate, onDelete }: FoodTableProps) {
           food={editingFood}
           open={!!editingFood}
           onOpenChange={(open) => !open && setEditingFood(null)}
-          onUpdate={(updates) => {
+          onSave={(updates) => {
             onUpdate(editingFood.id, updates)
             setEditingFood(null)
           }}

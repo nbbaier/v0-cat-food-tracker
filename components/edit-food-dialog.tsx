@@ -17,7 +17,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Checkbox } from "@/components/ui/checkbox"
 import { ThumbsUp, ThumbsDown, HelpCircle } from "lucide-react"
 
 type EditFoodDialogProps = {
@@ -31,13 +30,13 @@ export function EditFoodDialog({ food, open, onOpenChange, onSave }: EditFoodDia
   const [name, setName] = useState(food.name)
   const [preference, setPreference] = useState(food.preference)
   const [notes, setNotes] = useState(food.notes)
-  const [inStock, setInStock] = useState(food.inStock)
+  const [inventoryQuantity, setInventoryQuantity] = useState(food.inventoryQuantity)
 
   useEffect(() => {
     setName(food.name)
     setPreference(food.preference)
     setNotes(food.notes)
-    setInStock(food.inStock)
+    setInventoryQuantity(food.inventoryQuantity)
   }, [food])
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -48,7 +47,7 @@ export function EditFoodDialog({ food, open, onOpenChange, onSave }: EditFoodDia
       name: name.trim(),
       preference,
       notes: notes.trim(),
-      inStock,
+      inventoryQuantity,
     })
   }
 
@@ -110,11 +109,16 @@ export function EditFoodDialog({ food, open, onOpenChange, onSave }: EditFoodDia
               />
             </div>
 
-            <div className="flex items-center space-x-2">
-              <Checkbox id="edit-inStock" checked={inStock} onCheckedChange={(c) => setInStock(!!c)} />
-              <Label htmlFor="edit-inStock" className="font-normal">
-                Currently in stock
-              </Label>
+            <div className="space-y-2">
+              <Label htmlFor="edit-inventory">Inventory Quantity</Label>
+              <Input
+                id="edit-inventory"
+                type="number"
+                min="0"
+                placeholder="0"
+                value={inventoryQuantity}
+                onChange={(e) => setInventoryQuantity(Number(e.target.value))}
+              />
             </div>
           </div>
 

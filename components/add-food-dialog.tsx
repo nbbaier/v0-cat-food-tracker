@@ -17,7 +17,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Checkbox } from "@/components/ui/checkbox"
 import { ThumbsUp, ThumbsDown, HelpCircle } from "lucide-react"
 
 type AddFoodDialogProps = {
@@ -30,7 +29,7 @@ export function AddFoodDialog({ open, onOpenChange, onAdd }: AddFoodDialogProps)
   const [name, setName] = useState("")
   const [preference, setPreference] = useState<"likes" | "dislikes" | "unknown">("unknown")
   const [notes, setNotes] = useState("")
-  const [inStock, setInStock] = useState(false)
+  const [inventoryQuantity, setInventoryQuantity] = useState(0)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -40,14 +39,14 @@ export function AddFoodDialog({ open, onOpenChange, onAdd }: AddFoodDialogProps)
       name: name.trim(),
       preference,
       notes: notes.trim(),
-      inStock,
+      inventoryQuantity,
     })
 
     // Reset form
     setName("")
     setPreference("unknown")
     setNotes("")
-    setInStock(false)
+    setInventoryQuantity(0)
   }
 
   return (
@@ -111,11 +110,16 @@ export function AddFoodDialog({ open, onOpenChange, onAdd }: AddFoodDialogProps)
               />
             </div>
 
-            <div className="flex items-center space-x-2">
-              <Checkbox id="inStock" checked={inStock} onCheckedChange={(c) => setInStock(!!c)} />
-              <Label htmlFor="inStock" className="font-normal">
-                Currently in stock
-              </Label>
+            <div className="space-y-2">
+              <Label htmlFor="inventory">Inventory Quantity</Label>
+              <Input
+                id="inventory"
+                type="number"
+                min="0"
+                placeholder="0"
+                value={inventoryQuantity}
+                onChange={(e) => setInventoryQuantity(Number(e.target.value))}
+              />
             </div>
           </div>
 

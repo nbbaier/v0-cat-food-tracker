@@ -14,7 +14,7 @@ export async function GET() {
       name: food.name,
       preference: food.preference,
       notes: food.notes || "",
-      inStock: food.in_stock,
+      inventoryQuantity: food.inventory_quantity,
       addedAt: new Date(food.created_at).getTime(),
     }))
 
@@ -31,7 +31,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, preference, notes, inStock } = body
+    const { name, preference, notes, inventoryQuantity } = body
 
     if (!name || !preference) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
         name,
         preference,
         notes: notes || "",
-        in_stock: inStock,
+        inventory_quantity: inventoryQuantity || 0,
       })
       .select()
       .single()
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       name: food.name,
       preference: food.preference,
       notes: food.notes || "",
-      inStock: food.in_stock,
+      inventoryQuantity: food.inventory_quantity,
       addedAt: new Date(food.created_at).getTime(),
     }
 

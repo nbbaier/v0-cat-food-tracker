@@ -1,9 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 
-export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const { id } = await params
+    const { id } = params
     const body = await request.json()
 
     const updates: Record<string, any> = {}
@@ -11,13 +11,13 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     if (body.name !== undefined) updates.name = body.name
     if (body.preference !== undefined) updates.preference = body.preference
     if (body.notes !== undefined) updates.notes = body.notes
+    if (body.inventoryQuantity !== undefined) updates.inventory_quantity = body.inventoryQuantity
     if (body.inStock !== undefined) updates.in_stock = body.inStock
 
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ error: "No fields to update" }, { status: 400 })
     }
 
-    // Add updated_at timestamp
     updates.updated_at = new Date().toISOString()
 
     const supabase = await createClient()
@@ -35,9 +35,9 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const { id } = await params
+    const { id } = params
     const supabase = await createClient()
     const { error } = await supabase.from("foods").delete().eq("id", id)
 
