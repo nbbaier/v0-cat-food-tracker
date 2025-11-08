@@ -119,7 +119,7 @@ export default function Page() {
 							</h1>
 						</div>
 						<div className="flex flex-wrap gap-2 items-center sm:flex-nowrap">
-							<ButtonGroup className="flex-shrink-0">
+							<ButtonGroup className="shrink-0">
 								<Button
 									variant={viewMode === "cards" ? "outline" : "outline"}
 									size="icon"
@@ -137,7 +137,7 @@ export default function Page() {
 									<Table className="size-4" />
 								</Button>
 							</ButtonGroup>
-							<ButtonGroup className="flex-shrink-0">
+							<ButtonGroup className="shrink-0">
 								<ThemeToggle />
 							</ButtonGroup>
 							<ButtonGroup className="flex-1 sm:flex-initial">
