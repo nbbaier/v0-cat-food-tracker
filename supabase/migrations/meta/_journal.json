@@ -36,6 +36,13 @@
       "when": 1762660500000,
       "tag": "0004_add_food_archiving",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1762665583526,
+      "tag": "0005_right_logan",
+      "breakpoints": true
     }
   ]
 }
