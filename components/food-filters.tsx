@@ -3,7 +3,10 @@
 import {
 	ArrowDownAZ,
 	ArrowUpAZ,
+	ChevronDown,
+	ChevronUp,
 	HelpCircle,
+	RotateCcw,
 	Search,
 	ThumbsDown,
 	ThumbsUp,
@@ -31,6 +34,9 @@ type FoodFiltersProps = {
 	onSortByChange: (value: SortOption) => void;
 	sortOrder: "asc" | "desc";
 	onSortOrderToggle: () => void;
+	onReset: () => void;
+	isMinimized: boolean;
+	onToggleMinimize: () => void;
 };
 
 export function FoodFilters({
@@ -44,11 +50,47 @@ export function FoodFilters({
 	onSortByChange,
 	sortOrder,
 	onSortOrderToggle,
+	onReset,
+	isMinimized,
+	onToggleMinimize,
 }: FoodFiltersProps) {
 	return (
 		<div className="flex flex-col gap-4 p-4 mb-6 rounded-lg border bg-card">
-			{/* Search */}
-			<div className="flex flex-col gap-2">
+			{/* Header with Reset and Minimize buttons */}
+			<div className="flex justify-between items-center">
+				<h2 className="text-lg font-semibold">Filters</h2>
+				<div className="flex gap-2">
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={onReset}
+						title="Reset all filters"
+						className="shadow-none"
+					>
+						<RotateCcw className="size-4" />
+						<span className="ml-2">Reset</span>
+					</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={onToggleMinimize}
+						title={isMinimized ? "Expand filters" : "Minimize filters"}
+						className="shadow-none"
+					>
+						{isMinimized ? (
+							<ChevronDown className="size-4" />
+						) : (
+							<ChevronUp className="size-4" />
+						)}
+					</Button>
+				</div>
+			</div>
+
+			{/* Filter controls - only shown when not minimized */}
+			{!isMinimized && (
+				<>
+					{/* Search */}
+					<div className="flex flex-col gap-2">
 				<Label htmlFor="search" className="text-sm font-medium">
 					Search Notes
 				</Label>
@@ -157,6 +199,8 @@ export function FoodFilters({
 					</div>
 				</div>
 			</div>
+				</>
+			)}
 		</div>
 	);
 }

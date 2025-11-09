@@ -36,6 +36,7 @@ export default function Page() {
 		useState<InventoryFilter>("all");
 	const [sortBy, setSortBy] = useState<SortOption>("date");
 	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+	const [isFiltersMinimized, setIsFiltersMinimized] = useState(false);
 
 	const fetchFoods = useCallback(async () => {
 		try {
@@ -189,6 +190,15 @@ export default function Page() {
 		});
 	};
 
+	// Reset all filters to default
+	const resetFilters = () => {
+		setSearchTerm("");
+		setPreferenceFilters(new Set());
+		setInventoryFilter("all");
+		setSortBy("date");
+		setSortOrder("desc");
+	};
+
 	if (isLoading) {
 		return (
 			<div className="flex justify-center items-center min-h-screen bg-background">
@@ -258,6 +268,9 @@ export default function Page() {
 					onSortOrderToggle={() =>
 						setSortOrder(sortOrder === "asc" ? "desc" : "asc")
 					}
+					onReset={resetFilters}
+					isMinimized={isFiltersMinimized}
+					onToggleMinimize={() => setIsFiltersMinimized(!isFiltersMinimized)}
 				/>
 				<FoodList
 					foods={filteredAndSortedFoods}
