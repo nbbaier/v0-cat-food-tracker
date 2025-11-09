@@ -17,6 +17,11 @@ export type Food = {
 	notes: string;
 	inventoryQuantity: number;
 	addedAt: number;
+	// Nutrition information (dry matter basis, in %)
+	phosphorusDmb?: number;
+	proteinDmb?: number;
+	fatDmb?: number;
+	fiberDmb?: number;
 };
 
 export type SortOption = "name" | "preference" | "inventory" | "date";

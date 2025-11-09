@@ -18,6 +18,13 @@ export async function PATCH(
 		if (body.notes !== undefined) updates.notes = body.notes;
 		if (body.inventoryQuantity !== undefined)
 			updates.inventoryQuantity = body.inventoryQuantity;
+		if (body.phosphorusDmb !== undefined)
+			updates.phosphorusDmb = body.phosphorusDmb?.toString();
+		if (body.proteinDmb !== undefined)
+			updates.proteinDmb = body.proteinDmb?.toString();
+		if (body.fatDmb !== undefined) updates.fatDmb = body.fatDmb?.toString();
+		if (body.fiberDmb !== undefined)
+			updates.fiberDmb = body.fiberDmb?.toString();
 
 		if (Object.keys(updates).length === 0) {
 			return NextResponse.json(

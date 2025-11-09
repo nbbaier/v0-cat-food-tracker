@@ -97,6 +97,22 @@ export function FoodCard({ food, onUpdate, onDelete }: FoodCardProps) {
 					) : (
 						<p className="text-sm italic text-muted-foreground">No notes</p>
 					)}
+					{(food.phosphorusDmb ||
+						food.proteinDmb ||
+						food.fatDmb ||
+						food.fiberDmb) && (
+						<div className="pt-2 space-y-1 text-xs text-muted-foreground border-t">
+							<p className="font-semibold">Nutrition (DMB):</p>
+							<div className="gap-x-3 gap-y-0.5 grid grid-cols-2">
+								{food.phosphorusDmb && (
+									<span>Phosphorus: {food.phosphorusDmb}%</span>
+								)}
+								{food.proteinDmb && <span>Protein: {food.proteinDmb}%</span>}
+								{food.fatDmb && <span>Fat: {food.fatDmb}%</span>}
+								{food.fiberDmb && <span>Fiber: {food.fiberDmb}%</span>}
+							</div>
+						</div>
+					)}
 				</CardContent>
 				<CardFooter className="flex gap-2">
 					<Button

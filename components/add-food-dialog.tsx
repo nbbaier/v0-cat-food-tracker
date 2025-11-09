@@ -35,6 +35,10 @@ export function AddFoodDialog({
 	>("unknown");
 	const [notes, setNotes] = useState("");
 	const [inventoryQuantity, setInventoryQuantity] = useState(0);
+	const [phosphorusDmb, setPhosphorusDmb] = useState<number | undefined>();
+	const [proteinDmb, setProteinDmb] = useState<number | undefined>();
+	const [fatDmb, setFatDmb] = useState<number | undefined>();
+	const [fiberDmb, setFiberDmb] = useState<number | undefined>();
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
@@ -45,6 +49,10 @@ export function AddFoodDialog({
 			preference,
 			notes: notes.trim(),
 			inventoryQuantity,
+			phosphorusDmb,
+			proteinDmb,
+			fatDmb,
+			fiberDmb,
 		});
 
 		// Reset form
@@ -52,6 +60,10 @@ export function AddFoodDialog({
 		setPreference("unknown");
 		setNotes("");
 		setInventoryQuantity(0);
+		setPhosphorusDmb(undefined);
+		setProteinDmb(undefined);
+		setFatDmb(undefined);
+		setFiberDmb(undefined);
 	};
 
 	return (
@@ -138,6 +150,90 @@ export function AddFoodDialog({
 								value={inventoryQuantity}
 								onChange={(e) => setInventoryQuantity(Number(e.target.value))}
 							/>
+						</div>
+
+						<div className="space-y-3">
+							<Label className="text-base font-semibold">
+								Nutrition (Dry Matter Basis, %)
+							</Label>
+							<div className="gap-3 grid grid-cols-2">
+								<div className="space-y-2">
+									<Label htmlFor="phosphorus" className="text-sm font-normal">
+										Phosphorus
+									</Label>
+									<Input
+										id="phosphorus"
+										type="number"
+										min="0"
+										max="100"
+										step="0.01"
+										placeholder="e.g., 1.2"
+										value={phosphorusDmb ?? ""}
+										onChange={(e) =>
+											setPhosphorusDmb(
+												e.target.value ? Number(e.target.value) : undefined,
+											)
+										}
+									/>
+								</div>
+								<div className="space-y-2">
+									<Label htmlFor="protein" className="text-sm font-normal">
+										Protein
+									</Label>
+									<Input
+										id="protein"
+										type="number"
+										min="0"
+										max="100"
+										step="0.01"
+										placeholder="e.g., 45.5"
+										value={proteinDmb ?? ""}
+										onChange={(e) =>
+											setProteinDmb(
+												e.target.value ? Number(e.target.value) : undefined,
+											)
+										}
+									/>
+								</div>
+								<div className="space-y-2">
+									<Label htmlFor="fat" className="text-sm font-normal">
+										Fat
+									</Label>
+									<Input
+										id="fat"
+										type="number"
+										min="0"
+										max="100"
+										step="0.01"
+										placeholder="e.g., 20.0"
+										value={fatDmb ?? ""}
+										onChange={(e) =>
+											setFatDmb(
+												e.target.value ? Number(e.target.value) : undefined,
+											)
+										}
+									/>
+								</div>
+								<div className="space-y-2">
+									<Label htmlFor="fiber" className="text-sm font-normal">
+										Fiber
+									</Label>
+									<Input
+										id="fiber"
+										type="number"
+										min="0"
+										max="100"
+										step="0.01"
+										placeholder="e.g., 3.5"
+										value={fiberDmb ?? ""}
+										onChange={(e) =>
+											setFiberDmb(
+												e.target.value ? Number(e.target.value) : undefined,
+											)
+										}
+									/>
+								</div>
+							</div>
 						</div>
 					</div>
 

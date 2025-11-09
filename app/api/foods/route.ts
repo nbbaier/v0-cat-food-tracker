@@ -17,6 +17,10 @@ export async function GET() {
 			notes: food.notes || "",
 			inventoryQuantity: food.inventoryQuantity,
 			addedAt: new Date(food.createdAt).getTime(),
+			phosphorusDmb: food.phosphorusDmb ? Number(food.phosphorusDmb) : undefined,
+			proteinDmb: food.proteinDmb ? Number(food.proteinDmb) : undefined,
+			fatDmb: food.fatDmb ? Number(food.fatDmb) : undefined,
+			fiberDmb: food.fiberDmb ? Number(food.fiberDmb) : undefined,
 		}));
 
 		return NextResponse.json(formattedFoods);
@@ -35,7 +39,16 @@ export async function GET() {
 export async function POST(request: NextRequest) {
 	try {
 		const body = await request.json();
-		const { name, preference, notes, inventoryQuantity } = body;
+		const {
+			name,
+			preference,
+			notes,
+			inventoryQuantity,
+			phosphorusDmb,
+			proteinDmb,
+			fatDmb,
+			fiberDmb,
+		} = body;
 
 		if (!name || !preference) {
 			return NextResponse.json(
@@ -51,6 +64,10 @@ export async function POST(request: NextRequest) {
 				preference,
 				notes: notes || "",
 				inventoryQuantity: inventoryQuantity || 0,
+				phosphorusDmb: phosphorusDmb?.toString(),
+				proteinDmb: proteinDmb?.toString(),
+				fatDmb: fatDmb?.toString(),
+				fiberDmb: fiberDmb?.toString(),
 			})
 			.returning();
 
@@ -61,6 +78,12 @@ export async function POST(request: NextRequest) {
 			notes: newFood.notes || "",
 			inventoryQuantity: newFood.inventoryQuantity,
 			addedAt: new Date(newFood.createdAt).getTime(),
+			phosphorusDmb: newFood.phosphorusDmb
+				? Number(newFood.phosphorusDmb)
+				: undefined,
+			proteinDmb: newFood.proteinDmb ? Number(newFood.proteinDmb) : undefined,
+			fatDmb: newFood.fatDmb ? Number(newFood.fatDmb) : undefined,
+			fiberDmb: newFood.fiberDmb ? Number(newFood.fiberDmb) : undefined,
 		};
 
 		return NextResponse.json(formattedFood, { status: 201 });

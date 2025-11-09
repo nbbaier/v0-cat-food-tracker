@@ -31,6 +31,9 @@ export function FoodTable({ foods, onUpdate, onDelete }: FoodTableProps) {
 							<th className="px-3 py-2 text-xs font-semibold text-left sm:px-4 sm:py-3 sm:text-sm">
 								Inventory
 							</th>
+							<th className="hidden px-3 py-2 text-xs font-semibold text-left lg:table-cell sm:px-4 sm:py-3 sm:text-sm">
+								Nutrition (DMB)
+							</th>
 							<th className="hidden px-3 py-2 text-xs font-semibold text-left sm:table-cell sm:px-4 sm:py-3 sm:text-sm">
 								Notes
 							</th>
@@ -109,6 +112,23 @@ export function FoodTable({ foods, onUpdate, onDelete }: FoodTableProps) {
 											? `${food.inventoryQuantity} in stock`
 											: "Out"}
 									</Badge>
+								</td>
+								<td className="hidden px-3 py-2 lg:table-cell sm:px-4 sm:py-3">
+									{food.phosphorusDmb ||
+									food.proteinDmb ||
+									food.fatDmb ||
+									food.fiberDmb ? (
+										<div className="space-y-0.5 text-xs text-muted-foreground">
+											{food.phosphorusDmb && (
+												<div>P: {food.phosphorusDmb}%</div>
+											)}
+											{food.proteinDmb && <div>Protein: {food.proteinDmb}%</div>}
+											{food.fatDmb && <div>Fat: {food.fatDmb}%</div>}
+											{food.fiberDmb && <div>Fiber: {food.fiberDmb}%</div>}
+										</div>
+									) : (
+										<span className="text-sm text-muted-foreground">—</span>
+									)}
 								</td>
 								<td className="hidden px-3 py-2 max-w-xs sm:table-cell sm:px-4 sm:py-3">
 									<p className="text-sm truncate text-muted-foreground">
