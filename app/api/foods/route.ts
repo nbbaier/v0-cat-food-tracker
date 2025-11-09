@@ -1,24 +1,22 @@
+import { desc } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { db } from "@/lib/db";
+import { foods } from "@/lib/db/schema";
 
 export async function GET() {
 	try {
-		const supabase = await createClient();
-		const { data: foods, error } = await supabase
-			.from("foods")
-			.select("*")
-			.order("created_at", { ascending: false });
+		const allFoods = await db
+			.select()
+			.from(foods)
+			.orderBy(desc(foods.createdAt));
 
-		if (error) throw error;
-
-		// Map Supabase response to match frontend expectations
-		const formattedFoods = foods.map((food) => ({
+		const formattedFoods = allFoods.map((food) => ({
 			id: food.id,
 			name: food.name,
 			preference: food.preference,
 			notes: food.notes || "",
-			inventoryQuantity: food.inventory_quantity,
-			addedAt: new Date(food.created_at).getTime(),
+			inventoryQuantity: food.inventoryQuantity,
+			addedAt: new Date(food.createdAt).getTime(),
 		}));
 
 		return NextResponse.json(formattedFoods);
@@ -46,31 +44,26 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		const supabase = await createClient();
-		const { data: food, error } = await supabase
-			.from("foods")
-			.insert({
+		const [newFood] = await db
+			.insert(foods)
+			.values({
 				name,
 				preference,
 				notes: notes || "",
-				inventory_quantity: inventoryQuantity || 0,
+				inventoryQuantity: inventoryQuantity || 0,
 			})
-			.select()
-			.single();
+			.returning();
 
-		if (error) throw error;
-
-		// Format response to match frontend expectations
-		const newFood = {
-			id: food.id,
-			name: food.name,
-			preference: food.preference,
-			notes: food.notes || "",
-			inventoryQuantity: food.inventory_quantity,
-			addedAt: new Date(food.created_at).getTime(),
+		const formattedFood = {
+			id: newFood.id,
+			name: newFood.name,
+			preference: newFood.preference,
+			notes: newFood.notes || "",
+			inventoryQuantity: newFood.inventoryQuantity,
+			addedAt: new Date(newFood.createdAt).getTime(),
 		};
 
-		return NextResponse.json(newFood, { status: 201 });
+		return NextResponse.json(formattedFood, { status: 201 });
 	} catch (error) {
 		console.error("[v0] POST /api/foods error:", error);
 		return NextResponse.json(

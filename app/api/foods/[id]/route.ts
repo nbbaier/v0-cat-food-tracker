@@ -1,5 +1,7 @@
+import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { db } from "@/lib/db";
+import { foods } from "@/lib/db/schema";
 
 export async function PATCH(
 	request: NextRequest,
@@ -9,14 +11,13 @@ export async function PATCH(
 		const { id } = params;
 		const body = await request.json();
 
-		const updates: Record<string, any> = {};
+		const updates: Record<string, unknown> = {};
 
 		if (body.name !== undefined) updates.name = body.name;
 		if (body.preference !== undefined) updates.preference = body.preference;
 		if (body.notes !== undefined) updates.notes = body.notes;
 		if (body.inventoryQuantity !== undefined)
-			updates.inventory_quantity = body.inventoryQuantity;
-		if (body.inStock !== undefined) updates.in_stock = body.inStock;
+			updates.inventoryQuantity = body.inventoryQuantity;
 
 		if (Object.keys(updates).length === 0) {
 			return NextResponse.json(
@@ -25,12 +26,9 @@ export async function PATCH(
 			);
 		}
 
-		updates.updated_at = new Date().toISOString();
+		updates.updatedAt = new Date().toISOString();
 
-		const supabase = await createClient();
-		const { error } = await supabase.from("foods").update(updates).eq("id", id);
-
-		if (error) throw error;
+		await db.update(foods).set(updates).where(eq(foods.id, id));
 
 		return NextResponse.json({ success: true });
 	} catch (error) {
@@ -51,10 +49,7 @@ export async function DELETE(
 ) {
 	try {
 		const { id } = params;
-		const supabase = await createClient();
-		const { error } = await supabase.from("foods").delete().eq("id", id);
-
-		if (error) throw error;
+		await db.delete(foods).where(eq(foods.id, id));
 
 		return NextResponse.json({ success: true });
 	} catch (error) {
