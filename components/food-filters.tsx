@@ -1,6 +1,13 @@
 "use client";
 
-import { ArrowDownAZ, ArrowUpAZ, HelpCircle, Search, ThumbsDown, ThumbsUp } from "lucide-react";
+import {
+	ArrowDownAZ,
+	ArrowUpAZ,
+	HelpCircle,
+	Search,
+	ThumbsDown,
+	ThumbsUp,
+} from "lucide-react";
 import type { InventoryFilter, SortOption } from "@/app/page";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,21 +46,21 @@ export function FoodFilters({
 	onSortOrderToggle,
 }: FoodFiltersProps) {
 	return (
-		<div className="flex flex-col gap-4 p-4 mb-6 bg-card rounded-lg border">
+		<div className="flex flex-col gap-4 p-4 mb-6 rounded-lg border bg-card">
 			{/* Search */}
 			<div className="flex flex-col gap-2">
 				<Label htmlFor="search" className="text-sm font-medium">
 					Search Notes
 				</Label>
 				<div className="relative">
-					<Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+					<Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
 					<Input
 						id="search"
 						type="text"
 						placeholder="Search in notes..."
 						value={searchTerm}
 						onChange={(e) => onSearchChange(e.target.value)}
-						className="pl-9"
+						className="pl-9 shadow-none"
 					/>
 				</div>
 			</div>
@@ -68,25 +75,29 @@ export function FoodFilters({
 							size="sm"
 							onClick={() => onTogglePreference("likes")}
 							title="Filter by likes"
-							className="flex-1"
+							className="shadow-none"
 						>
 							<ThumbsUp className="size-4" />
 						</Button>
 						<Button
-							variant={preferenceFilters.has("dislikes") ? "destructive" : "outline"}
+							variant={
+								preferenceFilters.has("dislikes") ? "destructive" : "outline"
+							}
 							size="sm"
 							onClick={() => onTogglePreference("dislikes")}
 							title="Filter by dislikes"
-							className="flex-1"
+							className="shadow-none"
 						>
 							<ThumbsDown className="size-4" />
 						</Button>
 						<Button
-							variant={preferenceFilters.has("unknown") ? "secondary" : "outline"}
+							variant={
+								preferenceFilters.has("unknown") ? "secondary" : "outline"
+							}
 							size="sm"
 							onClick={() => onTogglePreference("unknown")}
 							title="Filter by unknown"
-							className="flex-1"
+							className="shadow-none"
 						>
 							<HelpCircle className="size-4" />
 						</Button>
@@ -98,7 +109,10 @@ export function FoodFilters({
 					<Label htmlFor="inventory-filter" className="text-sm font-medium">
 						Inventory Status
 					</Label>
-					<Select value={inventoryFilter} onValueChange={onInventoryFilterChange}>
+					<Select
+						value={inventoryFilter}
+						onValueChange={onInventoryFilterChange}
+					>
 						<SelectTrigger id="inventory-filter">
 							<SelectValue />
 						</SelectTrigger>
@@ -129,9 +143,10 @@ export function FoodFilters({
 						</Select>
 						<Button
 							variant="outline"
-							size="icon"
+							size="sm"
 							onClick={onSortOrderToggle}
 							title={sortOrder === "asc" ? "Ascending" : "Descending"}
+							className="shadow-none"
 						>
 							{sortOrder === "asc" ? (
 								<ArrowUpAZ className="size-4" />

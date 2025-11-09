@@ -22,19 +22,19 @@ export function FoodTable({ foods, onUpdate, onDelete }: FoodTableProps) {
 				<table className="w-full min-w-[640px]">
 					<thead className="bg-muted/50">
 						<tr className="border-b">
-							<th className="px-3 py-2 text-left text-xs font-semibold sm:px-4 sm:py-3 sm:text-sm">
+							<th className="px-3 py-2 text-xs font-semibold text-left sm:px-4 sm:py-3 sm:text-sm">
 								Name
 							</th>
-							<th className="px-3 py-2 text-left text-xs font-semibold sm:px-4 sm:py-3 sm:text-sm">
+							<th className="px-3 py-2 text-xs font-semibold text-left sm:px-4 sm:py-3 sm:text-sm">
 								Preference
 							</th>
-							<th className="px-3 py-2 text-left text-xs font-semibold sm:px-4 sm:py-3 sm:text-sm">
+							<th className="px-3 py-2 text-xs font-semibold text-left sm:px-4 sm:py-3 sm:text-sm">
 								Inventory
 							</th>
-							<th className="hidden px-3 py-2 text-left text-xs font-semibold sm:table-cell sm:px-4 sm:py-3 sm:text-sm">
+							<th className="hidden px-3 py-2 text-xs font-semibold text-left sm:table-cell sm:px-4 sm:py-3 sm:text-sm">
 								Notes
 							</th>
-							<th className="px-3 py-2 text-right text-xs font-semibold sm:px-4 sm:py-3 sm:text-sm">
+							<th className="px-3 py-2 text-xs font-semibold text-right sm:px-4 sm:py-3 sm:text-sm">
 								Actions
 							</th>
 						</tr>
@@ -50,7 +50,7 @@ export function FoodTable({ foods, onUpdate, onDelete }: FoodTableProps) {
 										type="button"
 										variant="link"
 										onClick={() => setEditingFood(food)}
-										className="font-medium text-left text-sm hover:underline sm:text-base"
+										className="text-sm font-medium text-left hover:underline sm:text-base"
 									>
 										{food.name}
 									</Button>
@@ -62,7 +62,7 @@ export function FoodTable({ foods, onUpdate, onDelete }: FoodTableProps) {
 												food.preference === "likes" ? "default" : "outline"
 											}
 											size="sm"
-											className="size-7 p-0 sm:size-8"
+											className="p-0 size-7 sm:size-8"
 											onClick={() => onUpdate(food.id, { preference: "likes" })}
 											title="Likes"
 										>
@@ -75,7 +75,7 @@ export function FoodTable({ foods, onUpdate, onDelete }: FoodTableProps) {
 													: "outline"
 											}
 											size="sm"
-											className="size-7 p-0 sm:size-8"
+											className="p-0 size-7 sm:size-8"
 											onClick={() =>
 												onUpdate(food.id, { preference: "dislikes" })
 											}
@@ -88,7 +88,7 @@ export function FoodTable({ foods, onUpdate, onDelete }: FoodTableProps) {
 												food.preference === "unknown" ? "secondary" : "outline"
 											}
 											size="sm"
-											className="size-7 p-0 sm:size-8"
+											className="p-0 size-7 sm:size-8"
 											onClick={() =>
 												onUpdate(food.id, { preference: "unknown" })
 											}
@@ -111,7 +111,7 @@ export function FoodTable({ foods, onUpdate, onDelete }: FoodTableProps) {
 									</Badge>
 								</td>
 								<td className="hidden px-3 py-2 max-w-xs sm:table-cell sm:px-4 sm:py-3">
-									<p className="text-sm text-muted-foreground truncate">
+									<p className="text-sm truncate text-muted-foreground">
 										{food.notes || "—"}
 									</p>
 								</td>
@@ -121,7 +121,7 @@ export function FoodTable({ foods, onUpdate, onDelete }: FoodTableProps) {
 										size="sm"
 										onClick={() => onDelete(food.id)}
 										title="Delete food"
-										className="size-7 p-0 sm:size-auto sm:p-2"
+										className="p-0 size-7 sm:size-auto sm:p-2"
 									>
 										<Trash2 className="size-3.5 sm:size-4" />
 									</Button>

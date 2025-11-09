@@ -29,8 +29,11 @@ export default function Page() {
 
 	// Filter and sort state
 	const [searchTerm, setSearchTerm] = useState("");
-	const [preferenceFilters, setPreferenceFilters] = useState<Set<"likes" | "dislikes" | "unknown">>(new Set());
-	const [inventoryFilter, setInventoryFilter] = useState<InventoryFilter>("all");
+	const [preferenceFilters, setPreferenceFilters] = useState<
+		Set<"likes" | "dislikes" | "unknown">
+	>(new Set());
+	const [inventoryFilter, setInventoryFilter] =
+		useState<InventoryFilter>("all");
 	const [sortBy, setSortBy] = useState<SortOption>("date");
 	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
@@ -118,13 +121,15 @@ export default function Page() {
 		// Filter by search term (notes)
 		if (searchTerm) {
 			filtered = filtered.filter((food) =>
-				food.notes?.toLowerCase().includes(searchTerm.toLowerCase())
+				food.notes?.toLowerCase().includes(searchTerm.toLowerCase()),
 			);
 		}
 
 		// Filter by preference
 		if (preferenceFilters.size > 0) {
-			filtered = filtered.filter((food) => preferenceFilters.has(food.preference));
+			filtered = filtered.filter((food) =>
+				preferenceFilters.has(food.preference),
+			);
 		}
 
 		// Filter by inventory status
@@ -144,7 +149,8 @@ export default function Page() {
 					break;
 				case "preference": {
 					const preferenceOrder = { likes: 0, unknown: 1, dislikes: 2 };
-					comparison = preferenceOrder[a.preference] - preferenceOrder[b.preference];
+					comparison =
+						preferenceOrder[a.preference] - preferenceOrder[b.preference];
 					break;
 				}
 				case "inventory":
@@ -159,10 +165,19 @@ export default function Page() {
 		});
 
 		return filtered;
-	}, [foods, searchTerm, preferenceFilters, inventoryFilter, sortBy, sortOrder]);
+	}, [
+		foods,
+		searchTerm,
+		preferenceFilters,
+		inventoryFilter,
+		sortBy,
+		sortOrder,
+	]);
 
 	// Toggle preference filter
-	const togglePreferenceFilter = (preference: "likes" | "dislikes" | "unknown") => {
+	const togglePreferenceFilter = (
+		preference: "likes" | "dislikes" | "unknown",
+	) => {
 		setPreferenceFilters((prev) => {
 			const newSet = new Set(prev);
 			if (newSet.has(preference)) {
@@ -240,7 +255,9 @@ export default function Page() {
 					sortBy={sortBy}
 					onSortByChange={setSortBy}
 					sortOrder={sortOrder}
-					onSortOrderToggle={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+					onSortOrderToggle={() =>
+						setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+					}
 				/>
 				<FoodList
 					foods={filteredAndSortedFoods}

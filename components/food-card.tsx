@@ -34,7 +34,7 @@ export function FoodCard({ food, onUpdate, onDelete }: FoodCardProps) {
 
 	return (
 		<>
-			<Card className="flex flex-col">
+			<Card className="gap-5">
 				<CardHeader className="flex flex-row justify-between items-center space-y-0">
 					<h3 className="text-base font-semibold tracking-tight leading-none sm:text-lg">
 						{food.name}
@@ -42,8 +42,8 @@ export function FoodCard({ food, onUpdate, onDelete }: FoodCardProps) {
 					<div className="flex gap-0.5 items-center sm:gap-1">
 						<Button
 							variant={food.preference === "likes" ? "default" : "outline"}
-							size="sm"
-							className={`size-7 p-0 sm:size-8 ${
+							size="icon-sm"
+							className={`${
 								food.preference === "likes"
 									? "bg-success hover:bg-success/90 text-success-foreground"
 									: "bg-transparent"
@@ -55,8 +55,8 @@ export function FoodCard({ food, onUpdate, onDelete }: FoodCardProps) {
 						</Button>
 						<Button
 							variant={food.preference === "dislikes" ? "default" : "outline"}
-							size="sm"
-							className={`size-7 p-0 sm:size-8 ${
+							size="icon-sm"
+							className={`${
 								food.preference === "dislikes"
 									? "bg-destructive hover:bg-destructive/90 text-destructive-foreground"
 									: "bg-transparent"
@@ -68,8 +68,8 @@ export function FoodCard({ food, onUpdate, onDelete }: FoodCardProps) {
 						</Button>
 						<Button
 							variant={food.preference === "unknown" ? "default" : "outline"}
-							size="sm"
-							className={`size-7 p-0 sm:size-8 ${
+							size="icon-sm"
+							className={` ${
 								food.preference === "unknown"
 									? "bg-muted hover:bg-muted/90 text-muted-foreground"
 									: "bg-transparent"
@@ -81,7 +81,7 @@ export function FoodCard({ food, onUpdate, onDelete }: FoodCardProps) {
 						</Button>
 					</div>
 				</CardHeader>
-				<CardContent className="flex-1 space-y-3">
+				<CardContent className="flex-1 space-y-2">
 					<div className="flex items-center gap-1.5 text-sm text-muted-foreground">
 						<Package className="size-3.5" />
 						<span>
