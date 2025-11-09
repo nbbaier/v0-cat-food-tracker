@@ -24,10 +24,22 @@ export const foods = pgTable(
 		inventoryQuantity: t.integer("inventory_quantity").default(0).notNull(),
 		archived: t.boolean().default(false).notNull(),
 		// Nutrition information (dry matter basis, in %)
-		phosphorusDmb: t.decimal("phosphorus_dmb", { precision: 5, scale: 2 }),
-		proteinDmb: t.decimal("protein_dmb", { precision: 5, scale: 2 }),
-		fatDmb: t.decimal("fat_dmb", { precision: 5, scale: 2 }),
-		fiberDmb: t.decimal("fiber_dmb", { precision: 5, scale: 2 }),
+		phosphorusDmb: t
+			.numeric("phosphorus_dmb", { mode: "number", precision: 5, scale: 2 })
+			.default(0)
+			.notNull(),
+		proteinDmb: t
+			.numeric("protein_dmb", { mode: "number", precision: 5, scale: 2 })
+			.default(0)
+			.notNull(),
+		fatDmb: t
+			.numeric("fat_dmb", { mode: "number", precision: 5, scale: 2 })
+			.default(0)
+			.notNull(),
+		fiberDmb: t
+			.numeric("fiber_dmb", { mode: "number", precision: 5, scale: 2 })
+			.default(0)
+			.notNull(),
 		createdAt: t
 			.timestamp("created_at", { withTimezone: true, mode: "string" })
 			.defaultNow()
