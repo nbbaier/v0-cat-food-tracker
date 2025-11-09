@@ -5,10 +5,10 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { AddMealDialog } from "@/components/add-meal-dialog";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 
 type Meal = {
 	id: string;
@@ -111,7 +111,9 @@ export default function MealsPage() {
 	);
 
 	// Sort dates descending
-	const sortedDates = Object.keys(mealsByDate).sort((a, b) => b.localeCompare(a));
+	const sortedDates = Object.keys(mealsByDate).sort((a, b) =>
+		b.localeCompare(a),
+	);
 
 	if (isLoading) {
 		return (
