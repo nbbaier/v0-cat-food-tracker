@@ -1,8 +1,9 @@
 "use client";
 
 import { LayoutGrid, Plus, Table } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AddFoodDialog } from "@/components/add-food-dialog";
+import { FoodFilters } from "@/components/food-filters";
 import { FoodList } from "@/components/food-list";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -17,11 +18,25 @@ export type Food = {
 	addedAt: number;
 };
 
+export type SortOption = "name" | "preference" | "inventory" | "date";
+export type InventoryFilter = "all" | "in-stock" | "out-of-stock";
+
 export default function Page() {
 	const [foods, setFoods] = useState<Food[]>([]);
 	const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 	const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
 	const [isLoading, setIsLoading] = useState(true);
+
+	// Filter and sort state
+	const [searchTerm, setSearchTerm] = useState("");
+	const [preferenceFilters, setPreferenceFilters] = useState<
+		Set<"likes" | "dislikes" | "unknown">
+	>(new Set());
+	const [inventoryFilter, setInventoryFilter] =
+		useState<InventoryFilter>("all");
+	const [sortBy, setSortBy] = useState<SortOption>("date");
+	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+	const [isFiltersMinimized, setIsFiltersMinimized] = useState(true);
 
 	const fetchFoods = useCallback(async () => {
 		try {
@@ -100,6 +115,90 @@ export default function Page() {
 		}
 	};
 
+	// Filter and sort foods
+	const filteredAndSortedFoods = useMemo(() => {
+		let filtered = [...foods];
+
+		// Filter by search term (notes)
+		if (searchTerm) {
+			filtered = filtered.filter((food) =>
+				food.notes?.toLowerCase().includes(searchTerm.toLowerCase()),
+			);
+		}
+
+		// Filter by preference
+		if (preferenceFilters.size > 0) {
+			filtered = filtered.filter((food) =>
+				preferenceFilters.has(food.preference),
+			);
+		}
+
+		// Filter by inventory status
+		if (inventoryFilter === "in-stock") {
+			filtered = filtered.filter((food) => food.inventoryQuantity > 0);
+		} else if (inventoryFilter === "out-of-stock") {
+			filtered = filtered.filter((food) => food.inventoryQuantity === 0);
+		}
+
+		// Sort
+		filtered.sort((a, b) => {
+			let comparison = 0;
+
+			switch (sortBy) {
+				case "name":
+					comparison = a.name.localeCompare(b.name);
+					break;
+				case "preference": {
+					const preferenceOrder = { likes: 0, unknown: 1, dislikes: 2 };
+					comparison =
+						preferenceOrder[a.preference] - preferenceOrder[b.preference];
+					break;
+				}
+				case "inventory":
+					comparison = a.inventoryQuantity - b.inventoryQuantity;
+					break;
+				case "date":
+					comparison = a.addedAt - b.addedAt;
+					break;
+			}
+
+			return sortOrder === "asc" ? comparison : -comparison;
+		});
+
+		return filtered;
+	}, [
+		foods,
+		searchTerm,
+		preferenceFilters,
+		inventoryFilter,
+		sortBy,
+		sortOrder,
+	]);
+
+	// Toggle preference filter
+	const togglePreferenceFilter = (
+		preference: "likes" | "dislikes" | "unknown",
+	) => {
+		setPreferenceFilters((prev) => {
+			const newSet = new Set(prev);
+			if (newSet.has(preference)) {
+				newSet.delete(preference);
+			} else {
+				newSet.add(preference);
+			}
+			return newSet;
+		});
+	};
+
+	// Reset all filters to default
+	const resetFilters = () => {
+		setSearchTerm("");
+		setPreferenceFilters(new Set());
+		setInventoryFilter("all");
+		setSortBy("date");
+		setSortOrder("desc");
+	};
+
 	if (isLoading) {
 		return (
 			<div className="flex justify-center items-center min-h-screen bg-background">
@@ -156,8 +255,25 @@ export default function Page() {
 			</header>
 
 			<main className="px-4 py-6 mx-auto max-w-5xl sm:px-6 sm:py-8 lg:px-8">
+				<FoodFilters
+					searchTerm={searchTerm}
+					onSearchChange={setSearchTerm}
+					preferenceFilters={preferenceFilters}
+					onTogglePreference={togglePreferenceFilter}
+					inventoryFilter={inventoryFilter}
+					onInventoryFilterChange={setInventoryFilter}
+					sortBy={sortBy}
+					onSortByChange={setSortBy}
+					sortOrder={sortOrder}
+					onSortOrderToggle={() =>
+						setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+					}
+					onReset={resetFilters}
+					isMinimized={isFiltersMinimized}
+					onToggleMinimize={() => setIsFiltersMinimized(!isFiltersMinimized)}
+				/>
 				<FoodList
-					foods={foods}
+					foods={filteredAndSortedFoods}
 					onUpdate={handleUpdateFood}
 					onDelete={handleDeleteFood}
 					viewMode={viewMode}
