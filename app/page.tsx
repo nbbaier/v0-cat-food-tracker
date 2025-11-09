@@ -1,6 +1,7 @@
 "use client";
 
-import { LayoutGrid, Plus, Table } from "lucide-react";
+import { LayoutGrid, Plus, Table, Utensils } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AddFoodDialog } from "@/components/add-food-dialog";
 import { FoodFilters } from "@/components/food-filters";
@@ -234,6 +235,13 @@ export default function Page() {
 									className={viewMode === "table" ? "bg-accent" : ""}
 								>
 									<Table className="size-4" />
+								</Button>
+							</ButtonGroup>
+							<ButtonGroup className="shrink-0">
+								<Button variant="outline" size="icon" asChild>
+									<Link href="/meals">
+										<Utensils className="size-4" />
+									</Link>
 								</Button>
 							</ButtonGroup>
 							<ButtonGroup className="shrink-0">

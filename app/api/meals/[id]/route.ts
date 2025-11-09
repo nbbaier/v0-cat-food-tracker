@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { foods } from "@/lib/db/schema";
+import { meals } from "@/lib/db/schema";
 
 export async function PATCH(
 	request: NextRequest,
@@ -13,11 +13,11 @@ export async function PATCH(
 
 		const updates: Record<string, unknown> = {};
 
-		if (body.name !== undefined) updates.name = body.name;
-		if (body.preference !== undefined) updates.preference = body.preference;
+		if (body.mealDate !== undefined) updates.mealDate = body.mealDate;
+		if (body.mealTime !== undefined) updates.mealTime = body.mealTime;
+		if (body.foodId !== undefined) updates.foodId = body.foodId;
+		if (body.amount !== undefined) updates.amount = body.amount;
 		if (body.notes !== undefined) updates.notes = body.notes;
-		if (body.inventoryQuantity !== undefined)
-			updates.inventoryQuantity = body.inventoryQuantity;
 
 		if (Object.keys(updates).length === 0) {
 			return NextResponse.json(
@@ -28,14 +28,14 @@ export async function PATCH(
 
 		updates.updatedAt = new Date().toISOString();
 
-		await db.update(foods).set(updates).where(eq(foods.id, id));
+		await db.update(meals).set(updates).where(eq(meals.id, id));
 
 		return NextResponse.json({ success: true });
 	} catch (error) {
-		console.error("[v0] PATCH /api/foods/[id] error:", error);
+		console.error("[v0] PATCH /api/meals/[id] error:", error);
 		return NextResponse.json(
 			{
-				error: "Failed to update food",
+				error: "Failed to update meal",
 				details: error instanceof Error ? error.message : String(error),
 			},
 			{ status: 500 },
@@ -49,14 +49,14 @@ export async function DELETE(
 ) {
 	try {
 		const { id } = params;
-		await db.delete(foods).where(eq(foods.id, id));
+		await db.delete(meals).where(eq(meals.id, id));
 
 		return NextResponse.json({ success: true });
 	} catch (error) {
-		console.error("[v0] DELETE /api/foods/[id] error:", error);
+		console.error("[v0] DELETE /api/meals/[id] error:", error);
 		return NextResponse.json(
 			{
-				error: "Failed to delete food",
+				error: "Failed to delete meal",
 				details: error instanceof Error ? error.message : String(error),
 			},
 			{ status: 500 },
