@@ -49,18 +49,6 @@ A Next.js application for tracking cat food preferences and inventory. The app a
 │   └── page.tsx          # Home page
 ├── components/
 │   ├── ui/               # Reusable UI components
-│   │   ├── badge.tsx
-│   │   ├── button.tsx
-│   │   ├── button-group.tsx
-│   │   ├── card.tsx
-│   │   ├── dialog.tsx
-│   │   ├── dropdown-menu.tsx
-│   │   ├── input.tsx
-│   │   ├── label.tsx
-│   │   ├── radio-group.tsx
-│   │   ├── select.tsx
-│   │   ├── separator.tsx
-│   │   └── textarea.tsx
 │   ├── add-food-dialog.tsx    # Dialog for adding new food
 │   ├── edit-food-dialog.tsx   # Dialog for editing food
 │   ├── food-card.tsx          # Card view for individual food
