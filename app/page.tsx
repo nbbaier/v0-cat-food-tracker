@@ -36,7 +36,7 @@ export default function Page() {
 		useState<InventoryFilter>("all");
 	const [sortBy, setSortBy] = useState<SortOption>("date");
 	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-	const [isFiltersMinimized, setIsFiltersMinimized] = useState(false);
+	const [isFiltersMinimized, setIsFiltersMinimized] = useState(true);
 
 	const fetchFoods = useCallback(async () => {
 		try {
