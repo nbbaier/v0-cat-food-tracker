@@ -1,35 +1,40 @@
+import { asc, desc, eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { db } from "@/lib/db";
+import { foods, meals } from "@/lib/db/schema";
 
 export async function GET() {
 	try {
-		const supabase = await createClient();
-		const { data: meals, error } = await supabase
-			.from("meals")
-			.select(`
-				*,
-				food:foods (
-					id,
-					name,
-					preference
-				)
-			`)
-			.order("meal_date", { ascending: false })
-			.order("meal_time", { ascending: true });
+		const allMeals = await db
+			.select({
+				id: meals.id,
+				mealDate: meals.mealDate,
+				mealTime: meals.mealTime,
+				foodId: meals.foodId,
+				amount: meals.amount,
+				notes: meals.notes,
+				createdAt: meals.createdAt,
+				updatedAt: meals.updatedAt,
+				food: {
+					id: foods.id,
+					name: foods.name,
+					preference: foods.preference,
+				},
+			})
+			.from(meals)
+			.leftJoin(foods, eq(meals.foodId, foods.id))
+			.orderBy(desc(meals.mealDate), asc(meals.mealTime));
 
-		if (error) throw error;
-
-		// Map Supabase response to match frontend expectations
-		const formattedMeals = meals.map((meal) => ({
+		const formattedMeals = allMeals.map((meal) => ({
 			id: meal.id,
-			mealDate: meal.meal_date,
-			mealTime: meal.meal_time,
-			foodId: meal.food_id,
+			mealDate: meal.mealDate,
+			mealTime: meal.mealTime,
+			foodId: meal.foodId,
 			food: meal.food,
 			amount: meal.amount,
 			notes: meal.notes || "",
-			createdAt: meal.created_at,
-			updatedAt: meal.updated_at,
+			createdAt: meal.createdAt,
+			updatedAt: meal.updatedAt,
 		}));
 
 		return NextResponse.json(formattedMeals);
@@ -57,42 +62,40 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		const supabase = await createClient();
-		const { data: meal, error } = await supabase
-			.from("meals")
-			.insert({
-				meal_date: mealDate,
-				meal_time: mealTime,
-				food_id: foodId,
+		const [newMeal] = await db
+			.insert(meals)
+			.values({
+				mealDate,
+				mealTime,
+				foodId,
 				amount,
 				notes: notes || "",
 			})
-			.select(`
-				*,
-				food:foods (
-					id,
-					name,
-					preference
-				)
-			`)
-			.single();
+			.returning();
 
-		if (error) throw error;
+		const [food] = await db
+			.select({
+				id: foods.id,
+				name: foods.name,
+				preference: foods.preference,
+			})
+			.from(foods)
+			.where(eq(foods.id, foodId))
+			.limit(1);
 
-		// Format response to match frontend expectations
-		const newMeal = {
-			id: meal.id,
-			mealDate: meal.meal_date,
-			mealTime: meal.meal_time,
-			foodId: meal.food_id,
-			food: meal.food,
-			amount: meal.amount,
-			notes: meal.notes || "",
-			createdAt: meal.created_at,
-			updatedAt: meal.updated_at,
+		const formattedMeal = {
+			id: newMeal.id,
+			mealDate: newMeal.mealDate,
+			mealTime: newMeal.mealTime,
+			foodId: newMeal.foodId,
+			food: food || null,
+			amount: newMeal.amount,
+			notes: newMeal.notes || "",
+			createdAt: newMeal.createdAt,
+			updatedAt: newMeal.updatedAt,
 		};
 
-		return NextResponse.json(newMeal, { status: 201 });
+		return NextResponse.json(formattedMeal, { status: 201 });
 	} catch (error) {
 		console.error("[v0] POST /api/meals error:", error);
 		return NextResponse.json(
