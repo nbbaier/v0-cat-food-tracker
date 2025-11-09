@@ -1,0 +1,147 @@
+"use client";
+
+import { ArrowDownAZ, ArrowUpAZ, HelpCircle, Search, ThumbsDown, ThumbsUp } from "lucide-react";
+import type { InventoryFilter, SortOption } from "@/app/page";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+
+type FoodFiltersProps = {
+	searchTerm: string;
+	onSearchChange: (value: string) => void;
+	preferenceFilters: Set<"likes" | "dislikes" | "unknown">;
+	onTogglePreference: (preference: "likes" | "dislikes" | "unknown") => void;
+	inventoryFilter: InventoryFilter;
+	onInventoryFilterChange: (value: InventoryFilter) => void;
+	sortBy: SortOption;
+	onSortByChange: (value: SortOption) => void;
+	sortOrder: "asc" | "desc";
+	onSortOrderToggle: () => void;
+};
+
+export function FoodFilters({
+	searchTerm,
+	onSearchChange,
+	preferenceFilters,
+	onTogglePreference,
+	inventoryFilter,
+	onInventoryFilterChange,
+	sortBy,
+	onSortByChange,
+	sortOrder,
+	onSortOrderToggle,
+}: FoodFiltersProps) {
+	return (
+		<div className="flex flex-col gap-4 p-4 mb-6 bg-card rounded-lg border">
+			{/* Search */}
+			<div className="flex flex-col gap-2">
+				<Label htmlFor="search" className="text-sm font-medium">
+					Search Notes
+				</Label>
+				<div className="relative">
+					<Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+					<Input
+						id="search"
+						type="text"
+						placeholder="Search in notes..."
+						value={searchTerm}
+						onChange={(e) => onSearchChange(e.target.value)}
+						className="pl-9"
+					/>
+				</div>
+			</div>
+
+			<div className="grid gap-4 sm:grid-cols-3">
+				{/* Preference Filter */}
+				<div className="flex flex-col gap-2">
+					<Label className="text-sm font-medium">Preference</Label>
+					<div className="flex gap-1">
+						<Button
+							variant={preferenceFilters.has("likes") ? "default" : "outline"}
+							size="sm"
+							onClick={() => onTogglePreference("likes")}
+							title="Filter by likes"
+							className="flex-1"
+						>
+							<ThumbsUp className="size-4" />
+						</Button>
+						<Button
+							variant={preferenceFilters.has("dislikes") ? "destructive" : "outline"}
+							size="sm"
+							onClick={() => onTogglePreference("dislikes")}
+							title="Filter by dislikes"
+							className="flex-1"
+						>
+							<ThumbsDown className="size-4" />
+						</Button>
+						<Button
+							variant={preferenceFilters.has("unknown") ? "secondary" : "outline"}
+							size="sm"
+							onClick={() => onTogglePreference("unknown")}
+							title="Filter by unknown"
+							className="flex-1"
+						>
+							<HelpCircle className="size-4" />
+						</Button>
+					</div>
+				</div>
+
+				{/* Inventory Filter */}
+				<div className="flex flex-col gap-2">
+					<Label htmlFor="inventory-filter" className="text-sm font-medium">
+						Inventory Status
+					</Label>
+					<Select value={inventoryFilter} onValueChange={onInventoryFilterChange}>
+						<SelectTrigger id="inventory-filter">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="all">All</SelectItem>
+							<SelectItem value="in-stock">In Stock</SelectItem>
+							<SelectItem value="out-of-stock">Out of Stock</SelectItem>
+						</SelectContent>
+					</Select>
+				</div>
+
+				{/* Sort */}
+				<div className="flex flex-col gap-2">
+					<Label htmlFor="sort-by" className="text-sm font-medium">
+						Sort By
+					</Label>
+					<div className="flex gap-1">
+						<Select value={sortBy} onValueChange={onSortByChange}>
+							<SelectTrigger id="sort-by" className="flex-1">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="name">Name</SelectItem>
+								<SelectItem value="preference">Preference</SelectItem>
+								<SelectItem value="inventory">Inventory</SelectItem>
+								<SelectItem value="date">Date Added</SelectItem>
+							</SelectContent>
+						</Select>
+						<Button
+							variant="outline"
+							size="icon"
+							onClick={onSortOrderToggle}
+							title={sortOrder === "asc" ? "Ascending" : "Descending"}
+						>
+							{sortOrder === "asc" ? (
+								<ArrowUpAZ className="size-4" />
+							) : (
+								<ArrowDownAZ className="size-4" />
+							)}
+						</Button>
+					</div>
+				</div>
+			</div>
+		</div>
+	);
+}
