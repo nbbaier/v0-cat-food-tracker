@@ -22,6 +22,7 @@ export const foods = pgTable(
 		notes: t.text(),
 		preference: preferenceEnum().notNull(),
 		inventoryQuantity: t.integer("inventory_quantity").default(0).notNull(),
+		archived: t.boolean().default(false).notNull(),
 		createdAt: t
 			.timestamp("created_at", { withTimezone: true, mode: "string" })
 			.defaultNow()
@@ -64,7 +65,7 @@ export const meals = pgTable(
 		mealTime: mealTimeEnum().notNull(),
 		foodId: t
 			.uuid()
-			.references(() => foods.id)
+			.references(() => foods.id, { onDelete: "restrict" })
 			.notNull(),
 		amount: t.text().notNull(),
 		notes: t.text(),
@@ -109,4 +110,8 @@ export const mealsRelations = relations(meals, ({ one }) => ({
 		fields: [meals.foodId],
 		references: [foods.id],
 	}),
+}));
+
+export const foodsRelations = relations(foods, ({ many }) => ({
+	meals: many(meals),
 }));
