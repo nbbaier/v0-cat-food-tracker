@@ -1,5 +1,6 @@
 "use client";
 
+import { Loader2 } from "lucide-react";
 import { redirect } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
@@ -13,11 +14,11 @@ export default function UserButton() {
 			<Button
 				variant="outline"
 				size="icon"
-				className="rounded-md animate-pulse pointer-events-none"
+				className="rounded-md pointer-events-none"
 				disabled
 				aria-label="Loading user session"
 			>
-				<div className="size-full rounded-md bg-muted" />
+				<Loader2 className="size-4 animate-spin" />
 			</Button>
 		);
 	}
