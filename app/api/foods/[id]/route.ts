@@ -39,6 +39,12 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
   try {
     const { id } = params
     const supabase = await createClient()
+
+    const { error: mealsError } = await supabase.from("meals").delete().eq("foodId", id)
+
+    if (mealsError) throw mealsError
+
+    // Now delete the food
     const { error } = await supabase.from("foods").delete().eq("id", id)
 
     if (error) throw error

@@ -92,9 +92,9 @@
 
 @theme inline {
   /* optional: --font-sans, --font-serif, --font-mono if they are applied in the layout.tsx */
-  --font-sans: "Outfit", "Outfit Fallback";
-  --font-serif: "Inter", "Inter Fallback";
-  --font-mono: var(--font-mono);
+  /* Reverting font variables to Geist */
+  --font-sans: "Geist", "Geist Fallback";
+  --font-mono: "Geist Mono", "Geist Mono Fallback";
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

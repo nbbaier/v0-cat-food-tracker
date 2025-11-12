@@ -4,7 +4,17 @@ import { ThemeProvider } from "next-themes"
 import type React from "react"
 import "./globals.css"
 
-import { Outfit, Inter } from "next/font/google"
+import { Geist, Geist_Mono } from "next/font/google"
+
+const geist = Geist({
+  subsets: ["latin"],
+  variable: "--font-sans",
+})
+
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+})
 
 export const metadata: Metadata = {
   title: "Ygritte's Picky Picks",
@@ -29,19 +39,6 @@ export const metadata: Metadata = {
   },
 }
 
-// Initialize fonts
-const outfit = Outfit({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
-})
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-serif",
-  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
-})
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -49,7 +46,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${outfit.variable} ${inter.variable} font-sans antialiased`}>
+      <body className={`${geist.variable} ${geistMono.variable} font-sans antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           {children}
         </ThemeProvider>
