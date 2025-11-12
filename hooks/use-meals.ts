@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "@/lib/constants";
 import type { Meal, MealInput } from "@/lib/types";
 
 export function useMeals() {
@@ -20,14 +21,13 @@ export function useMeals() {
 			} else {
 				const errorData = await response.json().catch(() => ({}));
 				const errorMessage =
-					errorData.error || "Failed to load meals. Please try again.";
+					errorData.error || ERROR_MESSAGES.FETCH_FAILED("meals");
 				toast.error(errorMessage);
 				setError(new Error(errorMessage));
 				console.error("Failed to fetch meals:", errorData);
 			}
 		} catch (err) {
-			const errorMessage =
-				"Unable to connect to server. Please check your connection.";
+			const errorMessage = ERROR_MESSAGES.CONNECTION_ERROR;
 			toast.error(errorMessage);
 			setError(err instanceof Error ? err : new Error(errorMessage));
 			console.error("Error fetching meals:", err);
@@ -51,17 +51,16 @@ export function useMeals() {
 			if (response.ok) {
 				const newMeal = await response.json();
 				setMeals((prev) => [newMeal, ...prev]);
-				toast.success("Meal logged successfully!");
+				toast.success(SUCCESS_MESSAGES.ADDED("Meal"));
 				return true;
 			}
 			const errorData = await response.json().catch(() => ({}));
-			const errorMessage =
-				errorData.error || "Failed to add meal. Please try again.";
+			const errorMessage = errorData.error || ERROR_MESSAGES.ADD_FAILED("meal");
 			toast.error(errorMessage);
 			console.error("Failed to add meal:", errorData);
 			return false;
 		} catch (err) {
-			toast.error("Unable to connect to server. Please check your connection.");
+			toast.error(ERROR_MESSAGES.CONNECTION_ERROR);
 			console.error("Error adding meal:", err);
 			return false;
 		}
@@ -75,17 +74,17 @@ export function useMeals() {
 
 			if (response.ok) {
 				setMeals((prev) => prev.filter((meal) => meal.id !== id));
-				toast.success("Meal deleted successfully!");
+				toast.success(SUCCESS_MESSAGES.DELETED("Meal"));
 				return true;
 			}
 			const errorData = await response.json().catch(() => ({}));
 			const errorMessage =
-				errorData.error || "Failed to delete meal. Please try again.";
+				errorData.error || ERROR_MESSAGES.DELETE_FAILED("meal");
 			toast.error(errorMessage);
 			console.error("Failed to delete meal:", errorData);
 			return false;
 		} catch (err) {
-			toast.error("Unable to connect to server. Please check your connection.");
+			toast.error(ERROR_MESSAGES.CONNECTION_ERROR);
 			console.error("Error deleting meal:", err);
 			return false;
 		}

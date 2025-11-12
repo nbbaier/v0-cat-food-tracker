@@ -128,7 +128,11 @@ export function FoodsPageClient({ user }: FoodsPageClientProps) {
 
 	if (isLoading) {
 		return (
-			<div className="flex justify-center items-center min-h-screen bg-background">
+			<div
+				className="flex justify-center items-center min-h-screen bg-background"
+				role="status"
+				aria-live="polite"
+			>
 				<p className="text-muted-foreground">Loading...</p>
 			</div>
 		);

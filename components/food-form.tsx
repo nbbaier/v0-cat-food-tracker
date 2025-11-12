@@ -2,6 +2,7 @@
 
 import type React from "react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { PreferenceRadioGroup } from "@/components/preference-radio-group";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,6 +64,27 @@ export function FoodForm({
 		e.preventDefault();
 		if (!name.trim()) return;
 
+		// Validate nutrition percentages
+		if (
+			phosphorusDmb !== undefined &&
+			(phosphorusDmb < 0 || phosphorusDmb > 100)
+		) {
+			toast.error("Phosphorus must be between 0 and 100%");
+			return;
+		}
+		if (proteinDmb !== undefined && (proteinDmb < 0 || proteinDmb > 100)) {
+			toast.error("Protein must be between 0 and 100%");
+			return;
+		}
+		if (fatDmb !== undefined && (fatDmb < 0 || fatDmb > 100)) {
+			toast.error("Fat must be between 0 and 100%");
+			return;
+		}
+		if (fiberDmb !== undefined && (fiberDmb < 0 || fiberDmb > 100)) {
+			toast.error("Fiber must be between 0 and 100%");
+			return;
+		}
+
 		onSubmit({
 			name: name.trim(),
 			preference,
@@ -72,7 +94,7 @@ export function FoodForm({
 			proteinDmb,
 			fatDmb,
 			fiberDmb,
-		} as FoodInput);
+		});
 
 		// Reset form only if it's not an edit
 		if (!isEdit) {
