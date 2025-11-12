@@ -6,12 +6,16 @@ import {
 	ChevronDown,
 	ChevronUp,
 	HelpCircle,
+	Plus,
 	RotateCcw,
 	Search,
 	ThumbsDown,
 	ThumbsUp,
 } from "lucide-react";
-import type { InventoryFilter, SortOption } from "@/app/page";
+import type {
+	InventoryFilter,
+	SortOption,
+} from "@/components/foods-page-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,6 +41,7 @@ type FoodFiltersProps = {
 	onReset: () => void;
 	isMinimized: boolean;
 	onToggleMinimize: () => void;
+	onAddFood: () => void;
 };
 
 export function FoodFilters({
@@ -53,157 +58,145 @@ export function FoodFilters({
 	onReset,
 	isMinimized,
 	onToggleMinimize,
+	onAddFood,
 }: FoodFiltersProps) {
 	return (
 		<div className="flex flex-col gap-4 p-4 mb-6 rounded-lg border bg-card">
-			{/* Header with Reset and Minimize buttons */}
-			<div className="flex justify-between items-center">
-				<h2 className="text-lg font-semibold">Filters</h2>
-				<div className="flex gap-2">
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={onReset}
-						title="Reset all filters"
-						className="shadow-none"
-					>
-						<RotateCcw className="size-4" />
-						<span className="ml-2">Reset</span>
-					</Button>
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={onToggleMinimize}
-						title={isMinimized ? "Expand filters" : "Minimize filters"}
-						className="shadow-none"
-					>
-						{isMinimized ? (
-							<ChevronDown className="size-4" />
-						) : (
-							<ChevronUp className="size-4" />
-						)}
-					</Button>
+			{/* Actions section - always visible */}
+			<div className="flex gap-2 items-center">
+				<div className="relative flex-1">
+					<Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+					<Input
+						id="search"
+						type="text"
+						placeholder="Search in notes..."
+						value={searchTerm}
+						onChange={(e) => onSearchChange(e.target.value)}
+						className="pl-9 shadow-none"
+					/>
 				</div>
+				<Button
+					variant="outline"
+					size="default"
+					onClick={onReset}
+					title="Reset all filters"
+					className="shadow-none"
+				>
+					<RotateCcw className="size-4" />
+					<span className="">Reset</span>
+				</Button>
+				<Button onClick={onAddFood} size="default" className="shadow-none">
+					<Plus className="size-4" />
+					Add Food
+				</Button>{" "}
+				<Button
+					variant="outline"
+					size="icon"
+					onClick={onToggleMinimize}
+					title={isMinimized ? "Expand filters" : "Minimize filters"}
+					className="shadow-none"
+				>
+					{isMinimized ? (
+						<ChevronDown className="size-4" />
+					) : (
+						<ChevronUp className="size-4" />
+					)}
+				</Button>
 			</div>
 
-			{/* Filter controls - only shown when not minimized */}
 			{!isMinimized && (
-				<>
-					{/* Search */}
+				<div className="grid gap-4 sm:grid-cols-3">
+					{/* Preference Filter */}
 					<div className="flex flex-col gap-2">
-						<Label htmlFor="search" className="text-sm font-medium">
-							Search Notes
-						</Label>
-						<div className="relative">
-							<Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-							<Input
-								id="search"
-								type="text"
-								placeholder="Search in notes..."
-								value={searchTerm}
-								onChange={(e) => onSearchChange(e.target.value)}
-								className="pl-9 shadow-none"
-							/>
+						<Label className="text-sm font-medium">Preference</Label>
+						<div className="flex gap-1">
+							<Button
+								variant={preferenceFilters.has("likes") ? "default" : "outline"}
+								size="sm"
+								onClick={() => onTogglePreference("likes")}
+								title="Filter by likes"
+								className="shadow-none"
+							>
+								<ThumbsUp className="size-4" />
+							</Button>
+							<Button
+								variant={
+									preferenceFilters.has("dislikes") ? "destructive" : "outline"
+								}
+								size="sm"
+								onClick={() => onTogglePreference("dislikes")}
+								title="Filter by dislikes"
+								className="shadow-none"
+							>
+								<ThumbsDown className="size-4" />
+							</Button>
+							<Button
+								variant={
+									preferenceFilters.has("unknown") ? "secondary" : "outline"
+								}
+								size="sm"
+								onClick={() => onTogglePreference("unknown")}
+								title="Filter by unknown"
+								className="shadow-none"
+							>
+								<HelpCircle className="size-4" />
+							</Button>
 						</div>
 					</div>
 
-					<div className="grid gap-4 sm:grid-cols-3">
-						{/* Preference Filter */}
-						<div className="flex flex-col gap-2">
-							<Label className="text-sm font-medium">Preference</Label>
-							<div className="flex gap-1">
-								<Button
-									variant={
-										preferenceFilters.has("likes") ? "default" : "outline"
-									}
-									size="sm"
-									onClick={() => onTogglePreference("likes")}
-									title="Filter by likes"
-									className="shadow-none"
-								>
-									<ThumbsUp className="size-4" />
-								</Button>
-								<Button
-									variant={
-										preferenceFilters.has("dislikes")
-											? "destructive"
-											: "outline"
-									}
-									size="sm"
-									onClick={() => onTogglePreference("dislikes")}
-									title="Filter by dislikes"
-									className="shadow-none"
-								>
-									<ThumbsDown className="size-4" />
-								</Button>
-								<Button
-									variant={
-										preferenceFilters.has("unknown") ? "secondary" : "outline"
-									}
-									size="sm"
-									onClick={() => onTogglePreference("unknown")}
-									title="Filter by unknown"
-									className="shadow-none"
-								>
-									<HelpCircle className="size-4" />
-								</Button>
-							</div>
-						</div>
+					{/* Inventory Filter */}
+					<div className="flex flex-col gap-2">
+						<Label htmlFor="inventory-filter" className="text-sm font-medium">
+							Inventory Status
+						</Label>
+						<Select
+							value={inventoryFilter}
+							onValueChange={onInventoryFilterChange}
+						>
+							<SelectTrigger id="inventory-filter">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">All</SelectItem>
+								<SelectItem value="in-stock">In Stock</SelectItem>
+								<SelectItem value="out-of-stock">Out of Stock</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
 
-						{/* Inventory Filter */}
-						<div className="flex flex-col gap-2">
-							<Label htmlFor="inventory-filter" className="text-sm font-medium">
-								Inventory Status
-							</Label>
-							<Select
-								value={inventoryFilter}
-								onValueChange={onInventoryFilterChange}
-							>
-								<SelectTrigger id="inventory-filter">
+					{/* Sort */}
+					<div className="flex flex-col gap-2">
+						<Label htmlFor="sort-by" className="text-sm font-medium">
+							Sort By
+						</Label>
+						<div className="flex gap-1">
+							<Select value={sortBy} onValueChange={onSortByChange}>
+								<SelectTrigger id="sort-by" className="flex-1">
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="all">All</SelectItem>
-									<SelectItem value="in-stock">In Stock</SelectItem>
-									<SelectItem value="out-of-stock">Out of Stock</SelectItem>
+									<SelectItem value="name">Name</SelectItem>
+									<SelectItem value="preference">Preference</SelectItem>
+									<SelectItem value="inventory">Inventory</SelectItem>
+									<SelectItem value="date">Date Added</SelectItem>
 								</SelectContent>
 							</Select>
-						</div>
-
-						{/* Sort */}
-						<div className="flex flex-col gap-2">
-							<Label htmlFor="sort-by" className="text-sm font-medium">
-								Sort By
-							</Label>
-							<div className="flex gap-1">
-								<Select value={sortBy} onValueChange={onSortByChange}>
-									<SelectTrigger id="sort-by" className="flex-1">
-										<SelectValue />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="name">Name</SelectItem>
-										<SelectItem value="preference">Preference</SelectItem>
-										<SelectItem value="inventory">Inventory</SelectItem>
-										<SelectItem value="date">Date Added</SelectItem>
-									</SelectContent>
-								</Select>
-								<Button
-									variant="outline"
-									size="sm"
-									onClick={onSortOrderToggle}
-									title={sortOrder === "asc" ? "Ascending" : "Descending"}
-									className="shadow-none"
-								>
-									{sortOrder === "asc" ? (
-										<ArrowUpAZ className="size-4" />
-									) : (
-										<ArrowDownAZ className="size-4" />
-									)}
-								</Button>
-							</div>
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={onSortOrderToggle}
+								title={sortOrder === "asc" ? "Ascending" : "Descending"}
+								className="shadow-none"
+							>
+								{sortOrder === "asc" ? (
+									<ArrowUpAZ className="size-4" />
+								) : (
+									<ArrowDownAZ className="size-4" />
+								)}
+							</Button>
 						</div>
 					</div>
-				</>
+				</div>
 			)}
 		</div>
 	);
