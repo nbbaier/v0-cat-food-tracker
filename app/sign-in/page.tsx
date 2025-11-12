@@ -29,7 +29,7 @@ export default function SignInPage() {
 	};
 
 	return (
-		<div className="flex min-h-screen items-center justify-center p-4">
+		<div className="flex items-center justify-center p-4 pt-20">
 			<SignInForm onSubmit={handleSubmit} isPending={isPending} />
 		</div>
 	);

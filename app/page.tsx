@@ -1,6 +1,5 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { FoodsPageClient } from "@/components/foods-page-client";
 import { auth } from "@/lib/auth";
 
 export default async function Page() {
@@ -9,8 +8,14 @@ export default async function Page() {
 	});
 
 	if (!session) {
-		redirect("/sign-in");
+		return (
+			<div className="flex items-center justify-center p-4 pt-20">
+				<div className="text-center">
+					<h1 className="mb-4 text-4xl font-bold">Welcome to the app</h1>
+				</div>
+			</div>
+		);
 	}
 
-	return <FoodsPageClient user={session.user} />;
+	redirect("/meals");
 }

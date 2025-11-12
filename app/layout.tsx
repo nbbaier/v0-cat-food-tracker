@@ -8,6 +8,8 @@ import {
 	Geist_Mono as V0_Font_Geist_Mono,
 	Source_Serif_4 as V0_Font_Source_Serif_4,
 } from "next/font/google";
+import { AppHeader } from "@/components/app-header";
+import { HeaderActionsProvider } from "@/components/header-context";
 import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
@@ -61,7 +63,10 @@ export default function RootLayout({
 					enableSystem
 					disableTransitionOnChange
 				>
-					{children}
+					<HeaderActionsProvider>
+						<AppHeader />
+						{children}
+					</HeaderActionsProvider>
 					<Toaster />
 				</ThemeProvider>
 				<Analytics />
