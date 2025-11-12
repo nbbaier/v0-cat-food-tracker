@@ -3,10 +3,13 @@
 import {
 	Edit,
 	HelpCircle,
+	MessageSquare,
 	Package,
+	TestTube,
 	ThumbsDown,
 	ThumbsUp,
 	Trash2,
+	Utensils,
 } from "lucide-react";
 import { useState } from "react";
 import type { Food } from "@/app/page";
@@ -81,14 +84,34 @@ export function FoodCard({ food, onUpdate, onDelete }: FoodCardProps) {
 						</Button>
 					</div>
 				</CardHeader>
-				<CardContent className="flex-1 space-y-2">
-					<div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-						<Package className="size-3.5" />
-						<span>
-							{food.inventoryQuantity > 0
-								? `${food.inventoryQuantity} in stock`
-								: "Out of stock"}
-						</span>
+				<CardContent className="flex-1 space-y-3">
+					<div className="flex flex-wrap gap-2">
+						<div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+							<Package className="size-3.5" />
+							<span>
+								{food.inventoryQuantity > 0
+									? `${food.inventoryQuantity} in stock`
+									: "Out of stock"}
+							</span>
+						</div>
+						{food.mealCount !== undefined && food.mealCount > 0 && (
+							<div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+								<Utensils className="size-3.5" />
+								<span>
+									{food.mealCount} meal{food.mealCount !== 1 ? "s" : ""}
+								</span>
+							</div>
+						)}
+						{food.mealCommentCount !== undefined &&
+							food.mealCommentCount > 0 && (
+								<div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+									<MessageSquare className="size-3.5" />
+									<span>
+										{food.mealCommentCount} comment
+										{food.mealCommentCount !== 1 ? "s" : ""}
+									</span>
+								</div>
+							)}
 					</div>
 					{food.notes ? (
 						<p className="text-sm leading-relaxed text-muted-foreground">
@@ -102,14 +125,23 @@ export function FoodCard({ food, onUpdate, onDelete }: FoodCardProps) {
 						food.fatDmb ||
 						food.fiberDmb) && (
 						<div className="pt-2 space-y-1 text-xs text-muted-foreground border-t">
-							<p className="font-semibold">Nutrition (DMB):</p>
+							<p className="flex items-center gap-1.5 font-semibold">
+								<TestTube className="size-3.5" />
+								Nutrition (DMB):
+							</p>
 							<div className="gap-x-3 gap-y-0.5 grid grid-cols-2">
-								{food.phosphorusDmb && (
+								{food.phosphorusDmb && food.phosphorusDmb > 0 && (
 									<span>Phosphorus: {food.phosphorusDmb}%</span>
 								)}
-								{food.proteinDmb && <span>Protein: {food.proteinDmb}%</span>}
-								{food.fatDmb && <span>Fat: {food.fatDmb}%</span>}
-								{food.fiberDmb && <span>Fiber: {food.fiberDmb}%</span>}
+								{food.proteinDmb && food.proteinDmb > 0 && (
+									<span>Protein: {food.proteinDmb}%</span>
+								)}
+								{food.fatDmb && food.fatDmb > 0 && (
+									<span>Fat: {food.fatDmb}%</span>
+								)}
+								{food.fiberDmb && food.fiberDmb > 0 && (
+									<span>Fiber: {food.fiberDmb}%</span>
+								)}
 							</div>
 						</div>
 					)}

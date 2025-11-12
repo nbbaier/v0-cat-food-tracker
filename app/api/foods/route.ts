@@ -1,13 +1,30 @@
-import { desc } from "drizzle-orm";
+import { count, desc, eq, isNotNull, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { foods } from "@/lib/db/schema";
+import { foods, meals } from "@/lib/db/schema";
 
 export async function GET() {
 	try {
 		const allFoods = await db
-			.select()
+			.select({
+				id: foods.id,
+				name: foods.name,
+				preference: foods.preference,
+				notes: foods.notes,
+				inventoryQuantity: foods.inventoryQuantity,
+				phosphorusDmb: foods.phosphorusDmb,
+				proteinDmb: foods.proteinDmb,
+				fatDmb: foods.fatDmb,
+				fiberDmb: foods.fiberDmb,
+				createdAt: foods.createdAt,
+				mealCount: sql<number>`count(distinct ${meals.id})`.as("meal_count"),
+				mealCommentCount: sql<number>`count(distinct case when ${meals.notes} is not null and ${meals.notes} != '' then ${meals.id} end)`.as(
+					"meal_comment_count",
+				),
+			})
 			.from(foods)
+			.leftJoin(meals, eq(foods.id, meals.foodId))
+			.groupBy(foods.id)
 			.orderBy(desc(foods.createdAt));
 
 		const formattedFoods = allFoods.map((food) => ({
@@ -21,6 +38,8 @@ export async function GET() {
 			proteinDmb: food.proteinDmb ? Number(food.proteinDmb) : undefined,
 			fatDmb: food.fatDmb ? Number(food.fatDmb) : undefined,
 			fiberDmb: food.fiberDmb ? Number(food.fiberDmb) : undefined,
+			mealCount: Number(food.mealCount) || 0,
+			mealCommentCount: Number(food.mealCommentCount) || 0,
 		}));
 
 		return NextResponse.json(formattedFoods);
