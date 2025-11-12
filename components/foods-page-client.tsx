@@ -3,14 +3,14 @@
 import type { User } from "better-auth";
 import { LayoutGrid, List, Utensils } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
+import { useMemo, useState } from "react";
 import { AddFoodDialog } from "@/components/add-food-dialog";
 import { FoodFilters } from "@/components/food-filters";
 import { FoodList } from "@/components/food-list";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
+import { useFoods } from "@/hooks/use-foods";
 import type { Food, FoodInput, InventoryFilter, SortOption } from "@/lib/types";
 import UserButton from "./user-button";
 
@@ -20,10 +20,9 @@ type FoodsPageClientProps = {
 
 // biome-ignore lint/correctness/noUnusedFunctionParameters: Required for auth context
 export function FoodsPageClient({ user }: FoodsPageClientProps) {
-	const [foods, setFoods] = useState<Food[]>([]);
+	const { foods, isLoading, addFood, updateFood, deleteFood } = useFoods();
 	const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 	const [viewMode, setViewMode] = useState<"compact" | "full">("compact");
-	const [isLoading, setIsLoading] = useState(true);
 
 	const [searchTerm, setSearchTerm] = useState("");
 	const [preferenceFilters, setPreferenceFilters] = useState<
@@ -35,107 +34,19 @@ export function FoodsPageClient({ user }: FoodsPageClientProps) {
 	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 	const [isFiltersMinimized, setIsFiltersMinimized] = useState(false);
 
-	const fetchFoods = useCallback(async () => {
-		try {
-			const response = await fetch("/api/foods");
-
-			if (response.ok) {
-				const data = await response.json();
-				setFoods(data);
-			} else {
-				const errorData = await response.json().catch(() => ({}));
-				const errorMessage =
-					errorData.error || "Failed to load foods. Please try again.";
-				toast.error(errorMessage);
-				console.error("Failed to fetch foods:", errorData);
-			}
-		} catch (error) {
-			toast.error("Unable to connect to server. Please check your connection.");
-			console.error("Error fetching foods:", error);
-		} finally {
-			setIsLoading(false);
-		}
-	}, []);
-
-	useEffect(() => {
-		fetchFoods();
-	}, [fetchFoods]);
-
 	const handleAddFood = async (food: FoodInput) => {
-		try {
-			const response = await fetch("/api/foods", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(food),
-			});
-
-			if (response.ok) {
-				const newFood = await response.json();
-				setFoods((prev) => [newFood, ...prev]);
-				setIsAddDialogOpen(false);
-				toast.success(`Added ${food.name} successfully!`);
-			} else {
-				const errorData = await response.json().catch(() => ({}));
-				const errorMessage =
-					errorData.error || "Failed to add food. Please try again.";
-				toast.error(errorMessage);
-				console.error("Failed to add food:", errorData);
-			}
-		} catch (error) {
-			toast.error("Unable to connect to server. Please check your connection.");
-			console.error("Error adding food:", error);
+		const success = await addFood(food);
+		if (success) {
+			setIsAddDialogOpen(false);
 		}
 	};
 
 	const handleUpdateFood = async (id: string, updates: Partial<Food>) => {
-		try {
-			const response = await fetch(`/api/foods/${id}`, {
-				method: "PATCH",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(updates),
-			});
-
-			if (response.ok) {
-				setFoods((prev) =>
-					prev.map((food) => (food.id === id ? { ...food, ...updates } : food)),
-				);
-				toast.success("Food updated successfully!");
-			} else {
-				const errorData = await response.json().catch(() => ({}));
-				const errorMessage =
-					errorData.error || "Failed to update food. Please try again.";
-				toast.error(errorMessage);
-				console.error("Failed to update food:", errorData);
-			}
-		} catch (error) {
-			toast.error("Unable to connect to server. Please check your connection.");
-			console.error("Error updating food:", error);
-		}
+		await updateFood(id, updates);
 	};
 
 	const handleDeleteFood = async (id: string) => {
-		const foodToDelete = foods.find((f) => f.id === id);
-		const foodName = foodToDelete?.name || "Food";
-
-		try {
-			const response = await fetch(`/api/foods/${id}`, {
-				method: "DELETE",
-			});
-
-			if (response.ok) {
-				setFoods((prev) => prev.filter((food) => food.id !== id));
-				toast.success(`Deleted ${foodName} successfully!`);
-			} else {
-				const errorData = await response.json().catch(() => ({}));
-				const errorMessage =
-					errorData.error || "Failed to delete food. Please try again.";
-				toast.error(errorMessage);
-				console.error("Failed to delete food:", errorData);
-			}
-		} catch (error) {
-			toast.error("Unable to connect to server. Please check your connection.");
-			console.error("Error deleting food:", error);
-		}
+		await deleteFood(id);
 	};
 
 	const filteredAndSortedFoods = useMemo(() => {

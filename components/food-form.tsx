@@ -1,12 +1,11 @@
 "use client";
 
-import { HelpCircle, ThumbsDown, ThumbsUp } from "lucide-react";
 import type React from "react";
 import { useEffect, useState } from "react";
+import { PreferenceRadioGroup } from "@/components/preference-radio-group";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import type { Food, FoodInput } from "@/lib/types";
 
@@ -104,52 +103,11 @@ export function FoodForm({
 
 				<div className="space-y-3">
 					<Label>Preference</Label>
-					<RadioGroup
+					<PreferenceRadioGroup
 						value={preference}
-						onValueChange={(v) =>
-							setPreference(v as "likes" | "dislikes" | "unknown")
-						}
-					>
-						<div className="flex items-center space-x-2">
-							<RadioGroupItem
-								value="likes"
-								id={isEdit ? "edit-likes" : "likes"}
-							/>
-							<Label
-								htmlFor={isEdit ? "edit-likes" : "likes"}
-								className="flex items-center gap-2 font-normal"
-							>
-								<ThumbsUp className="size-4 text-success" />
-								Likes
-							</Label>
-						</div>
-						<div className="flex items-center space-x-2">
-							<RadioGroupItem
-								value="dislikes"
-								id={isEdit ? "edit-dislikes" : "dislikes"}
-							/>
-							<Label
-								htmlFor={isEdit ? "edit-dislikes" : "dislikes"}
-								className="flex items-center gap-2 font-normal"
-							>
-								<ThumbsDown className="size-4 text-destructive" />
-								Dislikes
-							</Label>
-						</div>
-						<div className="flex items-center space-x-2">
-							<RadioGroupItem
-								value="unknown"
-								id={isEdit ? "edit-unknown" : "unknown"}
-							/>
-							<Label
-								htmlFor={isEdit ? "edit-unknown" : "unknown"}
-								className="flex items-center gap-2 font-normal"
-							>
-								<HelpCircle className="size-4 text-muted-foreground" />
-								Unknown
-							</Label>
-						</div>
-					</RadioGroup>
+						onValueChange={setPreference}
+						idPrefix={isEdit ? "edit-" : ""}
+					/>
 				</div>
 
 				<div className="space-y-2">
