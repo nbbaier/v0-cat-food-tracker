@@ -17,7 +17,7 @@ export type Food = {
 	mealCommentCount?: number;
 };
 
-export type FoodInput = Omit<Food, "id" | "addedAt">;
+export type FoodInput = Omit<Food, "id" | "addedAt" | "mealCount" | "mealCommentCount">;
 
 export type FoodUpdate = Partial<
 	Omit<Food, "id" | "addedAt" | "mealCount" | "mealCommentCount">
