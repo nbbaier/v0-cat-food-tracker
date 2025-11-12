@@ -1,28 +1,21 @@
 "use client";
 
-import type { User } from "better-auth";
-import { LayoutGrid, List, Utensils } from "lucide-react";
-import Link from "next/link";
-import { useMemo, useState } from "react";
+import { LayoutGrid, List } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { AddFoodDialog } from "@/components/add-food-dialog";
 import { FoodFilters } from "@/components/food-filters";
 import { FoodList } from "@/components/food-list";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { useHeaderActions } from "@/components/header-context";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { useFoods } from "@/hooks/use-foods";
 import type { Food, FoodInput, InventoryFilter, SortOption } from "@/lib/types";
-import UserButton from "./user-button";
 
-type FoodsPageClientProps = {
-	user: User;
-};
-
-// biome-ignore lint/correctness/noUnusedFunctionParameters: Required for auth context
-export function FoodsPageClient({ user }: FoodsPageClientProps) {
+export function FoodsPageClient() {
 	const { foods, isLoading, addFood, updateFood, deleteFood } = useFoods();
 	const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 	const [viewMode, setViewMode] = useState<"compact" | "full">("compact");
+	const { setActions } = useHeaderActions();
 
 	const [searchTerm, setSearchTerm] = useState("");
 	const [preferenceFilters, setPreferenceFilters] = useState<
@@ -126,67 +119,45 @@ export function FoodsPageClient({ user }: FoodsPageClientProps) {
 		setSortOrder("desc");
 	};
 
+	useEffect(() => {
+		setActions(
+			<ButtonGroup className="shrink-0">
+				<Button
+					variant="outline"
+					size="icon-lg"
+					onClick={() => setViewMode("compact")}
+					className={viewMode === "compact" ? "bg-accent" : ""}
+					title="Compact view"
+				>
+					<List className="size-4" />
+				</Button>
+				<Button
+					variant="outline"
+					size="icon-lg"
+					onClick={() => setViewMode("full")}
+					className={viewMode === "full" ? "bg-accent" : ""}
+					title="Full card view"
+				>
+					<LayoutGrid className="size-4" />
+				</Button>
+			</ButtonGroup>,
+		);
+
+		return () => {
+			setActions(null);
+		};
+	}, [viewMode, setActions]);
+
 	if (isLoading) {
 		return (
-			<div
-				className="flex justify-center items-center min-h-screen bg-background"
-				role="status"
-				aria-live="polite"
-			>
+			<output className="flex justify-center items-center min-h-screen bg-background">
 				<p className="text-muted-foreground">Loading...</p>
-			</div>
+			</output>
 		);
 	}
 
 	return (
 		<div className="min-h-screen bg-background">
-			<header className="border-b bg-card">
-				<div className="px-4 py-4 mx-auto max-w-5xl sm:px-6 sm:py-6 lg:px-8">
-					<div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
-						<div>
-							<h1 className="text-2xl font-bold tracking-tight text-balance sm:text-3xl">
-								Ygritte's Picky Picks
-							</h1>
-						</div>
-						<div className="flex flex-wrap gap-2 items-center sm:flex-nowrap">
-							<ButtonGroup className="shrink-0">
-								<Button
-									variant="outline"
-									size="icon"
-									onClick={() => setViewMode("compact")}
-									className={viewMode === "compact" ? "bg-accent" : ""}
-									title="Compact view"
-								>
-									<List className="size-4" />
-								</Button>
-								<Button
-									variant="outline"
-									size="icon"
-									onClick={() => setViewMode("full")}
-									className={viewMode === "full" ? "bg-accent" : ""}
-									title="Full card view"
-								>
-									<LayoutGrid className="size-4" />
-								</Button>
-							</ButtonGroup>
-							<ButtonGroup className="shrink-0">
-								<Button variant="outline" size="icon" asChild>
-									<Link href="/meals">
-										<Utensils className="size-4" />
-									</Link>
-								</Button>
-							</ButtonGroup>
-							<ButtonGroup className="shrink-0">
-								<ThemeToggle />
-							</ButtonGroup>
-							<ButtonGroup className="shrink-0">
-								<UserButton />
-							</ButtonGroup>
-						</div>
-					</div>
-				</div>
-			</header>
-
 			<main className="px-4 py-6 mx-auto max-w-5xl sm:px-6 sm:py-8 lg:px-8">
 				<FoodFilters
 					searchTerm={searchTerm}
