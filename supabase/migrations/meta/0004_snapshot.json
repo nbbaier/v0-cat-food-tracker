@@ -1,294 +1,267 @@
 {
-  "id": "a8e2c9f3-4b1e-4c7d-9a5f-e1f8d4a2b3c6",
-  "prevId": "b7d18f59-570e-4da2-b4be-e9181a4a13e6",
-  "version": "7",
-  "dialect": "postgresql",
-  "tables": {
-    "public.foods": {
-      "name": "foods",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "notes": {
-          "name": "notes",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "preference": {
-          "name": "preference",
-          "type": "preference",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "inventory_quantity": {
-          "name": "inventory_quantity",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "archived": {
-          "name": "archived",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {
-        "Allow public to delete foods": {
-          "name": "Allow public to delete foods",
-          "as": "PERMISSIVE",
-          "for": "DELETE",
-          "to": [
-            "public"
-          ],
-          "using": "true"
-        },
-        "Allow public to update foods": {
-          "name": "Allow public to update foods",
-          "as": "PERMISSIVE",
-          "for": "UPDATE",
-          "to": [
-            "public"
-          ]
-        },
-        "Allow public to insert foods": {
-          "name": "Allow public to insert foods",
-          "as": "PERMISSIVE",
-          "for": "INSERT",
-          "to": [
-            "public"
-          ]
-        },
-        "Allow public to view foods": {
-          "name": "Allow public to view foods",
-          "as": "PERMISSIVE",
-          "for": "SELECT",
-          "to": [
-            "public"
-          ]
-        }
-      },
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.meals": {
-      "name": "meals",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "mealDate": {
-          "name": "mealDate",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "mealTime": {
-          "name": "mealTime",
-          "type": "meal_time_type",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "foodId": {
-          "name": "foodId",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "amount": {
-          "name": "amount",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "notes": {
-          "name": "notes",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "idx_meals_food_ids": {
-          "name": "idx_meals_food_ids",
-          "columns": [
-            {
-              "expression": "foodId",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "with": {},
-          "method": "btree",
-          "concurrently": false
-        },
-        "meals_date_time_unique": {
-          "name": "meals_date_time_unique",
-          "columns": [
-            {
-              "expression": "mealDate",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "mealTime",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "foodId",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "with": {},
-          "method": "btree",
-          "concurrently": false
-        }
-      },
-      "foreignKeys": {
-        "meals_foodId_foods_id_fk": {
-          "name": "meals_foodId_foods_id_fk",
-          "tableFrom": "meals",
-          "columnsFrom": [
-            "foodId"
-          ],
-          "tableTo": "foods",
-          "columnsTo": [
-            "id"
-          ],
-          "onUpdate": "no action",
-          "onDelete": "restrict"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {
-        "Allow public to delete meals": {
-          "name": "Allow public to delete meals",
-          "as": "PERMISSIVE",
-          "for": "DELETE",
-          "to": [
-            "public"
-          ],
-          "using": "true"
-        },
-        "Allow public to update meals": {
-          "name": "Allow public to update meals",
-          "as": "PERMISSIVE",
-          "for": "UPDATE",
-          "to": [
-            "public"
-          ]
-        },
-        "Allow public to insert meals": {
-          "name": "Allow public to insert meals",
-          "as": "PERMISSIVE",
-          "for": "INSERT",
-          "to": [
-            "public"
-          ]
-        },
-        "Allow public to view meals": {
-          "name": "Allow public to view meals",
-          "as": "PERMISSIVE",
-          "for": "SELECT",
-          "to": [
-            "public"
-          ]
-        }
-      },
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    }
-  },
-  "enums": {
-    "public.meal_time_type": {
-      "name": "meal_time_type",
-      "schema": "public",
-      "values": [
-        "morning",
-        "evening"
-      ]
-    },
-    "public.preference": {
-      "name": "preference",
-      "schema": "public",
-      "values": [
-        "likes",
-        "dislikes",
-        "unknown"
-      ]
-    }
-  },
-  "schemas": {},
-  "views": {},
-  "sequences": {},
-  "roles": {},
-  "policies": {},
-  "_meta": {
-    "columns": {},
-    "schemas": {},
-    "tables": {}
-  }
+	"id": "a8e2c9f3-4b1e-4c7d-9a5f-e1f8d4a2b3c6",
+	"prevId": "b7d18f59-570e-4da2-b4be-e9181a4a13e6",
+	"version": "7",
+	"dialect": "postgresql",
+	"tables": {
+		"public.foods": {
+			"name": "foods",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"name": {
+					"name": "name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"notes": {
+					"name": "notes",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"preference": {
+					"name": "preference",
+					"type": "preference",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"inventory_quantity": {
+					"name": "inventory_quantity",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"default": 0
+				},
+				"archived": {
+					"name": "archived",
+					"type": "boolean",
+					"primaryKey": false,
+					"notNull": true,
+					"default": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {
+				"Allow public to delete foods": {
+					"name": "Allow public to delete foods",
+					"as": "PERMISSIVE",
+					"for": "DELETE",
+					"to": ["public"],
+					"using": "true"
+				},
+				"Allow public to update foods": {
+					"name": "Allow public to update foods",
+					"as": "PERMISSIVE",
+					"for": "UPDATE",
+					"to": ["public"]
+				},
+				"Allow public to insert foods": {
+					"name": "Allow public to insert foods",
+					"as": "PERMISSIVE",
+					"for": "INSERT",
+					"to": ["public"]
+				},
+				"Allow public to view foods": {
+					"name": "Allow public to view foods",
+					"as": "PERMISSIVE",
+					"for": "SELECT",
+					"to": ["public"]
+				}
+			},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		},
+		"public.meals": {
+			"name": "meals",
+			"schema": "",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true,
+					"default": "gen_random_uuid()"
+				},
+				"mealDate": {
+					"name": "mealDate",
+					"type": "date",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"mealTime": {
+					"name": "mealTime",
+					"type": "meal_time_type",
+					"typeSchema": "public",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"foodId": {
+					"name": "foodId",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"amount": {
+					"name": "amount",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"notes": {
+					"name": "notes",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "timestamp with time zone",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "now()"
+				}
+			},
+			"indexes": {
+				"idx_meals_food_ids": {
+					"name": "idx_meals_food_ids",
+					"columns": [
+						{
+							"expression": "foodId",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": false,
+					"with": {},
+					"method": "btree",
+					"concurrently": false
+				},
+				"meals_date_time_unique": {
+					"name": "meals_date_time_unique",
+					"columns": [
+						{
+							"expression": "mealDate",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "mealTime",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						},
+						{
+							"expression": "foodId",
+							"isExpression": false,
+							"asc": true,
+							"nulls": "last"
+						}
+					],
+					"isUnique": true,
+					"with": {},
+					"method": "btree",
+					"concurrently": false
+				}
+			},
+			"foreignKeys": {
+				"meals_foodId_foods_id_fk": {
+					"name": "meals_foodId_foods_id_fk",
+					"tableFrom": "meals",
+					"columnsFrom": ["foodId"],
+					"tableTo": "foods",
+					"columnsTo": ["id"],
+					"onUpdate": "no action",
+					"onDelete": "restrict"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"policies": {
+				"Allow public to delete meals": {
+					"name": "Allow public to delete meals",
+					"as": "PERMISSIVE",
+					"for": "DELETE",
+					"to": ["public"],
+					"using": "true"
+				},
+				"Allow public to update meals": {
+					"name": "Allow public to update meals",
+					"as": "PERMISSIVE",
+					"for": "UPDATE",
+					"to": ["public"]
+				},
+				"Allow public to insert meals": {
+					"name": "Allow public to insert meals",
+					"as": "PERMISSIVE",
+					"for": "INSERT",
+					"to": ["public"]
+				},
+				"Allow public to view meals": {
+					"name": "Allow public to view meals",
+					"as": "PERMISSIVE",
+					"for": "SELECT",
+					"to": ["public"]
+				}
+			},
+			"checkConstraints": {},
+			"isRLSEnabled": false
+		}
+	},
+	"enums": {
+		"public.meal_time_type": {
+			"name": "meal_time_type",
+			"schema": "public",
+			"values": ["morning", "evening"]
+		},
+		"public.preference": {
+			"name": "preference",
+			"schema": "public",
+			"values": ["likes", "dislikes", "unknown"]
+		}
+	},
+	"schemas": {},
+	"views": {},
+	"sequences": {},
+	"roles": {},
+	"policies": {},
+	"_meta": {
+		"columns": {},
+		"schemas": {},
+		"tables": {}
+	}
 }

@@ -12,8 +12,6 @@ import {
 	Utensils,
 } from "lucide-react";
 import { useState } from "react";
-import type { Food } from "@/app/page";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Item,
@@ -23,6 +21,7 @@ import {
 	ItemIcon,
 	ItemTitle,
 } from "@/components/ui/item";
+import type { Food } from "@/lib/types";
 import { EditFoodDialog } from "./edit-food-dialog";
 
 type FoodItemProps = {
@@ -88,13 +87,14 @@ export function FoodItem({ food, onUpdate, onDelete }: FoodItemProps) {
 								{food.mealCount} meal{food.mealCount !== 1 ? "s" : ""}
 							</span>
 						)}
-						{food.mealCommentCount !== undefined && food.mealCommentCount > 0 && (
-							<span className="flex items-center gap-1">
-								<MessageSquare className="size-3" />
-								{food.mealCommentCount} comment
-								{food.mealCommentCount !== 1 ? "s" : ""}
-							</span>
-						)}
+						{food.mealCommentCount !== undefined &&
+							food.mealCommentCount > 0 && (
+								<span className="flex items-center gap-1">
+									<MessageSquare className="size-3" />
+									{food.mealCommentCount} comment
+									{food.mealCommentCount !== 1 ? "s" : ""}
+								</span>
+							)}
 					</ItemDescription>
 				</ItemContent>
 				<ItemAction>

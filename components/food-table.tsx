@@ -2,9 +2,9 @@
 
 import { HelpCircle, ThumbsDown, ThumbsUp, Trash2 } from "lucide-react";
 import { useState } from "react";
-import type { Food } from "@/app/page";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import type { Food } from "@/lib/types";
 import { EditFoodDialog } from "./edit-food-dialog";
 
 type FoodTableProps = {
@@ -122,7 +122,9 @@ export function FoodTable({ foods, onUpdate, onDelete }: FoodTableProps) {
 											{food.phosphorusDmb && (
 												<div>P: {food.phosphorusDmb}%</div>
 											)}
-											{food.proteinDmb && <div>Protein: {food.proteinDmb}%</div>}
+											{food.proteinDmb && (
+												<div>Protein: {food.proteinDmb}%</div>
+											)}
 											{food.fatDmb && <div>Fat: {food.fatDmb}%</div>}
 											{food.fiberDmb && <div>Fiber: {food.fiberDmb}%</div>}
 										</div>

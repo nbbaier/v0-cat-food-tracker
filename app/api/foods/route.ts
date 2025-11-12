@@ -1,4 +1,4 @@
-import { count, desc, eq, isNotNull, sql } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { foods, meals } from "@/lib/db/schema";
@@ -17,10 +17,14 @@ export async function GET() {
 				fatDmb: foods.fatDmb,
 				fiberDmb: foods.fiberDmb,
 				createdAt: foods.createdAt,
-				mealCount: sql<number>`coalesce(count(distinct ${meals.id}) filter (where ${meals.id} is not null), 0)`.as("meal_count"),
-				mealCommentCount: sql<number>`coalesce(count(distinct ${meals.id}) filter (where ${meals.notes} is not null and ${meals.notes} != ''), 0)`.as(
-					"meal_comment_count",
-				),
+				mealCount:
+					sql<number>`coalesce(count(distinct ${meals.id}) filter (where ${meals.id} is not null), 0)`.as(
+						"meal_count",
+					),
+				mealCommentCount:
+					sql<number>`coalesce(count(distinct ${meals.id}) filter (where ${meals.notes} is not null and ${meals.notes} != ''), 0)`.as(
+						"meal_comment_count",
+					),
 			})
 			.from(foods)
 			.leftJoin(meals, eq(foods.id, meals.foodId))
@@ -34,7 +38,9 @@ export async function GET() {
 			notes: food.notes || "",
 			inventoryQuantity: food.inventoryQuantity,
 			addedAt: new Date(food.createdAt).getTime(),
-			phosphorusDmb: food.phosphorusDmb ? Number(food.phosphorusDmb) : undefined,
+			phosphorusDmb: food.phosphorusDmb
+				? Number(food.phosphorusDmb)
+				: undefined,
 			proteinDmb: food.proteinDmb ? Number(food.proteinDmb) : undefined,
 			fatDmb: food.fatDmb ? Number(food.fatDmb) : undefined,
 			fiberDmb: food.fiberDmb ? Number(food.fiberDmb) : undefined,

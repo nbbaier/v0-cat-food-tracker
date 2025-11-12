@@ -3,36 +3,14 @@
 import { Home, Plus, Trash2, Utensils } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { AddMealDialog } from "@/components/add-meal-dialog";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-type Meal = {
-	id: string;
-	mealDate: string;
-	mealTime: "morning" | "evening";
-	foodId: string;
-	food: {
-		id: string;
-		name: string;
-		preference: string;
-	};
-	amount: string;
-	notes: string;
-	createdAt: string;
-	updatedAt: string;
-};
-
-type MealInput = {
-	mealDate: string;
-	mealTime: "morning" | "evening";
-	foodId: string;
-	amount: string;
-	notes: string;
-};
+import type { Meal, MealInput } from "@/lib/types";
 
 export default function MealsPage() {
 	const [meals, setMeals] = useState<Meal[]>([]);
@@ -47,9 +25,14 @@ export default function MealsPage() {
 				const data = await response.json();
 				setMeals(data);
 			} else {
-				console.error("Failed to fetch meals");
+				const errorData = await response.json().catch(() => ({}));
+				const errorMessage =
+					errorData.error || "Failed to load meals. Please try again.";
+				toast.error(errorMessage);
+				console.error("Failed to fetch meals:", errorData);
 			}
 		} catch (error) {
+			toast.error("Unable to connect to server. Please check your connection.");
 			console.error("Error fetching meals:", error);
 		} finally {
 			setIsLoading(false);
@@ -72,10 +55,16 @@ export default function MealsPage() {
 				const newMeal = await response.json();
 				setMeals((prev) => [newMeal, ...prev]);
 				setIsAddDialogOpen(false);
+				toast.success("Meal logged successfully!");
 			} else {
-				console.error("Failed to add meal");
+				const errorData = await response.json().catch(() => ({}));
+				const errorMessage =
+					errorData.error || "Failed to add meal. Please try again.";
+				toast.error(errorMessage);
+				console.error("Failed to add meal:", errorData);
 			}
 		} catch (error) {
+			toast.error("Unable to connect to server. Please check your connection.");
 			console.error("Error adding meal:", error);
 		}
 	};
@@ -90,10 +79,16 @@ export default function MealsPage() {
 
 			if (response.ok) {
 				setMeals((prev) => prev.filter((meal) => meal.id !== id));
+				toast.success("Meal deleted successfully!");
 			} else {
-				console.error("Failed to delete meal");
+				const errorData = await response.json().catch(() => ({}));
+				const errorMessage =
+					errorData.error || "Failed to delete meal. Please try again.";
+				toast.error(errorMessage);
+				console.error("Failed to delete meal:", errorData);
 			}
 		} catch (error) {
+			toast.error("Unable to connect to server. Please check your connection.");
 			console.error("Error deleting meal:", error);
 		}
 	};

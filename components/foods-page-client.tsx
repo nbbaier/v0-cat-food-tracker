@@ -4,36 +4,21 @@ import type { User } from "better-auth";
 import { LayoutGrid, List, Utensils } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { AddFoodDialog } from "@/components/add-food-dialog";
 import { FoodFilters } from "@/components/food-filters";
 import { FoodList } from "@/components/food-list";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
+import type { Food, FoodInput, InventoryFilter, SortOption } from "@/lib/types";
 import UserButton from "./user-button";
-
-export type Food = {
-	id: string;
-	name: string;
-	preference: "likes" | "dislikes" | "unknown";
-	notes: string;
-	inventoryQuantity: number;
-	addedAt: number;
-	phosphorusDmb?: number;
-	proteinDmb?: number;
-	fatDmb?: number;
-	fiberDmb?: number;
-	mealCount?: number;
-	mealCommentCount?: number;
-};
-
-export type SortOption = "name" | "preference" | "inventory" | "date";
-export type InventoryFilter = "all" | "in-stock" | "out-of-stock";
 
 type FoodsPageClientProps = {
 	user: User;
 };
 
+// biome-ignore lint/correctness/noUnusedFunctionParameters: Required for auth context
 export function FoodsPageClient({ user }: FoodsPageClientProps) {
 	const [foods, setFoods] = useState<Food[]>([]);
 	const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -58,9 +43,14 @@ export function FoodsPageClient({ user }: FoodsPageClientProps) {
 				const data = await response.json();
 				setFoods(data);
 			} else {
-				console.error("Failed to fetch foods");
+				const errorData = await response.json().catch(() => ({}));
+				const errorMessage =
+					errorData.error || "Failed to load foods. Please try again.";
+				toast.error(errorMessage);
+				console.error("Failed to fetch foods:", errorData);
 			}
 		} catch (error) {
+			toast.error("Unable to connect to server. Please check your connection.");
 			console.error("Error fetching foods:", error);
 		} finally {
 			setIsLoading(false);
@@ -71,7 +61,7 @@ export function FoodsPageClient({ user }: FoodsPageClientProps) {
 		fetchFoods();
 	}, [fetchFoods]);
 
-	const handleAddFood = async (food: Omit<Food, "id" | "addedAt">) => {
+	const handleAddFood = async (food: FoodInput) => {
 		try {
 			const response = await fetch("/api/foods", {
 				method: "POST",
@@ -83,10 +73,16 @@ export function FoodsPageClient({ user }: FoodsPageClientProps) {
 				const newFood = await response.json();
 				setFoods((prev) => [newFood, ...prev]);
 				setIsAddDialogOpen(false);
+				toast.success(`Added ${food.name} successfully!`);
 			} else {
-				console.error("Failed to add food");
+				const errorData = await response.json().catch(() => ({}));
+				const errorMessage =
+					errorData.error || "Failed to add food. Please try again.";
+				toast.error(errorMessage);
+				console.error("Failed to add food:", errorData);
 			}
 		} catch (error) {
+			toast.error("Unable to connect to server. Please check your connection.");
 			console.error("Error adding food:", error);
 		}
 	};
@@ -103,15 +99,24 @@ export function FoodsPageClient({ user }: FoodsPageClientProps) {
 				setFoods((prev) =>
 					prev.map((food) => (food.id === id ? { ...food, ...updates } : food)),
 				);
+				toast.success("Food updated successfully!");
 			} else {
-				console.error("Failed to update food");
+				const errorData = await response.json().catch(() => ({}));
+				const errorMessage =
+					errorData.error || "Failed to update food. Please try again.";
+				toast.error(errorMessage);
+				console.error("Failed to update food:", errorData);
 			}
 		} catch (error) {
+			toast.error("Unable to connect to server. Please check your connection.");
 			console.error("Error updating food:", error);
 		}
 	};
 
 	const handleDeleteFood = async (id: string) => {
+		const foodToDelete = foods.find((f) => f.id === id);
+		const foodName = foodToDelete?.name || "Food";
+
 		try {
 			const response = await fetch(`/api/foods/${id}`, {
 				method: "DELETE",
@@ -119,10 +124,16 @@ export function FoodsPageClient({ user }: FoodsPageClientProps) {
 
 			if (response.ok) {
 				setFoods((prev) => prev.filter((food) => food.id !== id));
+				toast.success(`Deleted ${foodName} successfully!`);
 			} else {
-				console.error("Failed to delete food");
+				const errorData = await response.json().catch(() => ({}));
+				const errorMessage =
+					errorData.error || "Failed to delete food. Please try again.";
+				toast.error(errorMessage);
+				console.error("Failed to delete food:", errorData);
 			}
 		} catch (error) {
+			toast.error("Unable to connect to server. Please check your connection.");
 			console.error("Error deleting food:", error);
 		}
 	};

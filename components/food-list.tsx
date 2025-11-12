@@ -1,6 +1,6 @@
 "use client";
 
-import type { Food } from "@/app/page";
+import type { Food } from "@/lib/types";
 import { FoodCard } from "./food-card";
 import { FoodItem } from "./food-item";
 

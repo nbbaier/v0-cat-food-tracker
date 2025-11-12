@@ -12,7 +12,6 @@ import {
 	Utensils,
 } from "lucide-react";
 import { useState } from "react";
-import type { Food } from "@/app/page";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -20,6 +19,7 @@ import {
 	CardFooter,
 	CardHeader,
 } from "@/components/ui/card";
+import type { Food } from "@/lib/types";
 import { EditFoodDialog } from "./edit-food-dialog";
 
 type FoodCardProps = {
