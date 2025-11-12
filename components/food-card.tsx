@@ -120,10 +120,10 @@ export function FoodCard({ food, onUpdate, onDelete }: FoodCardProps) {
 					) : (
 						<p className="text-sm italic text-muted-foreground">No notes</p>
 					)}
-					{(food.phosphorusDmb ||
-						food.proteinDmb ||
-						food.fatDmb ||
-						food.fiberDmb) && (
+					{((food.phosphorusDmb && food.phosphorusDmb > 0) ||
+						(food.proteinDmb && food.proteinDmb > 0) ||
+						(food.fatDmb && food.fatDmb > 0) ||
+						(food.fiberDmb && food.fiberDmb > 0)) && (
 						<div className="pt-2 space-y-1 text-xs text-muted-foreground border-t">
 							<p className="flex items-center gap-1.5 font-semibold">
 								<TestTube className="size-3.5" />

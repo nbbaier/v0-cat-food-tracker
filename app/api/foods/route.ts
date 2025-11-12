@@ -17,8 +17,8 @@ export async function GET() {
 				fatDmb: foods.fatDmb,
 				fiberDmb: foods.fiberDmb,
 				createdAt: foods.createdAt,
-				mealCount: sql<number>`count(distinct ${meals.id})`.as("meal_count"),
-				mealCommentCount: sql<number>`count(distinct case when ${meals.notes} is not null and ${meals.notes} != '' then ${meals.id} end)`.as(
+				mealCount: sql<number>`coalesce(count(distinct ${meals.id}) filter (where ${meals.id} is not null), 0)`.as("meal_count"),
+				mealCommentCount: sql<number>`coalesce(count(distinct ${meals.id}) filter (where ${meals.notes} is not null and ${meals.notes} != ''), 0)`.as(
 					"meal_comment_count",
 				),
 			})
