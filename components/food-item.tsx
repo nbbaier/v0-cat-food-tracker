@@ -34,8 +34,16 @@ type FoodItemProps = {
 export function FoodItem({ food, onUpdate, onDelete }: FoodItemProps) {
 	const [isEditOpen, setIsEditOpen] = useState(false);
 
-	const handlePreferenceChange = (preference: Food["preference"]) => {
-		onUpdate(food.id, { preference });
+	const cyclePreference = () => {
+		const preferenceOrder: Food["preference"][] = [
+			"likes",
+			"dislikes",
+			"unknown",
+		];
+		const currentIndex = preferenceOrder.indexOf(food.preference);
+		const nextIndex = (currentIndex + 1) % preferenceOrder.length;
+		const nextPreference = preferenceOrder[nextIndex];
+		onUpdate(food.id, { preference: nextPreference });
 	};
 
 	const getPreferenceIcon = () => {
@@ -52,7 +60,13 @@ export function FoodItem({ food, onUpdate, onDelete }: FoodItemProps) {
 	return (
 		<>
 			<Item>
-				<ItemIcon>{getPreferenceIcon()}</ItemIcon>
+				<ItemIcon
+					className="cursor-pointer hover:bg-accent rounded-sm transition-colors"
+					onClick={cyclePreference}
+					title="Click to cycle preference"
+				>
+					{getPreferenceIcon()}
+				</ItemIcon>
 				<ItemContent>
 					<ItemTitle>{food.name}</ItemTitle>
 					<ItemDescription className="flex items-center gap-3 mt-1 flex-wrap">
