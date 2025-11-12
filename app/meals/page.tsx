@@ -182,7 +182,7 @@ export default function MealsPage() {
 							return (
 								<div key={date}>
 									<h2 className="mb-3 text-lg font-semibold">
-										{new Date(date + "T00:00:00").toLocaleDateString("en-US", {
+										{new Date(`${date}T00:00:00`).toLocaleDateString("en-US", {
 											weekday: "long",
 											year: "numeric",
 											month: "long",

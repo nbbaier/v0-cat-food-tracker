@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import type React from "react";
 import "./globals.css";
-
 import {
 	Geist as V0_Font_Geist,
 	Geist_Mono as V0_Font_Geist_Mono,
