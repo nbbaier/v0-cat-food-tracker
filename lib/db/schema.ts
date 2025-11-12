@@ -23,6 +23,23 @@ export const foods = pgTable(
 		preference: preferenceEnum().notNull(),
 		inventoryQuantity: t.integer("inventory_quantity").default(0).notNull(),
 		archived: t.boolean().default(false).notNull(),
+		// Nutrition information (dry matter basis, in %)
+		phosphorusDmb: t
+			.numeric("phosphorus_dmb", { mode: "number", precision: 5, scale: 2 })
+			.default(0)
+			.notNull(),
+		proteinDmb: t
+			.numeric("protein_dmb", { mode: "number", precision: 5, scale: 2 })
+			.default(0)
+			.notNull(),
+		fatDmb: t
+			.numeric("fat_dmb", { mode: "number", precision: 5, scale: 2 })
+			.default(0)
+			.notNull(),
+		fiberDmb: t
+			.numeric("fiber_dmb", { mode: "number", precision: 5, scale: 2 })
+			.default(0)
+			.notNull(),
 		createdAt: t
 			.timestamp("created_at", { withTimezone: true, mode: "string" })
 			.defaultNow()
