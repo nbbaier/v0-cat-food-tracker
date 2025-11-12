@@ -1,19 +1,12 @@
 "use client";
 
+import { Edit, MessageSquare, Package, Trash2, Utensils } from "lucide-react";
+import React, { useState } from "react";
+import { NutritionDisplay } from "@/components/nutrition-display";
 import {
-	Edit,
-	HelpCircle,
-	MessageSquare,
-	Package,
-	TestTube,
-	ThumbsDown,
-	ThumbsUp,
-	Trash2,
-	Utensils,
-} from "lucide-react";
-import { useState } from "react";
-import type { Food } from "@/app/page";
-import { Badge } from "@/components/ui/badge";
+	getPreferenceColor,
+	PreferenceIcon,
+} from "@/components/preference-icon";
 import { Button } from "@/components/ui/button";
 import {
 	Item,
@@ -23,6 +16,7 @@ import {
 	ItemIcon,
 	ItemTitle,
 } from "@/components/ui/item";
+import type { Food } from "@/lib/types";
 import { EditFoodDialog } from "./edit-food-dialog";
 
 type FoodItemProps = {
@@ -31,7 +25,11 @@ type FoodItemProps = {
 	onDelete: (id: string) => void;
 };
 
-export function FoodItem({ food, onUpdate, onDelete }: FoodItemProps) {
+export const FoodItem = React.memo(function FoodItem({
+	food,
+	onUpdate,
+	onDelete,
+}: FoodItemProps) {
 	const [isEditOpen, setIsEditOpen] = useState(false);
 
 	const cyclePreference = () => {
@@ -46,17 +44,6 @@ export function FoodItem({ food, onUpdate, onDelete }: FoodItemProps) {
 		onUpdate(food.id, { preference: nextPreference });
 	};
 
-	const getPreferenceIcon = () => {
-		switch (food.preference) {
-			case "likes":
-				return <ThumbsUp className="size-4 text-success" />;
-			case "dislikes":
-				return <ThumbsDown className="size-4 text-destructive" />;
-			case "unknown":
-				return <HelpCircle className="size-4 text-muted-foreground" />;
-		}
-	};
-
 	return (
 		<>
 			<Item>
@@ -65,7 +52,10 @@ export function FoodItem({ food, onUpdate, onDelete }: FoodItemProps) {
 					onClick={cyclePreference}
 					title="Click to cycle preference"
 				>
-					{getPreferenceIcon()}
+					<PreferenceIcon
+						preference={food.preference}
+						className={`size-4 ${getPreferenceColor(food.preference)}`}
+					/>
 				</ItemIcon>
 				<ItemContent>
 					<ItemTitle>{food.name}</ItemTitle>
@@ -76,25 +66,21 @@ export function FoodItem({ food, onUpdate, onDelete }: FoodItemProps) {
 								? `${food.inventoryQuantity} in stock`
 								: "Out of stock"}
 						</span>
-						{food.phosphorusDmb !== undefined && food.phosphorusDmb > 0 && (
-							<span className="flex items-center gap-1">
-								<TestTube className="size-3" />
-								P: {food.phosphorusDmb}%
-							</span>
-						)}
+						<NutritionDisplay food={food} variant="compact" />
 						{food.mealCount !== undefined && food.mealCount > 0 && (
 							<span className="flex items-center gap-1">
 								<Utensils className="size-3" />
 								{food.mealCount} meal{food.mealCount !== 1 ? "s" : ""}
 							</span>
 						)}
-						{food.mealCommentCount !== undefined && food.mealCommentCount > 0 && (
-							<span className="flex items-center gap-1">
-								<MessageSquare className="size-3" />
-								{food.mealCommentCount} comment
-								{food.mealCommentCount !== 1 ? "s" : ""}
-							</span>
-						)}
+						{food.mealCommentCount !== undefined &&
+							food.mealCommentCount > 0 && (
+								<span className="flex items-center gap-1">
+									<MessageSquare className="size-3" />
+									{food.mealCommentCount} comment
+									{food.mealCommentCount !== 1 ? "s" : ""}
+								</span>
+							)}
 					</ItemDescription>
 				</ItemContent>
 				<ItemAction>
@@ -129,4 +115,4 @@ export function FoodItem({ food, onUpdate, onDelete }: FoodItemProps) {
 			/>
 		</>
 	);
-}
+});

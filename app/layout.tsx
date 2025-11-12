@@ -8,6 +8,7 @@ import {
 	Geist_Mono as V0_Font_Geist_Mono,
 	Source_Serif_4 as V0_Font_Source_Serif_4,
 } from "next/font/google";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
 	title: "Ygritte's Picky Picks",
@@ -61,6 +62,7 @@ export default function RootLayout({
 					disableTransitionOnChange
 				>
 					{children}
+					<Toaster />
 				</ThemeProvider>
 				<Analytics />
 			</body>

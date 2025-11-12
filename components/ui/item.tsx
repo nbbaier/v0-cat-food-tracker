@@ -45,10 +45,7 @@ function ItemTitle({ className, ...props }: React.ComponentProps<"div">) {
 	);
 }
 
-function ItemDescription({
-	className,
-	...props
-}: React.ComponentProps<"div">) {
+function ItemDescription({ className, ...props }: React.ComponentProps<"div">) {
 	return (
 		<div
 			data-slot="item-description"

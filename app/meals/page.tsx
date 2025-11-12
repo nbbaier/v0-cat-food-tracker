@@ -2,99 +2,33 @@
 
 import { Home, Plus, Trash2, Utensils } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { AddMealDialog } from "@/components/add-meal-dialog";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-type Meal = {
-	id: string;
-	mealDate: string;
-	mealTime: "morning" | "evening";
-	foodId: string;
-	food: {
-		id: string;
-		name: string;
-		preference: string;
-	};
-	amount: string;
-	notes: string;
-	createdAt: string;
-	updatedAt: string;
-};
-
-type MealInput = {
-	mealDate: string;
-	mealTime: "morning" | "evening";
-	foodId: string;
-	amount: string;
-	notes: string;
-};
+import { useMeals } from "@/hooks/use-meals";
+import type { Meal, MealInput } from "@/lib/types";
 
 export default function MealsPage() {
-	const [meals, setMeals] = useState<Meal[]>([]);
+	const { meals, isLoading, addMeal, deleteMeal } = useMeals();
 	const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-	const [isLoading, setIsLoading] = useState(true);
-
-	const fetchMeals = useCallback(async () => {
-		try {
-			const response = await fetch("/api/meals");
-
-			if (response.ok) {
-				const data = await response.json();
-				setMeals(data);
-			} else {
-				console.error("Failed to fetch meals");
-			}
-		} catch (error) {
-			console.error("Error fetching meals:", error);
-		} finally {
-			setIsLoading(false);
-		}
-	}, []);
-
-	useEffect(() => {
-		fetchMeals();
-	}, [fetchMeals]);
+	const [mealToDelete, setMealToDelete] = useState<string | null>(null);
 
 	const handleAddMeal = async (meal: MealInput) => {
-		try {
-			const response = await fetch("/api/meals", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(meal),
-			});
-
-			if (response.ok) {
-				const newMeal = await response.json();
-				setMeals((prev) => [newMeal, ...prev]);
-				setIsAddDialogOpen(false);
-			} else {
-				console.error("Failed to add meal");
-			}
-		} catch (error) {
-			console.error("Error adding meal:", error);
+		const success = await addMeal(meal);
+		if (success) {
+			setIsAddDialogOpen(false);
 		}
 	};
 
-	const handleDeleteMeal = async (id: string) => {
-		if (!confirm("Are you sure you want to delete this meal?")) return;
-
-		try {
-			const response = await fetch(`/api/meals/${id}`, {
-				method: "DELETE",
-			});
-
-			if (response.ok) {
-				setMeals((prev) => prev.filter((meal) => meal.id !== id));
-			} else {
-				console.error("Failed to delete meal");
-			}
-		} catch (error) {
-			console.error("Error deleting meal:", error);
+	const handleDeleteMeal = async () => {
+		if (mealToDelete) {
+			await deleteMeal(mealToDelete);
+			setMealToDelete(null);
 		}
 	};
 
@@ -209,7 +143,7 @@ export default function MealsPage() {
 													<Button
 														variant="ghost"
 														size="icon"
-														onClick={() => handleDeleteMeal(meal.id)}
+														onClick={() => setMealToDelete(meal.id)}
 														className="size-8 -mt-1 -mr-2 text-muted-foreground hover:text-destructive"
 													>
 														<Trash2 className="size-4" />
@@ -236,6 +170,15 @@ export default function MealsPage() {
 				open={isAddDialogOpen}
 				onOpenChange={setIsAddDialogOpen}
 				onAdd={handleAddMeal}
+			/>
+			<ConfirmDialog
+				open={mealToDelete !== null}
+				onOpenChange={(open) => !open && setMealToDelete(null)}
+				onConfirm={handleDeleteMeal}
+				title="Delete Meal"
+				description="Are you sure you want to delete this meal? This action cannot be undone."
+				confirmLabel="Delete"
+				variant="destructive"
 			/>
 		</div>
 	);

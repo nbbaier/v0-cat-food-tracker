@@ -12,10 +12,6 @@ import {
 	ThumbsDown,
 	ThumbsUp,
 } from "lucide-react";
-import type {
-	InventoryFilter,
-	SortOption,
-} from "@/components/foods-page-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,6 +22,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import type { InventoryFilter, SortOption } from "@/lib/types";
 
 type FoodFiltersProps = {
 	searchTerm: string;

@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -14,7 +14,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Textarea } from "@/components/ui/textarea";
 import {
 	Select,
 	SelectContent,
@@ -22,25 +21,13 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-
-type Food = {
-	id: string;
-	name: string;
-	preference: string;
-};
-
-type Meal = {
-	mealDate: string;
-	mealTime: "morning" | "evening";
-	foodId: string;
-	amount: string;
-	notes: string;
-};
+import { Textarea } from "@/components/ui/textarea";
+import type { FoodSummary, MealInput } from "@/lib/types";
 
 type AddMealDialogProps = {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	onAdd: (meal: Meal) => void;
+	onAdd: (meal: MealInput) => void;
 };
 
 export function AddMealDialog({
@@ -48,7 +35,7 @@ export function AddMealDialog({
 	onOpenChange,
 	onAdd,
 }: AddMealDialogProps) {
-	const [foods, setFoods] = useState<Food[]>([]);
+	const [foods, setFoods] = useState<FoodSummary[]>([]);
 	const [mealDate, setMealDate] = useState(
 		new Date().toISOString().split("T")[0],
 	);
@@ -57,26 +44,28 @@ export function AddMealDialog({
 	const [amount, setAmount] = useState("");
 	const [notes, setNotes] = useState("");
 
-	// Fetch foods when dialog opens
-	useEffect(() => {
-		if (open) {
-			fetchFoods();
-		}
-	}, [open]);
-
-	const fetchFoods = async () => {
+	const fetchFoods = useCallback(async () => {
 		try {
 			const response = await fetch("/api/foods");
 			if (response.ok) {
 				const data = await response.json();
 				// Filter out archived foods
-				const activeFoods = data.filter((food: any) => !food.archived);
+				const activeFoods = data.filter(
+					(food: { archived?: boolean }) => !food.archived,
+				);
 				setFoods(activeFoods);
 			}
 		} catch (error) {
 			console.error("Error fetching foods:", error);
 		}
-	};
+	}, []);
+
+	// Fetch foods when dialog opens
+	useEffect(() => {
+		if (open) {
+			fetchFoods();
+		}
+	}, [open, fetchFoods]);
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();

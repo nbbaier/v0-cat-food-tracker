@@ -1,18 +1,9 @@
 "use client";
 
-import {
-	Edit,
-	HelpCircle,
-	MessageSquare,
-	Package,
-	TestTube,
-	ThumbsDown,
-	ThumbsUp,
-	Trash2,
-	Utensils,
-} from "lucide-react";
-import { useState } from "react";
-import type { Food } from "@/app/page";
+import { Edit, MessageSquare, Package, Trash2, Utensils } from "lucide-react";
+import React, { useState } from "react";
+import { NutritionDisplay } from "@/components/nutrition-display";
+import { PreferenceIcon } from "@/components/preference-icon";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -20,6 +11,7 @@ import {
 	CardFooter,
 	CardHeader,
 } from "@/components/ui/card";
+import type { Food } from "@/lib/types";
 import { EditFoodDialog } from "./edit-food-dialog";
 
 type FoodCardProps = {
@@ -28,7 +20,11 @@ type FoodCardProps = {
 	onDelete: (id: string) => void;
 };
 
-export function FoodCard({ food, onUpdate, onDelete }: FoodCardProps) {
+export const FoodCard = React.memo(function FoodCard({
+	food,
+	onUpdate,
+	onDelete,
+}: FoodCardProps) {
 	const [isEditOpen, setIsEditOpen] = useState(false);
 
 	const handlePreferenceChange = (preference: Food["preference"]) => {
@@ -54,7 +50,10 @@ export function FoodCard({ food, onUpdate, onDelete }: FoodCardProps) {
 							onClick={() => handlePreferenceChange("likes")}
 							title="Likes"
 						>
-							<ThumbsUp className="size-3.5 sm:size-4" />
+							<PreferenceIcon
+								preference="likes"
+								className="size-3.5 sm:size-4"
+							/>
 						</Button>
 						<Button
 							variant={food.preference === "dislikes" ? "default" : "outline"}
@@ -67,7 +66,10 @@ export function FoodCard({ food, onUpdate, onDelete }: FoodCardProps) {
 							onClick={() => handlePreferenceChange("dislikes")}
 							title="Dislikes"
 						>
-							<ThumbsDown className="size-3.5 sm:size-4" />
+							<PreferenceIcon
+								preference="dislikes"
+								className="size-3.5 sm:size-4"
+							/>
 						</Button>
 						<Button
 							variant={food.preference === "unknown" ? "default" : "outline"}
@@ -80,7 +82,10 @@ export function FoodCard({ food, onUpdate, onDelete }: FoodCardProps) {
 							onClick={() => handlePreferenceChange("unknown")}
 							title="Unknown"
 						>
-							<HelpCircle className="size-3.5 sm:size-4" />
+							<PreferenceIcon
+								preference="unknown"
+								className="size-3.5 sm:size-4"
+							/>
 						</Button>
 					</div>
 				</CardHeader>
@@ -120,31 +125,7 @@ export function FoodCard({ food, onUpdate, onDelete }: FoodCardProps) {
 					) : (
 						<p className="text-sm italic text-muted-foreground">No notes</p>
 					)}
-					{((food.phosphorusDmb && food.phosphorusDmb > 0) ||
-						(food.proteinDmb && food.proteinDmb > 0) ||
-						(food.fatDmb && food.fatDmb > 0) ||
-						(food.fiberDmb && food.fiberDmb > 0)) && (
-						<div className="pt-2 space-y-1 text-xs text-muted-foreground border-t">
-							<p className="flex items-center gap-1.5 font-semibold">
-								<TestTube className="size-3.5" />
-								Nutrition (DMB):
-							</p>
-							<div className="gap-x-3 gap-y-0.5 grid grid-cols-2">
-								{food.phosphorusDmb && food.phosphorusDmb > 0 && (
-									<span>Phosphorus: {food.phosphorusDmb}%</span>
-								)}
-								{food.proteinDmb && food.proteinDmb > 0 && (
-									<span>Protein: {food.proteinDmb}%</span>
-								)}
-								{food.fatDmb && food.fatDmb > 0 && (
-									<span>Fat: {food.fatDmb}%</span>
-								)}
-								{food.fiberDmb && food.fiberDmb > 0 && (
-									<span>Fiber: {food.fiberDmb}%</span>
-								)}
-							</div>
-						</div>
-					)}
+					<NutritionDisplay food={food} variant="card" />
 				</CardContent>
 				<CardFooter className="flex gap-2">
 					<Button
@@ -178,4 +159,4 @@ export function FoodCard({ food, onUpdate, onDelete }: FoodCardProps) {
 			/>
 		</>
 	);
-}
+});

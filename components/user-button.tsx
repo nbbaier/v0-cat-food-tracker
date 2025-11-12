@@ -1,8 +1,8 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
+import { authClient } from "@/lib/auth-client";
 import AuthButtons from "./auth-buttons";
 import UserDropdown from "./user-dropdown";
 
@@ -34,7 +34,7 @@ export default function UserButton() {
 				authClient.signOut({
 					fetchOptions: {
 						onSuccess: () => {
-							redirect("/");
+							window.location.href = "/sign-in";
 						},
 					},
 				})
