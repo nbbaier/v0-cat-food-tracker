@@ -32,7 +32,7 @@ export default function UserDropdown({ onSignOut, user }: UserDropdownProps) {
 		<div className="flex items-center gap-4">
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
-					<Button variant="outline" size="icon" className="rounded-md">
+					<Button variant="outline" size="icon-lg" className="rounded-md">
 						<Avatar className="size-full rounded-md">
 							<AvatarImage src={user.image ?? undefined} alt="User" />
 							<AvatarFallback className="rounded-md">

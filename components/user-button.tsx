@@ -12,7 +12,7 @@ export default function UserButton() {
 		return (
 			<Button
 				variant="outline"
-				size="icon"
+				size="icon-lg"
 				className="rounded-md pointer-events-none"
 				disabled
 				aria-label="Loading user session"
