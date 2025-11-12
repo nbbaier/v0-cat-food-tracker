@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutGrid, Plus, Table, Utensils } from "lucide-react";
+import { LayoutGrid, List, Plus, Utensils } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AddFoodDialog } from "@/components/add-food-dialog";
@@ -22,6 +22,9 @@ export type Food = {
 	proteinDmb?: number;
 	fatDmb?: number;
 	fiberDmb?: number;
+	// Aggregated data
+	mealCount?: number;
+	mealCommentCount?: number;
 };
 
 export type SortOption = "name" | "preference" | "inventory" | "date";
@@ -30,7 +33,7 @@ export type InventoryFilter = "all" | "in-stock" | "out-of-stock";
 export default function Page() {
 	const [foods, setFoods] = useState<Food[]>([]);
 	const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-	const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+	const [viewMode, setViewMode] = useState<"compact" | "full">("compact");
 	const [isLoading, setIsLoading] = useState(true);
 
 	// Filter and sort state
@@ -226,20 +229,22 @@ export default function Page() {
 						<div className="flex flex-wrap gap-2 items-center sm:flex-nowrap">
 							<ButtonGroup className="shrink-0">
 								<Button
-									variant={viewMode === "cards" ? "outline" : "outline"}
+									variant="outline"
 									size="icon"
-									onClick={() => setViewMode("cards")}
-									className={viewMode === "cards" ? "bg-accent" : ""}
+									onClick={() => setViewMode("compact")}
+									className={viewMode === "compact" ? "bg-accent" : ""}
+									title="Compact view"
 								>
-									<LayoutGrid className="size-4" />
+									<List className="size-4" />
 								</Button>
 								<Button
-									variant={viewMode === "table" ? "outline" : "outline"}
+									variant="outline"
 									size="icon"
-									onClick={() => setViewMode("table")}
-									className={viewMode === "table" ? "bg-accent" : ""}
+									onClick={() => setViewMode("full")}
+									className={viewMode === "full" ? "bg-accent" : ""}
+									title="Full card view"
 								>
-									<Table className="size-4" />
+									<LayoutGrid className="size-4" />
 								</Button>
 							</ButtonGroup>
 							<ButtonGroup className="shrink-0">

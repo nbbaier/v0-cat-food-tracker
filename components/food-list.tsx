@@ -2,13 +2,13 @@
 
 import type { Food } from "@/app/page";
 import { FoodCard } from "./food-card";
-import { FoodTable } from "./food-table";
+import { FoodItem } from "./food-item";
 
 type FoodListProps = {
 	foods: Food[];
 	onUpdate: (id: string, updates: Partial<Food>) => void;
 	onDelete: (id: string) => void;
-	viewMode: "cards" | "table";
+	viewMode: "compact" | "full";
 };
 
 export function FoodList({
@@ -31,8 +31,19 @@ export function FoodList({
 		);
 	}
 
-	if (viewMode === "table") {
-		return <FoodTable foods={foods} onUpdate={onUpdate} onDelete={onDelete} />;
+	if (viewMode === "compact") {
+		return (
+			<div className="space-y-2">
+				{foods.map((food) => (
+					<FoodItem
+						key={food.id}
+						food={food}
+						onUpdate={onUpdate}
+						onDelete={onDelete}
+					/>
+				))}
+			</div>
+		);
 	}
 
 	return (
