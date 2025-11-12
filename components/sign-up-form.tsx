@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Github, Loader2 } from "lucide-react";
+import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import z from "zod";
 import { Button } from "@/components/ui/button";
@@ -60,6 +61,7 @@ export function SignUpForm({
 	onGitHubSignIn,
 	isPending,
 	redirectUrl,
+	errorMessage,
 }: SignUpFormProps) {
 	const form = useForm<SignUpFormValues>({
 		resolver: zodResolver(formSchema),
@@ -71,6 +73,27 @@ export function SignUpForm({
 			confirmPassword: "",
 		},
 	});
+
+	const isEmailNotAllowedError =
+		errorMessage?.toLowerCase().includes("not allowed") ||
+		errorMessage?.toLowerCase().includes("email is not allowed");
+
+	useEffect(() => {
+		if (isEmailNotAllowedError) {
+			form.setError("email", {
+				type: "server",
+				message: errorMessage || "This email is not allowed to sign up.",
+			});
+		} else if (errorMessage) {
+			form.setError("root", {
+				type: "server",
+				message: errorMessage,
+			});
+		} else {
+			form.clearErrors("email");
+			form.clearErrors("root");
+		}
+	}, [errorMessage, isEmailNotAllowedError, form]);
 
 	return (
 		<Card className="w-full max-w-md">
@@ -129,16 +152,18 @@ export function SignUpForm({
 							name="email"
 							control={form.control}
 							render={({ field, fieldState }) => (
-								<Field data-invalid={fieldState.invalid}>
+								<Field
+									data-invalid={fieldState.invalid || isEmailNotAllowedError}
+								>
 									<FieldLabel htmlFor="sign-up-email">Email</FieldLabel>
 									<Input
 										{...field}
 										id="sign-up-email"
 										type="email"
-										aria-invalid={fieldState.invalid}
+										aria-invalid={fieldState.invalid || isEmailNotAllowedError}
 										disabled={isPending}
 									/>
-									{fieldState.invalid && (
+									{(fieldState.invalid || isEmailNotAllowedError) && (
 										<FieldError errors={[fieldState.error]} />
 									)}
 								</Field>
@@ -186,6 +211,14 @@ export function SignUpForm({
 						/>
 					</FieldGroup>
 				</form>
+				{errorMessage && !isEmailNotAllowedError && (
+					<div
+						role="alert"
+						className="rounded-md border border-destructive bg-destructive/10 p-3 text-sm text-destructive"
+					>
+						{errorMessage}
+					</div>
+				)}
 				<Button
 					type="submit"
 					form="sign-up-form"

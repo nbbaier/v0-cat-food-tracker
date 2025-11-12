@@ -8,8 +8,10 @@ import { authClient } from "@/lib/auth-client";
 export default function SignUpPage() {
 	const router = useRouter();
 	const [isPending, setPending] = useState(false);
+	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
 	const handleSubmit = (values: SignUpFormValues) => {
+		setErrorMessage(null);
 		authClient.signUp.email(
 			{
 				email: values.email,
@@ -23,7 +25,7 @@ export default function SignUpPage() {
 					router.push("/");
 				},
 				onError: (error) => {
-					alert(error.error.message);
+					setErrorMessage(error.error.message);
 				},
 			},
 		);
@@ -31,7 +33,11 @@ export default function SignUpPage() {
 
 	return (
 		<div className="flex min-h-screen items-center justify-center p-4">
-			<SignUpForm onSubmit={handleSubmit} isPending={isPending} />
+			<SignUpForm
+				onSubmit={handleSubmit}
+				isPending={isPending}
+				errorMessage={errorMessage}
+			/>
 		</div>
 	);
 }
