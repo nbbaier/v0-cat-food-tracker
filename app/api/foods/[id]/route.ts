@@ -5,10 +5,10 @@ import { foods } from "@/lib/db/schema";
 
 export async function PATCH(
 	request: NextRequest,
-	{ params }: { params: { id: string } },
+	{ params }: { params: Promise<{ id: string }> },
 ) {
 	try {
-		const { id } = params;
+		const { id } = await params;
 		const body = await request.json();
 
 		const updates: Record<string, unknown> = {};
@@ -45,10 +45,10 @@ export async function PATCH(
 
 export async function DELETE(
 	_request: NextRequest,
-	{ params }: { params: { id: string } },
+	{ params }: { params: Promise<{ id: string }> },
 ) {
 	try {
-		const { id } = params;
+		const { id } = await params;
 		await db.delete(foods).where(eq(foods.id, id));
 
 		return NextResponse.json({ success: true });
