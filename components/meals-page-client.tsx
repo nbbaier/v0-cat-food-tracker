@@ -1,15 +1,12 @@
 "use client";
 
-import { Plus, Trash2, Utensils } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Utensils } from "lucide-react";
+import { useMemo, useState } from "react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
-import { useHeaderActions } from "@/components/header-context";
+import { HeaderQuickAddButton } from "@/components/header-quick-add-button";
+import { MealCard } from "@/components/meal-card";
 import { MealFilters } from "@/components/meal-filters";
 import { QuickAddDialog } from "@/components/quick-add-dialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { ButtonGroup } from "@/components/ui/button-group";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useFoods } from "@/hooks/use-foods";
 import { useMeals } from "@/hooks/use-meals";
 import type { FoodInput, Meal, MealInput } from "@/lib/types";
@@ -22,7 +19,6 @@ export function MealsPageClient() {
 	const { addFood } = useFoods();
 	const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
 	const [mealToDelete, setMealToDelete] = useState<string | null>(null);
-	const { setActions } = useHeaderActions();
 	const [searchTerm, setSearchTerm] = useState("");
 	const [mealTimeFilter, setMealTimeFilter] = useState<MealTimeFilter>("all");
 	const [sortBy, setSortBy] = useState<MealSortOption>("date");
@@ -127,26 +123,6 @@ export function MealsPageClient() {
 		return b.localeCompare(a);
 	});
 
-	useEffect(() => {
-		setActions(
-			<ButtonGroup className="shrink-0">
-				<Button
-					variant="default"
-					size="icon-lg"
-					onClick={() => setIsQuickAddOpen(true)}
-					className="sm:w-auto sm:px-4"
-				>
-					<Plus className="size-4" />
-					<span className="hidden sm:inline sm:ml-2">Quick Add</span>
-				</Button>
-			</ButtonGroup>,
-		);
-
-		return () => {
-			setActions(null);
-		};
-	}, [setActions]);
-
 	if (isLoading) {
 		return (
 			<div className="flex justify-center items-center min-h-screen bg-background">
@@ -157,6 +133,7 @@ export function MealsPageClient() {
 
 	return (
 		<div className="min-h-screen bg-background">
+			<HeaderQuickAddButton onClick={() => setIsQuickAddOpen(true)} />
 			<main className="px-4 py-6 mx-auto max-w-5xl sm:px-6 sm:py-8 lg:px-8">
 				<MealFilters
 					searchTerm={searchTerm}
@@ -215,38 +192,11 @@ export function MealsPageClient() {
 									</h2>
 									<div className="gap-4 grid grid-cols-1 md:grid-cols-2">
 										{sortedMeals.map((meal) => (
-											<Card key={meal.id}>
-												<CardHeader className="flex flex-row justify-between items-start pb-3">
-													<div className="space-y-1">
-														<CardTitle className="text-base">
-															{meal.food.name}
-														</CardTitle>
-														<div className="flex gap-2 items-center">
-															<Badge variant="outline" className="capitalize">
-																{meal.mealTime}
-															</Badge>
-															<span className="text-sm text-muted-foreground">
-																{meal.amount}
-															</span>
-														</div>
-													</div>
-													<Button
-														variant="ghost"
-														size="icon"
-														onClick={() => setMealToDelete(meal.id)}
-														className="size-8 -mt-1 -mr-2 text-muted-foreground hover:text-destructive"
-													>
-														<Trash2 className="size-4" />
-													</Button>
-												</CardHeader>
-												{meal.notes && (
-													<CardContent className="pt-0">
-														<p className="text-sm text-muted-foreground">
-															{meal.notes}
-														</p>
-													</CardContent>
-												)}
-											</Card>
+											<MealCard
+												key={meal.id}
+												meal={meal}
+												onDelete={setMealToDelete}
+											/>
 										))}
 									</div>
 								</div>
