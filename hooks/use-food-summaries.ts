@@ -17,10 +17,11 @@ async function fetchFoodSummaries(): Promise<FoodSummary[]> {
 
 	fetchPromise = (async () => {
 		try {
-			const response = await fetch("/api/foods");
+			const response = await fetch("/api/foods?archived=false&limit=500");
 			if (response.ok) {
 				const data = await response.json();
-				const activeFoods = (data as Food[])
+				const items: Food[] = data.foods || data;
+				const activeFoods = items
 					.filter((food) => !food.archived)
 					.map((food) => ({
 						id: food.id,

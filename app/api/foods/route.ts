@@ -44,8 +44,6 @@ export async function GET(request: NextRequest) {
 		const rawOffset = Number.parseInt(searchParams.get("offset") ?? "", 10);
 		const offset = Math.max(0, Number.isFinite(rawOffset) ? rawOffset : 0);
 
-		// Pre-aggregate meal counts to avoid expensive DISTINCT with FILTER
-		// Combine both counts in a single CTE to avoid scanning the meals table twice
 		const mealCounts = db.$with("meal_counts").as(
 			db
 				.select({
@@ -60,7 +58,18 @@ export async function GET(request: NextRequest) {
 				.groupBy(meals.foodId),
 		);
 
-		const allFoods = await db
+		const archivedParam = searchParams.get("archived");
+		let archivedFilter: boolean | null = null;
+		if (typeof archivedParam === "string") {
+			const normalized = archivedParam.trim().toLowerCase();
+			if (normalized === "true") {
+				archivedFilter = true;
+			} else if (normalized === "false") {
+				archivedFilter = false;
+			}
+		}
+
+		const baseFoodsQuery = db
 			.with(mealCounts)
 			.select({
 				id: foods.id,
@@ -83,7 +92,14 @@ export async function GET(request: NextRequest) {
 					),
 			})
 			.from(foods)
-			.leftJoin(mealCounts, eq(mealCounts.foodId, foods.id))
+			.leftJoin(mealCounts, eq(mealCounts.foodId, foods.id));
+
+		const foodsQuery =
+			archivedFilter !== null
+				? baseFoodsQuery.where(eq(foods.archived, archivedFilter))
+				: baseFoodsQuery;
+
+		const allFoods = await foodsQuery
 			.orderBy(desc(foods.createdAt))
 			.limit(limit)
 			.offset(offset);
@@ -96,13 +112,12 @@ export async function GET(request: NextRequest) {
 			inventoryQuantity: food.inventoryQuantity,
 			archived: Boolean(food.archived),
 			addedAt: new Date(food.createdAt).getTime(),
-			// Schema defines nutrition fields as .default(0).notNull(), so they're always numbers
 			phosphorusDmb: Number(food.phosphorusDmb),
 			proteinDmb: Number(food.proteinDmb),
 			fatDmb: Number(food.fatDmb),
 			fiberDmb: Number(food.fiberDmb),
-			mealCount: Number(food.mealCount) ?? 0,
-			mealCommentCount: Number(food.mealCommentCount) ?? 0,
+			mealCount: Number(food.mealCount),
+			mealCommentCount: Number(food.mealCommentCount),
 		}));
 
 		return NextResponse.json(
@@ -112,8 +127,6 @@ export async function GET(request: NextRequest) {
 			},
 			{
 				headers: {
-					// Reduced stale-while-revalidate from 300s to 60s to minimize stale data
-					// for real-time inventory and preference tracking
 					"Cache-Control": "private, max-age=30, stale-while-revalidate=60",
 				},
 			},
@@ -140,7 +153,6 @@ export async function POST(request: NextRequest) {
 	try {
 		const body = await request.json();
 
-		// Validate input with Zod
 		const validatedData = foodInputSchema.parse(body);
 
 		const {
@@ -155,8 +167,6 @@ export async function POST(request: NextRequest) {
 			fiberDmb,
 		} = validatedData;
 
-		// Build values object with proper typing
-		// Nutrition fields are optional - if not provided, DB defaults (0) will be used
 		const insertValues = {
 			name,
 			preference,
@@ -187,7 +197,6 @@ export async function POST(request: NextRequest) {
 
 		return NextResponse.json(formattedFood, { status: 201 });
 	} catch (error) {
-		// Handle Zod validation errors
 		if (error instanceof ZodError) {
 			return NextResponse.json(
 				{
