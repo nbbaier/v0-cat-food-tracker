@@ -1,9 +1,11 @@
 import { desc, eq, sql } from "drizzle-orm";
 import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
+import { ZodError } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { foods, meals } from "@/lib/db/schema";
+import { foodInputSchema } from "@/lib/validations";
 
 export async function GET() {
 	const session = await auth.api.getSession({ headers: await headers() });
@@ -76,6 +78,10 @@ export async function POST(request: NextRequest) {
 	}
 	try {
 		const body = await request.json();
+
+		// Validate input with Zod
+		const validatedData = foodInputSchema.parse(body);
+
 		const {
 			name,
 			preference,
@@ -86,14 +92,7 @@ export async function POST(request: NextRequest) {
 			proteinDmb,
 			fatDmb,
 			fiberDmb,
-		} = body;
-
-		if (!name || !preference) {
-			return NextResponse.json(
-				{ error: "Missing required fields" },
-				{ status: 400 },
-			);
-		}
+		} = validatedData;
 
 		const [newFood] = await db
 			.insert(foods)
@@ -128,6 +127,17 @@ export async function POST(request: NextRequest) {
 
 		return NextResponse.json(formattedFood, { status: 201 });
 	} catch (error) {
+		// Handle Zod validation errors
+		if (error instanceof ZodError) {
+			return NextResponse.json(
+				{
+					error: "Validation failed",
+					details: error.issues.map((e) => `${e.path.join(".")}: ${e.message}`),
+				},
+				{ status: 400 },
+			);
+		}
+
 		console.error("[v0] POST /api/foods error:", error);
 		return NextResponse.json(
 			{
