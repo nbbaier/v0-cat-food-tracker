@@ -14,7 +14,8 @@
 		"jsx": "react-jsx",
 		"incremental": true,
 		"plugins": [{ "name": "next" }],
-		"paths": { "@/*": ["./*"] }
+		"paths": { "@/*": ["./*"] },
+		"types": ["vitest/globals", "vitest/importMeta"]
 	},
 	"include": [
 		"next-env.d.ts",
