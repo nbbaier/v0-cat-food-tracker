@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Food } from "@/lib/types";
+import { ConfirmDialog } from "./confirm-dialog";
 import { EditFoodDialog } from "./edit-food-dialog";
 
 type FoodTableProps = {
@@ -15,6 +16,7 @@ type FoodTableProps = {
 
 export function FoodTable({ foods, onUpdate, onDelete }: FoodTableProps) {
 	const [editingFood, setEditingFood] = useState<Food | null>(null);
+	const [foodToDelete, setFoodToDelete] = useState<Food | null>(null);
 
 	return (
 		<>
@@ -134,14 +136,14 @@ export function FoodTable({ foods, onUpdate, onDelete }: FoodTableProps) {
 								</td>
 								<td className="hidden px-3 py-2 max-w-xs sm:table-cell sm:px-4 sm:py-3">
 									<p className="text-sm truncate text-muted-foreground">
-										{food.notes || "—"}
+										{food.notes ?? "—"}
 									</p>
 								</td>
 								<td className="px-3 py-2 text-right sm:px-4 sm:py-3">
 									<Button
 										variant="ghost"
 										size="sm"
-										onClick={() => onDelete(food.id)}
+										onClick={() => setFoodToDelete(food)}
 										title="Delete food"
 										className="p-0 size-7 sm:size-auto sm:p-2"
 									>
@@ -163,6 +165,20 @@ export function FoodTable({ foods, onUpdate, onDelete }: FoodTableProps) {
 						onUpdate(editingFood.id, updates);
 						setEditingFood(null);
 					}}
+				/>
+			)}
+			{foodToDelete && (
+				<ConfirmDialog
+					open={!!foodToDelete}
+					onOpenChange={(open) => !open && setFoodToDelete(null)}
+					onConfirm={() => {
+						onDelete(foodToDelete.id);
+						setFoodToDelete(null);
+					}}
+					title="Delete Food"
+					description={`Are you sure you want to delete "${foodToDelete.name}"? This action cannot be undone.`}
+					confirmLabel="Delete"
+					variant="destructive"
 				/>
 			)}
 		</>

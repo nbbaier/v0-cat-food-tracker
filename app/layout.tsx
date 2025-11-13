@@ -1,7 +1,6 @@
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
-import type React from "react";
 import "./globals.css";
 import { AppHeader } from "@/components/app-header";
 import { HeaderActionsProvider } from "@/components/header-context";

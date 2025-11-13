@@ -1,15 +1,15 @@
 import { asc, desc, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { foods, meals } from "@/lib/db/schema";
-import { auth } from "@/lib/auth";
 
 export async function GET() {
-    const session = await auth.api.getSession({ headers: await headers() });
-    if (!session) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+	const session = await auth.api.getSession({ headers: await headers() });
+	if (!session) {
+		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+	}
 	try {
 		const allMeals = await db
 			.select({
@@ -38,7 +38,7 @@ export async function GET() {
 			foodId: meal.foodId,
 			food: meal.food,
 			amount: meal.amount,
-			notes: meal.notes || "",
+			notes: meal.notes ?? "",
 			createdAt: meal.createdAt,
 			updatedAt: meal.updatedAt,
 		}));
@@ -57,10 +57,10 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-    const session = await auth.api.getSession({ headers: await headers() });
-    if (!session) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+	const session = await auth.api.getSession({ headers: await headers() });
+	if (!session) {
+		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+	}
 	try {
 		const body = await request.json();
 		const { mealDate, mealTime, foodId, amount, notes } = body;
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
 				mealTime,
 				foodId,
 				amount,
-				notes: notes || "",
+				notes: notes ?? "",
 			})
 			.returning();
 
@@ -98,9 +98,9 @@ export async function POST(request: NextRequest) {
 			mealDate: newMeal.mealDate,
 			mealTime: newMeal.mealTime,
 			foodId: newMeal.foodId,
-			food: food || null,
+			food: food ?? null,
 			amount: newMeal.amount,
-			notes: newMeal.notes || "",
+			notes: newMeal.notes ?? "",
 			createdAt: newMeal.createdAt,
 			updatedAt: newMeal.updatedAt,
 		};

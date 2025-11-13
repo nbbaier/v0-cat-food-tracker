@@ -1,6 +1,5 @@
 "use client";
 
-import type React from "react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { PreferenceRadioGroup } from "@/components/preference-radio-group";
@@ -12,7 +11,7 @@ import type { Food, FoodInput } from "@/lib/types";
 
 type FoodFormProps = {
 	initialValues?: Partial<Food>;
-	onSubmit: (data: FoodInput) => void;
+	onSubmit: (data: FoodInput) => void | Promise<void>;
 	onCancel: () => void;
 	submitLabel?: string;
 	isEdit?: boolean;
@@ -25,13 +24,13 @@ export function FoodForm({
 	submitLabel = "Add Food",
 	isEdit = false,
 }: FoodFormProps) {
-	const [name, setName] = useState(initialValues?.name || "");
+	const [name, setName] = useState(initialValues?.name ?? "");
 	const [preference, setPreference] = useState<
 		"likes" | "dislikes" | "unknown"
-	>(initialValues?.preference || "unknown");
-	const [notes, setNotes] = useState(initialValues?.notes || "");
+	>(initialValues?.preference ?? "unknown");
+	const [notes, setNotes] = useState(initialValues?.notes ?? "");
 	const [inventoryQuantity, setInventoryQuantity] = useState(
-		initialValues?.inventoryQuantity || 0,
+		initialValues?.inventoryQuantity ?? 0,
 	);
 	const [phosphorusDmb, setPhosphorusDmb] = useState<number | undefined>(
 		initialValues?.phosphorusDmb,
@@ -49,10 +48,10 @@ export function FoodForm({
 	// Update form when initialValues change (for edit dialog)
 	useEffect(() => {
 		if (isEdit && initialValues) {
-			setName(initialValues.name || "");
-			setPreference(initialValues.preference || "unknown");
-			setNotes(initialValues.notes || "");
-			setInventoryQuantity(initialValues.inventoryQuantity || 0);
+			setName(initialValues.name ?? "");
+			setPreference(initialValues.preference ?? "unknown");
+			setNotes(initialValues.notes ?? "");
+			setInventoryQuantity(initialValues.inventoryQuantity ?? 0);
 			setPhosphorusDmb(initialValues.phosphorusDmb);
 			setProteinDmb(initialValues.proteinDmb);
 			setFatDmb(initialValues.fatDmb);
