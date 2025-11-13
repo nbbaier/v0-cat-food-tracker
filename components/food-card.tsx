@@ -12,6 +12,7 @@ import {
 	CardHeader,
 } from "@/components/ui/card";
 import type { Food } from "@/lib/types";
+import { ConfirmDialog } from "./confirm-dialog";
 import { EditFoodDialog } from "./edit-food-dialog";
 
 type FoodCardProps = {
@@ -23,10 +24,10 @@ type FoodCardProps = {
 export const FoodCard = React.memo(function FoodCard({
 	food,
 	onUpdate,
-	onDelete: _onDelete,
+	onDelete,
 }: FoodCardProps) {
 	const [isEditOpen, setIsEditOpen] = useState(false);
-	const [_isDeleteOpen, setIsDeleteOpen] = useState(false);
+	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 	const handlePreferenceChange = (preference: Food["preference"]) => {
 		onUpdate(food.id, { preference });
 	};
@@ -156,6 +157,18 @@ export const FoodCard = React.memo(function FoodCard({
 					onUpdate(food.id, updates);
 					setIsEditOpen(false);
 				}}
+			/>
+			<ConfirmDialog
+				open={isDeleteOpen}
+				onOpenChange={setIsDeleteOpen}
+				onConfirm={() => {
+					onDelete(food.id);
+					setIsDeleteOpen(false);
+				}}
+				title="Delete Food"
+				description={`Are you sure you want to delete "${food.name}"? This action cannot be undone.`}
+				confirmLabel="Delete"
+				variant="destructive"
 			/>
 		</>
 	);
