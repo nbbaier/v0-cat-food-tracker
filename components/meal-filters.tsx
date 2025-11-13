@@ -5,7 +5,6 @@ import {
 	ArrowUpAZ,
 	ChevronDown,
 	ChevronUp,
-	Plus,
 	RotateCcw,
 	Search,
 } from "lucide-react";
@@ -35,7 +34,6 @@ type MealFiltersProps = {
 	onReset: () => void;
 	isMinimized: boolean;
 	onToggleMinimize: () => void;
-	onLogMeal: () => void;
 };
 
 export function MealFilters({
@@ -50,7 +48,6 @@ export function MealFilters({
 	onReset,
 	isMinimized,
 	onToggleMinimize,
-	onLogMeal,
 }: MealFiltersProps) {
 	return (
 		<div className="flex flex-col gap-4 p-4 mb-6 rounded-lg border bg-card">
@@ -75,10 +72,6 @@ export function MealFilters({
 				>
 					<RotateCcw className="size-4" />
 					<span className="">Reset</span>
-				</Button>
-				<Button onClick={onLogMeal} size="default" className="shadow-none">
-					<Plus className="size-4" />
-					Log Meal
 				</Button>
 				<Button
 					variant="outline"

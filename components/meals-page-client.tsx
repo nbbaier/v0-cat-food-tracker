@@ -1,23 +1,28 @@
 "use client";
 
-import { Trash2, Utensils } from "lucide-react";
-import { useMemo, useState } from "react";
-import { AddMealDialog } from "@/components/add-meal-dialog";
+import { Plus, Trash2, Utensils } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { useHeaderActions } from "@/components/header-context";
 import { MealFilters } from "@/components/meal-filters";
+import { QuickAddDialog } from "@/components/quick-add-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useFoods } from "@/hooks/use-foods";
 import { useMeals } from "@/hooks/use-meals";
-import type { Meal, MealInput } from "@/lib/types";
+import type { FoodInput, Meal, MealInput } from "@/lib/types";
 
 type MealTimeFilter = "all" | "morning" | "evening";
 type MealSortOption = "date" | "time" | "food";
 
 export function MealsPageClient() {
 	const { meals, isLoading, addMeal, deleteMeal } = useMeals();
-	const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+	const { addFood } = useFoods();
+	const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
 	const [mealToDelete, setMealToDelete] = useState<string | null>(null);
+	const { setActions } = useHeaderActions();
 	const [searchTerm, setSearchTerm] = useState("");
 	const [mealTimeFilter, setMealTimeFilter] = useState<MealTimeFilter>("all");
 	const [sortBy, setSortBy] = useState<MealSortOption>("date");
@@ -27,7 +32,14 @@ export function MealsPageClient() {
 	const handleAddMeal = async (meal: MealInput) => {
 		const success = await addMeal(meal);
 		if (success) {
-			setIsAddDialogOpen(false);
+			setIsQuickAddOpen(false);
+		}
+	};
+
+	const handleAddFood = async (food: FoodInput) => {
+		const success = await addFood(food);
+		if (success) {
+			setIsQuickAddOpen(false);
 		}
 	};
 
@@ -115,6 +127,26 @@ export function MealsPageClient() {
 		return b.localeCompare(a);
 	});
 
+	useEffect(() => {
+		setActions(
+			<ButtonGroup className="shrink-0">
+				<Button
+					variant="default"
+					size="icon-lg"
+					onClick={() => setIsQuickAddOpen(true)}
+					className="sm:w-auto sm:px-4"
+				>
+					<Plus className="size-4" />
+					<span className="hidden sm:inline sm:ml-2">Quick Add</span>
+				</Button>
+			</ButtonGroup>,
+		);
+
+		return () => {
+			setActions(null);
+		};
+	}, [setActions]);
+
 	if (isLoading) {
 		return (
 			<div className="flex justify-center items-center min-h-screen bg-background">
@@ -140,7 +172,6 @@ export function MealsPageClient() {
 					onReset={resetFilters}
 					isMinimized={isFiltersMinimized}
 					onToggleMinimize={() => setIsFiltersMinimized(!isFiltersMinimized)}
-					onLogMeal={() => setIsAddDialogOpen(true)}
 				/>
 				{filteredAndSortedMeals.length === 0 ? (
 					<div className="flex flex-col justify-center items-center py-12 text-center">
@@ -152,7 +183,7 @@ export function MealsPageClient() {
 						</h2>
 						<p className="mb-4 text-sm text-muted-foreground">
 							{meals.length === 0
-								? "Start tracking your cat's meals by clicking the Log Meal button above."
+								? "Start tracking your cat's meals by clicking the Quick Add button above."
 								: "Try adjusting your filters to see more results."}
 						</p>
 					</div>
@@ -225,10 +256,12 @@ export function MealsPageClient() {
 				)}
 			</main>
 
-			<AddMealDialog
-				open={isAddDialogOpen}
-				onOpenChange={setIsAddDialogOpen}
-				onAdd={handleAddMeal}
+			<QuickAddDialog
+				open={isQuickAddOpen}
+				onOpenChange={setIsQuickAddOpen}
+				onAddFood={handleAddFood}
+				onAddMeal={handleAddMeal}
+				defaultTab="meal"
 			/>
 			<ConfirmDialog
 				open={mealToDelete !== null}

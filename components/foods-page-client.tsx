@@ -1,20 +1,27 @@
 "use client";
 
-import { LayoutGrid, List } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { AddFoodDialog } from "@/components/add-food-dialog";
 import { FoodFilters } from "@/components/food-filters";
 import { FoodList } from "@/components/food-list";
 import { useHeaderActions } from "@/components/header-context";
+import { QuickAddDialog } from "@/components/quick-add-dialog";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { useFoods } from "@/hooks/use-foods";
-import type { Food, FoodInput, InventoryFilter, SortOption } from "@/lib/types";
+import { useMeals } from "@/hooks/use-meals";
+import type {
+	Food,
+	FoodInput,
+	InventoryFilter,
+	MealInput,
+	SortOption,
+} from "@/lib/types";
 
 export function FoodsPageClient() {
 	const { foods, isLoading, addFood, updateFood, deleteFood } = useFoods();
-	const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-	const [viewMode, setViewMode] = useState<"compact" | "full">("compact");
+	const { addMeal } = useMeals();
+	const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
 	const { setActions } = useHeaderActions();
 
 	const [searchTerm, setSearchTerm] = useState("");
@@ -30,7 +37,14 @@ export function FoodsPageClient() {
 	const handleAddFood = async (food: FoodInput) => {
 		const success = await addFood(food);
 		if (success) {
-			setIsAddDialogOpen(false);
+			setIsQuickAddOpen(false);
+		}
+	};
+
+	const handleAddMeal = async (meal: MealInput) => {
+		const success = await addMeal(meal);
+		if (success) {
+			setIsQuickAddOpen(false);
 		}
 	};
 
@@ -123,22 +137,13 @@ export function FoodsPageClient() {
 		setActions(
 			<ButtonGroup className="shrink-0">
 				<Button
-					variant="outline"
+					variant="default"
 					size="icon-lg"
-					onClick={() => setViewMode("compact")}
-					className={viewMode === "compact" ? "bg-accent" : ""}
-					title="Compact view"
+					onClick={() => setIsQuickAddOpen(true)}
+					className="sm:w-auto sm:px-4"
 				>
-					<List className="size-4" />
-				</Button>
-				<Button
-					variant="outline"
-					size="icon-lg"
-					onClick={() => setViewMode("full")}
-					className={viewMode === "full" ? "bg-accent" : ""}
-					title="Full card view"
-				>
-					<LayoutGrid className="size-4" />
+					<Plus className="size-4" />
+					<span className="hidden sm:inline sm:ml-2">Quick Add</span>
 				</Button>
 			</ButtonGroup>,
 		);
@@ -146,7 +151,7 @@ export function FoodsPageClient() {
 		return () => {
 			setActions(null);
 		};
-	}, [viewMode, setActions]);
+	}, [setActions]);
 
 	if (isLoading) {
 		return (
@@ -175,20 +180,21 @@ export function FoodsPageClient() {
 					onReset={resetFilters}
 					isMinimized={isFiltersMinimized}
 					onToggleMinimize={() => setIsFiltersMinimized(!isFiltersMinimized)}
-					onAddFood={() => setIsAddDialogOpen(true)}
 				/>
 				<FoodList
 					foods={filteredAndSortedFoods}
 					onUpdate={handleUpdateFood}
 					onDelete={handleDeleteFood}
-					viewMode={viewMode}
+					viewMode="compact"
 				/>
 			</main>
 
-			<AddFoodDialog
-				open={isAddDialogOpen}
-				onOpenChange={setIsAddDialogOpen}
-				onAdd={handleAddFood}
+			<QuickAddDialog
+				open={isQuickAddOpen}
+				onOpenChange={setIsQuickAddOpen}
+				onAddFood={handleAddFood}
+				onAddMeal={handleAddMeal}
+				defaultTab="food"
 			/>
 		</div>
 	);
