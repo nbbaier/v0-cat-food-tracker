@@ -1,16 +1,13 @@
 "use client";
 
-import { Plus } from "lucide-react";
 import type React from "react";
 import { useCallback, useEffect, useState } from "react";
 import { FoodForm } from "@/components/food-form";
-import { PreferenceRadioGroup } from "@/components/preference-radio-group";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
 	DialogDescription,
-	DialogFooter,
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
@@ -113,7 +110,10 @@ export function QuickAddDialog({
 					</DialogDescription>
 				</DialogHeader>
 
-				<Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "food" | "meal")}>
+				<Tabs
+					value={activeTab}
+					onValueChange={(v) => setActiveTab(v as "food" | "meal")}
+				>
 					<TabsList className="grid w-full grid-cols-2">
 						<TabsTrigger value="food">Food</TabsTrigger>
 						<TabsTrigger value="meal">Meal</TabsTrigger>
@@ -145,7 +145,9 @@ export function QuickAddDialog({
 									<Label>Meal Time</Label>
 									<RadioGroup
 										value={mealTime}
-										onValueChange={(v) => setMealTime(v as "morning" | "evening")}
+										onValueChange={(v) =>
+											setMealTime(v as "morning" | "evening")
+										}
 									>
 										<div className="flex items-center space-x-2">
 											<RadioGroupItem value="morning" id="quick-morning" />

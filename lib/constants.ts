@@ -5,7 +5,8 @@
 export const ERROR_MESSAGES = {
 	FETCH_FAILED: (resource: string) =>
 		`Failed to load ${resource}. Please try again.`,
-	CONNECTION_ERROR: "Unable to connect to server. Please check your connection.",
+	CONNECTION_ERROR:
+		"Unable to connect to server. Please check your connection.",
 	DELETE_FAILED: (resource: string) =>
 		`Failed to delete ${resource}. Please try again.`,
 	UPDATE_FAILED: (resource: string) =>
