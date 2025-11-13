@@ -6,7 +6,8 @@
 		"useIgnoreFile": true
 	},
 	"files": {
-		"ignoreUnknown": false
+		"ignoreUnknown": false,
+		"includes": ["**", "!supabase", "!components/ui"]
 	},
 	"formatter": {
 		"enabled": true,
@@ -14,9 +15,7 @@
 	},
 	"linter": {
 		"enabled": true,
-		"rules": {
-			"recommended": true
-		}
+		"rules": { "recommended": true }
 	},
 	"javascript": {
 		"formatter": {
