@@ -1,7 +1,7 @@
 "use client";
 
 import { Utensils } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { HeaderQuickAddButton } from "@/components/header-quick-add-button";
 import { MealCard } from "@/components/meal-card";
@@ -52,6 +52,10 @@ export function MealsPageClient() {
 		setSortBy("date");
 		setSortOrder("desc");
 	};
+
+	const handleQuickAddOpen = useCallback(() => {
+		setIsQuickAddOpen(true);
+	}, []);
 
 	const filteredAndSortedMeals = useMemo(() => {
 		let filtered = [...meals];
@@ -133,7 +137,7 @@ export function MealsPageClient() {
 
 	return (
 		<div className="min-h-screen bg-background">
-			<HeaderQuickAddButton onClick={() => setIsQuickAddOpen(true)} />
+			<HeaderQuickAddButton onClick={handleQuickAddOpen} />
 			<main className="px-4 py-6 mx-auto max-w-5xl sm:px-6 sm:py-8 lg:px-8">
 				<MealFilters
 					searchTerm={searchTerm}

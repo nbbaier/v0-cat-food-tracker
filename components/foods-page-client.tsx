@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { FoodFilters } from "@/components/food-filters";
 import { FoodList } from "@/components/food-list";
 import { HeaderQuickAddButton } from "@/components/header-quick-add-button";
@@ -137,6 +137,10 @@ export function FoodsPageClient() {
 		setSortOrder("desc");
 	};
 
+	const handleQuickAddOpen = useCallback(() => {
+		setIsQuickAddOpen(true);
+	}, []);
+
 	if (isLoading) {
 		return (
 			<output className="flex justify-center items-center min-h-screen bg-background">
@@ -147,7 +151,7 @@ export function FoodsPageClient() {
 
 	return (
 		<div className="min-h-screen bg-background">
-			<HeaderQuickAddButton onClick={() => setIsQuickAddOpen(true)} />
+			<HeaderQuickAddButton onClick={handleQuickAddOpen} />
 			<main className="px-4 py-6 mx-auto max-w-5xl sm:px-6 sm:py-8 lg:px-8">
 				<FoodFilters
 					searchTerm={searchTerm}
