@@ -41,8 +41,8 @@ export function MealsPageClient() {
 	}, [handleOpenDialog]);
 
 	const handleAddMeal = async (meal: MealInput) => {
-		const success = await addMeal(meal);
-		if (success) {
+		const result = await addMeal(meal);
+		if (result.success) {
 			setIsQuickAddOpen(false);
 		}
 	};

@@ -41,7 +41,13 @@ export type Meal = {
 	updatedAt: string;
 };
 
-export type MealInput = Omit<Meal, "id" | "food" | "createdAt" | "updatedAt">;
+export type MealInput = {
+	mealDate: string;
+	mealTime: "morning" | "evening";
+	foodId: string;
+	amount: string;
+	notes?: string;
+};
 
 export type SortOption = "name" | "preference" | "inventory" | "date";
 

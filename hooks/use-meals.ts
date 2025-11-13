@@ -60,31 +60,49 @@ export function useMeals() {
 		};
 	}, [fetchMeals]);
 
-	const addMeal = useCallback(async (meal: MealInput): Promise<boolean> => {
-		try {
-			const response = await fetch("/api/meals", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(meal),
-			});
+	const addMeal = useCallback(
+		async (
+			meal: MealInput,
+		): Promise<
+			| { success: true }
+			| { success: false; errors?: Record<string, string>; error?: string }
+		> => {
+			try {
+				const response = await fetch("/api/meals", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify(meal),
+				});
 
-			if (response.ok) {
-				const newMeal = await response.json();
-				setMeals((prev) => [newMeal, ...prev]);
-				toast.success(SUCCESS_MESSAGES.ADDED("Meal"));
-				return true;
+				if (response.ok) {
+					const newMeal = await response.json();
+					setMeals((prev) => [newMeal, ...prev]);
+					toast.success(SUCCESS_MESSAGES.ADDED("Meal"));
+					return { success: true };
+				}
+				const errorData = await response.json().catch(() => ({}));
+
+				if (errorData.details && Array.isArray(errorData.details)) {
+					const { parseValidationErrors } = await import("@/lib/utils");
+					const errors = parseValidationErrors(errorData.details);
+					if (Object.keys(errors).length > 0) {
+						return { success: false, errors };
+					}
+				}
+
+				const errorMessage =
+					errorData.error ?? ERROR_MESSAGES.ADD_FAILED("meal");
+				toast.error(errorMessage);
+				console.error("Failed to add meal:", errorData);
+				return { success: false, error: errorMessage };
+			} catch (err) {
+				toast.error(ERROR_MESSAGES.CONNECTION_ERROR);
+				console.error("Error adding meal:", err);
+				return { success: false, error: ERROR_MESSAGES.CONNECTION_ERROR };
 			}
-			const errorData = await response.json().catch(() => ({}));
-			const errorMessage = errorData.error ?? ERROR_MESSAGES.ADD_FAILED("meal");
-			toast.error(errorMessage);
-			console.error("Failed to add meal:", errorData);
-			return false;
-		} catch (err) {
-			toast.error(ERROR_MESSAGES.CONNECTION_ERROR);
-			console.error("Error adding meal:", err);
-			return false;
-		}
-	}, []);
+		},
+		[],
+	);
 
 	const deleteMeal = useCallback(async (id: string): Promise<boolean> => {
 		try {

@@ -145,12 +145,12 @@ const amountString = z
 	.refine(
 		(val) => {
 			const amountRegex =
-				/^\d+(\.\d+)?\s*(g|ml|oz|lb|kg|can|cans|cup|cups|tbsp|tsp|pouch|pouches)?$/i;
+				/^\d+(\.\d+)?\s*(g|ml|oz|lb|kg|can|cans|cup|cups|tbsp|tsp|pouch|pouches)$/i;
 			return amountRegex.test(val.trim());
 		},
 		{
 			message:
-				"Amount must be a number with optional unit (e.g., '100g', '2 cans', '1.5 cups')",
+				"Amount must be a number with a unit (e.g., '100g', '2 cans', '1.5 cups')",
 		},
 	);
 
