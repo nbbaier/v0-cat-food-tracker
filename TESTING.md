@@ -5,6 +5,7 @@
 ### Foods API (`/api/foods`)
 
 #### GET `/api/foods`
+
 - Pagination edge cases (limit validation, cursor behavior, hasMore flag)
 - Archived filtering (true/false/null)
 - Meal count aggregation accuracy
@@ -13,6 +14,7 @@
 - Limit boundaries (min 1, max 500, default 100)
 
 #### POST `/api/foods`
+
 - Zod validation (required fields, boundaries, strict mode)
 - Duplicate food names
 - Nutrition field boundaries (0-100, decimal precision)
@@ -24,6 +26,7 @@
 ### Meals API (`/api/meals`)
 
 #### GET `/api/meals`
+
 - Cursor pagination
 - Ordering (mealDate DESC, mealTime ASC)
 - Food join behavior (when food deleted/archived)
@@ -31,6 +34,7 @@
 - Invalid cursor values
 
 #### POST `/api/meals`
+
 - Date validation (ISO format, range)
 - Amount string format validation
 - Unique constraint violation (same date/time/food)
@@ -41,25 +45,28 @@
 ## Validation Schemas (`lib/validations.ts`) (Priority: High)
 
 ### foodInputSchema
+
 - Boundary tests:
-  - Name length (1-200 characters)
-  - Nutrition percentages (0-100)
-  - Inventory quantity (0-999)
+   - Name length (1-200 characters)
+   - Nutrition percentages (0-100)
+   - Inventory quantity (0-999)
 - Decimal precision (2 places for nutrition)
 - Strict mode rejection of unknown fields
 - Required vs optional fields
 - Preference enum validation
 
 ### mealInputSchema
+
 - Date format/range (2020-01-01 to tomorrow)
 - Amount regex patterns:
-  - Valid: "100g", "2 cans", "1.5 cups", "3 pouches"
-  - Invalid: "100", "abc", "100 xyz"
+   - Valid: "100g", "2 cans", "1.5 cups", "3 pouches"
+   - Invalid: "100", "abc", "100 xyz"
 - UUID validation for foodId
 - Meal time enum ("morning", "evening")
 - Strict mode rejection
 
 ### Update Schemas
+
 - At least one field requirement
 - Partial validation (only validate provided fields)
 - Strict mode on partial updates
@@ -67,6 +74,7 @@
 ## React Hooks (Priority: Medium)
 
 ### use-foods / use-meals
+
 - Cursor pagination logic
 - Cache invalidation on mutations
 - Error handling and error states
@@ -75,6 +83,7 @@
 - Refetch behavior
 
 ### use-food-mutations / use-meal-mutations
+
 - Optimistic updates
 - Rollback on error
 - Mutation success callbacks
@@ -85,6 +94,7 @@
 ## Components (Priority: Medium-Low)
 
 ### FoodForm (`components/foods/food-form.tsx`)
+
 - Manual validation logic (phosphorus/protein/fat/fiber 0-100 range checks)
 - Form reset behavior (edit vs create mode)
 - Controlled input state synchronization with initialValues
@@ -93,6 +103,7 @@
 - Toast error messages for validation
 
 ### Forms & Dialogs
+
 - User interactions (submit, cancel, validation feedback)
 - Dialog open/close state management
 - Toast notifications on success/error
@@ -100,6 +111,7 @@
 - Keyboard interactions (Enter to submit, Escape to cancel)
 
 ### Food/Meal Cards & Lists
+
 - Rendering with empty data
 - Rendering with pagination
 - Filter interactions
@@ -109,21 +121,25 @@
 ## Integration Tests (Priority: Medium)
 
 ### Full CRUD Flows
+
 - Create food → Log meal → Update food → Delete (FK constraint prevents deletion)
 - Create meal → Update meal → Delete meal
 - Archive food → Verify excluded from default lists
 
 ### Constraint Tests
+
 - Unique constraint: Multiple meals same date/time/food
 - FK constraint: Delete food with meals (should fail)
 - FK constraint: Create meal with invalid foodId (should fail)
 
 ### Authentication Flows
+
 - Cascade behavior: User deletion → session cleanup
 - Unauthorized API access without session
 - Session expiration handling
 
 ### Pagination Flows
+
 - Navigate through multiple pages
 - Verify no duplicates across pages
 - Verify no gaps in data
@@ -133,6 +149,7 @@
 ## Edge Cases to Focus On
 
 ### Data Layer
+
 - Archived foods in meal relationships
 - Concurrent updates to same resource
 - Database constraint violations (FK, unique)
@@ -140,6 +157,7 @@
 - Timezone handling in timestamps
 
 ### API Layer
+
 - Invalid cursor values in pagination
 - Missing/malformed authentication headers
 - Boundary values (max string lengths, numeric limits)
@@ -147,6 +165,7 @@
 - Content-Type header validation
 
 ### UI Layer
+
 - Empty states (no foods, no meals)
 - Loading states during mutations
 - Error states with user-friendly messages
@@ -154,6 +173,7 @@
 - Stale data after mutations
 
 ### Business Logic
+
 - Nutrition percentages summing > 100% (allowed but unusual)
 - Meal dates in far future
 - Very long food names/notes
