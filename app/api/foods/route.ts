@@ -7,13 +7,45 @@ import { db } from "@/lib/db";
 import { foods, meals } from "@/lib/db/schema";
 import { foodInputSchema } from "@/lib/validations";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
 	const session = await auth.api.getSession({ headers: await headers() });
 	if (!session) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 	try {
+		const { searchParams } = new URL(request.url);
+		const rawLimit = Number.parseInt(searchParams.get("limit") ?? "", 10);
+		const limit = Math.max(
+			1,
+			Math.min(Number.isFinite(rawLimit) ? rawLimit : 50, 200),
+		);
+		const rawOffset = Number.parseInt(searchParams.get("offset") ?? "", 10);
+		const offset = Math.max(0, Number.isFinite(rawOffset) ? rawOffset : 0);
+
+		// Pre-aggregate meal counts to avoid expensive DISTINCT with FILTER
+		const mealCounts = db.$with("meal_counts").as(
+			db
+				.select({
+					foodId: meals.foodId,
+					cnt: sql<number>`count(*)`.as("cnt"),
+				})
+				.from(meals)
+				.groupBy(meals.foodId),
+		);
+
+		const mealCommentCounts = db.$with("meal_comment_counts").as(
+			db
+				.select({
+					foodId: meals.foodId,
+					cnt: sql<number>`count(*)`.as("cnt"),
+				})
+				.from(meals)
+				.where(sql`${meals.notes} is not null and ${meals.notes} <> ''`)
+				.groupBy(meals.foodId),
+		);
+
 		const allFoods = await db
+			.with(mealCounts, mealCommentCounts)
 			.select({
 				id: foods.id,
 				name: foods.name,
@@ -26,19 +58,17 @@ export async function GET() {
 				fatDmb: foods.fatDmb,
 				fiberDmb: foods.fiberDmb,
 				createdAt: foods.createdAt,
-				mealCount:
-					sql<number>`coalesce(count(distinct ${meals.id}) filter (where ${meals.id} is not null), 0)`.as(
-						"meal_count",
-					),
-				mealCommentCount:
-					sql<number>`coalesce(count(distinct ${meals.id}) filter (where ${meals.notes} is not null and ${meals.notes} != ''), 0)`.as(
-						"meal_comment_count",
-					),
+				mealCount: sql<number>`coalesce(${mealCounts.cnt}, 0)`.as("meal_count"),
+				mealCommentCount: sql<number>`coalesce(${mealCommentCounts.cnt}, 0)`.as(
+					"meal_comment_count",
+				),
 			})
 			.from(foods)
-			.leftJoin(meals, eq(foods.id, meals.foodId))
-			.groupBy(foods.id)
-			.orderBy(desc(foods.createdAt));
+			.leftJoin(mealCounts, eq(mealCounts.foodId, foods.id))
+			.leftJoin(mealCommentCounts, eq(mealCommentCounts.foodId, foods.id))
+			.orderBy(desc(foods.createdAt))
+			.limit(limit)
+			.offset(offset);
 
 		const formattedFoods = allFoods.map((food) => ({
 			id: food.id,
@@ -48,17 +78,25 @@ export async function GET() {
 			inventoryQuantity: food.inventoryQuantity,
 			archived: Boolean(food.archived),
 			addedAt: new Date(food.createdAt).getTime(),
-			phosphorusDmb: food.phosphorusDmb
-				? Number(food.phosphorusDmb)
-				: undefined,
-			proteinDmb: food.proteinDmb ? Number(food.proteinDmb) : undefined,
-			fatDmb: food.fatDmb ? Number(food.fatDmb) : undefined,
-			fiberDmb: food.fiberDmb ? Number(food.fiberDmb) : undefined,
+			phosphorusDmb: Number(food.phosphorusDmb),
+			proteinDmb: Number(food.proteinDmb),
+			fatDmb: Number(food.fatDmb),
+			fiberDmb: Number(food.fiberDmb),
 			mealCount: Number(food.mealCount) ?? 0,
 			mealCommentCount: Number(food.mealCommentCount) ?? 0,
 		}));
 
-		return NextResponse.json(formattedFoods);
+		return NextResponse.json(
+			{
+				foods: formattedFoods,
+				hasMore: formattedFoods.length === limit,
+			},
+			{
+				headers: {
+					"Cache-Control": "private, max-age=30, stale-while-revalidate=300",
+				},
+			},
+		);
 	} catch (error) {
 		console.error("[v0] GET /api/foods error:", error);
 		return NextResponse.json(
@@ -118,12 +156,10 @@ export async function POST(request: NextRequest) {
 			inventoryQuantity: newFood.inventoryQuantity,
 			archived: Boolean(newFood.archived),
 			addedAt: new Date(newFood.createdAt).getTime(),
-			phosphorusDmb: newFood.phosphorusDmb
-				? Number(newFood.phosphorusDmb)
-				: undefined,
-			proteinDmb: newFood.proteinDmb ? Number(newFood.proteinDmb) : undefined,
-			fatDmb: newFood.fatDmb ? Number(newFood.fatDmb) : undefined,
-			fiberDmb: newFood.fiberDmb ? Number(newFood.fiberDmb) : undefined,
+			phosphorusDmb: Number(newFood.phosphorusDmb),
+			proteinDmb: Number(newFood.proteinDmb),
+			fatDmb: Number(newFood.fatDmb),
+			fiberDmb: Number(newFood.fiberDmb),
 		};
 
 		return NextResponse.json(formattedFood, { status: 201 });
