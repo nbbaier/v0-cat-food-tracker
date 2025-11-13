@@ -1,21 +1,38 @@
 "use client";
 
 import { Utensils } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { QuickAddDialog } from "@/components/layout/quick-add-dialog";
 import { MealCard } from "@/components/meals/meal-card";
 import { MealFilters } from "@/components/meals/meal-filters";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { useQuickAddDialog } from "@/components/shared/quick-add-context";
+import { Button } from "@/components/ui/button";
 import { useFoodMutations } from "@/hooks/use-food-mutations";
 import { useMeals } from "@/hooks/use-meals";
 import type { FoodInput, Meal, MealInput } from "@/lib/types";
+
+const QuickAddDialog = dynamic(
+	() =>
+		import("@/components/layout/quick-add-dialog").then(
+			(mod) => mod.QuickAddDialog,
+		),
+	{ ssr: false },
+);
 
 type MealTimeFilter = "all" | "morning" | "evening";
 type MealSortOption = "date" | "time" | "food";
 
 export function MealsPageClient() {
-	const { meals, isLoading, addMeal, deleteMeal } = useMeals();
+	const {
+		meals,
+		isLoading,
+		isFetchingMore,
+		hasMore,
+		addMeal,
+		deleteMeal,
+		loadMoreMeals,
+	} = useMeals();
 	const { addFood } = useFoodMutations();
 	const { registerDialog } = useQuickAddDialog();
 	const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
@@ -130,12 +147,16 @@ export function MealsPageClient() {
 		);
 	}, [filteredAndSortedMeals]);
 
-	const sortedDates = Object.keys(mealsByDate).sort((a, b) => {
-		if (sortBy === "date") {
-			return sortOrder === "desc" ? b.localeCompare(a) : a.localeCompare(b);
-		}
-		return b.localeCompare(a);
-	});
+	const sortedDates = useMemo(
+		() =>
+			Object.keys(mealsByDate).sort((a, b) => {
+				if (sortBy === "date") {
+					return sortOrder === "desc" ? b.localeCompare(a) : a.localeCompare(b);
+				}
+				return b.localeCompare(a);
+			}),
+		[mealsByDate, sortBy, sortOrder],
+	);
 
 	if (isLoading) {
 		return (
@@ -181,6 +202,7 @@ export function MealsPageClient() {
 					<div className="space-y-6">
 						{sortedDates.map((date) => {
 							const dateMeals = mealsByDate[date];
+
 							const sortedMeals = [...dateMeals].sort((a, b) => {
 								if (sortBy === "time") {
 									const timeA = a.mealTime === "morning" ? 0 : 1;
@@ -189,8 +211,7 @@ export function MealsPageClient() {
 										return sortOrder === "asc" ? timeA - timeB : timeB - timeA;
 									}
 								}
-								if (a.mealTime === b.mealTime) return 0;
-								return a.mealTime === "morning" ? -1 : 1;
+								return 0;
 							});
 
 							return (
@@ -215,6 +236,17 @@ export function MealsPageClient() {
 								</div>
 							);
 						})}
+					</div>
+				)}
+				{hasMore && (
+					<div className="flex justify-center mt-6">
+						<Button
+							variant="outline"
+							onClick={loadMoreMeals}
+							disabled={isFetchingMore}
+						>
+							{isFetchingMore ? "Loading..." : "Load More"}
+						</Button>
 					</div>
 				)}
 			</main>

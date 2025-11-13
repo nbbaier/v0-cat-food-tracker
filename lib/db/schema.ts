@@ -52,7 +52,11 @@ export const foods = pgTable(
 			.defaultNow()
 			.notNull(),
 	}),
-	(_table) => [
+	(t) => [
+		index("idx_foods_created_at").on(t.createdAt),
+		index("idx_foods_preference").on(t.preference),
+		index("idx_foods_inventory").on(t.inventoryQuantity),
+		index("idx_foods_archived_created").on(t.archived, t.createdAt.desc()),
 		pgPolicy("Allow public to delete foods", {
 			as: "permissive",
 			for: "delete",
@@ -100,6 +104,8 @@ export const meals = pgTable(
 	}),
 	(t) => [
 		index("idx_meals_food_ids").on(t.foodId),
+		index("idx_meals_mealdate_mealtime").on(t.mealDate, t.mealTime),
+		index("idx_meals_created_at").on(t.createdAt),
 		uniqueIndex("meals_date_time_unique").on(t.mealDate, t.mealTime, t.foodId),
 		pgPolicy("Allow public to delete meals", {
 			as: "permissive",

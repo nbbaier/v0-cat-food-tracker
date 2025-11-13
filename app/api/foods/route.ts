@@ -1,19 +1,89 @@
-import { desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, lt, sql } from "drizzle-orm";
 import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { auth } from "@/lib/auth";
+import { PAGINATION } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { foods, meals } from "@/lib/db/schema";
+import { getErrorDetails, safeLogError } from "@/lib/utils";
 import { foodInputSchema } from "@/lib/validations";
 
-export async function GET() {
+/**
+ * GET /api/foods - Fetch foods with cursor-based pagination support
+ *
+ * Query parameters:
+ * - limit: Number of items to return (default: 100, max: 500)
+ * - cursor: Timestamp (milliseconds) to fetch items created before this time (optional)
+ * - archived: Filter by archived status ("true" | "false", optional)
+ *
+ * Response format:
+ * {
+ *   foods: Food[],
+ *   hasMore: boolean  // Indicates if more results are available
+ * }
+ *
+ * Cursor-based pagination:
+ * - First request: Don't include cursor parameter
+ * - Subsequent requests: Use the smallest `createdAt` timestamp from previous results as cursor
+ * - Results are ordered by createdAt DESC (newest first)
+ */
+export async function GET(request: NextRequest) {
 	const session = await auth.api.getSession({ headers: await headers() });
 	if (!session) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 	try {
-		const allFoods = await db
+		const { searchParams } = new URL(request.url);
+		const rawLimit = Number.parseInt(searchParams.get("limit") ?? "", 10);
+		const limit = Math.max(
+			1,
+			Math.min(
+				Number.isFinite(rawLimit) ? rawLimit : PAGINATION.DEFAULT_PAGE_SIZE,
+				PAGINATION.MAX_PAGE_SIZE,
+			),
+		);
+		const rawCursor = searchParams.get("cursor");
+		const cursor = rawCursor ? Number.parseInt(rawCursor, 10) : null;
+		const cursorDate =
+			cursor && Number.isFinite(cursor) && cursor > 0
+				? new Date(cursor).toISOString()
+				: null;
+
+		const archivedParam = searchParams.get("archived");
+		let archivedFilter: boolean | null = null;
+		if (typeof archivedParam === "string") {
+			const normalized = archivedParam.trim().toLowerCase();
+			if (normalized === "true") {
+				archivedFilter = true;
+			} else if (normalized === "false") {
+				archivedFilter = false;
+			}
+		}
+
+		const mealCountsSubquery = db
+			.select({
+				foodId: meals.foodId,
+				totalCount: sql<number>`count(*)`.as("total_count"),
+				commentCount:
+					sql<number>`count(*) filter (where ${meals.notes} is not null and ${meals.notes} <> '')`.as(
+						"comment_count",
+					),
+			})
+			.from(meals)
+			.innerJoin(foods, eq(meals.foodId, foods.id))
+			.where(
+				archivedFilter !== null
+					? eq(foods.archived, archivedFilter)
+					: undefined,
+			)
+			.groupBy(meals.foodId);
+
+		const mealCountsCTEBuilder = db.$with("meal_counts");
+		const mealCounts = mealCountsCTEBuilder.as(mealCountsSubquery);
+
+		const baseFoodsQuery = db
+			.with(mealCounts)
 			.select({
 				id: foods.id,
 				name: foods.name,
@@ -26,21 +96,38 @@ export async function GET() {
 				fatDmb: foods.fatDmb,
 				fiberDmb: foods.fiberDmb,
 				createdAt: foods.createdAt,
-				mealCount:
-					sql<number>`coalesce(count(distinct ${meals.id}) filter (where ${meals.id} is not null), 0)`.as(
-						"meal_count",
-					),
+				mealCount: sql<number>`coalesce(${mealCounts.totalCount}, 0)`.as(
+					"meal_count",
+				),
 				mealCommentCount:
-					sql<number>`coalesce(count(distinct ${meals.id}) filter (where ${meals.notes} is not null and ${meals.notes} != ''), 0)`.as(
+					sql<number>`coalesce(${mealCounts.commentCount}, 0)`.as(
 						"meal_comment_count",
 					),
 			})
 			.from(foods)
-			.leftJoin(meals, eq(foods.id, meals.foodId))
-			.groupBy(foods.id)
-			.orderBy(desc(foods.createdAt));
+			.leftJoin(mealCounts, eq(mealCounts.foodId, foods.id));
 
-		const formattedFoods = allFoods.map((food) => ({
+		const whereConditions = [];
+		if (archivedFilter !== null) {
+			whereConditions.push(eq(foods.archived, archivedFilter));
+		}
+		if (cursorDate) {
+			whereConditions.push(lt(foods.createdAt, cursorDate));
+		}
+
+		const foodsQuery =
+			whereConditions.length > 0
+				? baseFoodsQuery.where(and(...whereConditions))
+				: baseFoodsQuery;
+
+		const allFoods = await foodsQuery
+			.orderBy(desc(foods.createdAt))
+			.limit(limit + 1);
+
+		const hasMore = allFoods.length > limit;
+		const foodsToReturn = hasMore ? allFoods.slice(0, limit) : allFoods;
+
+		const formattedFoods = foodsToReturn.map((food) => ({
 			id: food.id,
 			name: food.name,
 			preference: food.preference,
@@ -48,23 +135,33 @@ export async function GET() {
 			inventoryQuantity: food.inventoryQuantity,
 			archived: Boolean(food.archived),
 			addedAt: new Date(food.createdAt).getTime(),
-			phosphorusDmb: food.phosphorusDmb
-				? Number(food.phosphorusDmb)
-				: undefined,
-			proteinDmb: food.proteinDmb ? Number(food.proteinDmb) : undefined,
-			fatDmb: food.fatDmb ? Number(food.fatDmb) : undefined,
-			fiberDmb: food.fiberDmb ? Number(food.fiberDmb) : undefined,
-			mealCount: Number(food.mealCount) ?? 0,
-			mealCommentCount: Number(food.mealCommentCount) ?? 0,
+			createdAt: food.createdAt,
+			phosphorusDmb: food.phosphorusDmb,
+			proteinDmb: food.proteinDmb,
+			fatDmb: food.fatDmb,
+			fiberDmb: food.fiberDmb,
+			mealCount: Number(food.mealCount),
+			mealCommentCount: Number(food.mealCommentCount),
 		}));
 
-		return NextResponse.json(formattedFoods);
+		return NextResponse.json(
+			{
+				foods: formattedFoods,
+				hasMore,
+			},
+			{
+				headers: {
+					"Cache-Control": "private, max-age=30, stale-while-revalidate=60",
+				},
+			},
+		);
 	} catch (error) {
-		console.error("[v0] GET /api/foods error:", error);
+		safeLogError("GET /api/foods", error);
+		const details = getErrorDetails(error);
 		return NextResponse.json(
 			{
 				error: "Failed to fetch foods",
-				details: error instanceof Error ? error.message : String(error),
+				...(details && { details }),
 			},
 			{ status: 500 },
 		);
@@ -79,7 +176,6 @@ export async function POST(request: NextRequest) {
 	try {
 		const body = await request.json();
 
-		// Validate input with Zod
 		const validatedData = foodInputSchema.parse(body);
 
 		const {
@@ -94,8 +190,6 @@ export async function POST(request: NextRequest) {
 			fiberDmb,
 		} = validatedData;
 
-		// Build values object with proper typing
-		// Nutrition fields are optional - if not provided, DB defaults (0) will be used
 		const insertValues = {
 			name,
 			preference,
@@ -118,32 +212,35 @@ export async function POST(request: NextRequest) {
 			inventoryQuantity: newFood.inventoryQuantity,
 			archived: Boolean(newFood.archived),
 			addedAt: new Date(newFood.createdAt).getTime(),
-			phosphorusDmb: newFood.phosphorusDmb
-				? Number(newFood.phosphorusDmb)
-				: undefined,
-			proteinDmb: newFood.proteinDmb ? Number(newFood.proteinDmb) : undefined,
-			fatDmb: newFood.fatDmb ? Number(newFood.fatDmb) : undefined,
-			fiberDmb: newFood.fiberDmb ? Number(newFood.fiberDmb) : undefined,
+			createdAt: newFood.createdAt,
+			phosphorusDmb: newFood.phosphorusDmb,
+			proteinDmb: newFood.proteinDmb,
+			fatDmb: newFood.fatDmb,
+			fiberDmb: newFood.fiberDmb,
 		};
 
 		return NextResponse.json(formattedFood, { status: 201 });
 	} catch (error) {
-		// Handle Zod validation errors
 		if (error instanceof ZodError) {
+			const details =
+				process.env.NODE_ENV === "development"
+					? error.issues.map((e) => `${e.path.join(".")}: ${e.message}`)
+					: undefined;
 			return NextResponse.json(
 				{
 					error: "Validation failed",
-					details: error.issues.map((e) => `${e.path.join(".")}: ${e.message}`),
+					...(details && { details }),
 				},
 				{ status: 400 },
 			);
 		}
 
-		console.error("[v0] POST /api/foods error:", error);
+		safeLogError("POST /api/foods", error);
+		const details = getErrorDetails(error);
 		return NextResponse.json(
 			{
 				error: "Failed to create food",
-				details: error instanceof Error ? error.message : String(error),
+				...(details && { details }),
 			},
 			{ status: 500 },
 		);
