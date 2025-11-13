@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "@/lib/constants";
 import type { Food, FoodInput } from "@/lib/types";
+import { invalidateFoodSummariesCache } from "./use-food-summaries";
 
 export function useFoods() {
 	const [foods, setFoods] = useState<Food[]>([]);
@@ -51,6 +52,7 @@ export function useFoods() {
 			if (response.ok) {
 				const newFood = await response.json();
 				setFoods((prev) => [newFood, ...prev]);
+				invalidateFoodSummariesCache();
 				toast.success(SUCCESS_MESSAGES.ADDED("Food", food.name));
 				return true;
 			}
@@ -84,6 +86,7 @@ export function useFoods() {
 				});
 
 				if (response.ok) {
+					invalidateFoodSummariesCache();
 					toast.success(SUCCESS_MESSAGES.UPDATED("Food"));
 					return true;
 				}
@@ -110,7 +113,7 @@ export function useFoods() {
 	const deleteFood = useCallback(
 		async (id: string): Promise<boolean> => {
 			const foodToDelete = foods.find((f) => f.id === id);
-			const foodName = foodToDelete?.name || "Food";
+			const foodName = foodToDelete?.name ?? "Food";
 
 			try {
 				const response = await fetch(`/api/foods/${id}`, {
@@ -119,6 +122,7 @@ export function useFoods() {
 
 				if (response.ok) {
 					setFoods((prev) => prev.filter((food) => food.id !== id));
+					invalidateFoodSummariesCache();
 					toast.success(SUCCESS_MESSAGES.DELETED("Food", foodName));
 					return true;
 				}
