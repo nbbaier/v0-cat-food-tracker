@@ -1,12 +1,12 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FoodFilters } from "@/components/food-filters";
 import { FoodList } from "@/components/food-list";
-import { HeaderQuickAddButton } from "@/components/header-quick-add-button";
+import { useQuickAddDialog } from "@/components/quick-add-context";
 import { QuickAddDialog } from "@/components/quick-add-dialog";
 import { useFoods } from "@/hooks/use-foods";
-import { useMeals } from "@/hooks/use-meals";
+import { useMealMutations } from "@/hooks/use-meal-mutations";
 import type {
 	Food,
 	FoodInput,
@@ -18,8 +18,23 @@ import { ConfirmDialog } from "./confirm-dialog";
 
 export function FoodsPageClient() {
 	const { foods, isLoading, addFood, updateFood, deleteFood } = useFoods();
-	const { addMeal } = useMeals();
+	const { addMeal } = useMealMutations();
+	const { registerDialog } = useQuickAddDialog();
 	const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
+
+	const handleOpenDialog = useCallback(() => {
+		setIsQuickAddOpen(true);
+	}, []);
+
+	const registerDialogRef = useRef(registerDialog);
+	registerDialogRef.current = registerDialog;
+
+	useEffect(() => {
+		registerDialogRef.current(handleOpenDialog);
+		return () => {
+			registerDialogRef.current(() => {});
+		};
+	}, [handleOpenDialog]);
 
 	const [searchTerm, setSearchTerm] = useState("");
 	const [preferenceFilters, setPreferenceFilters] = useState<
@@ -137,10 +152,6 @@ export function FoodsPageClient() {
 		setSortOrder("desc");
 	};
 
-	const handleQuickAddOpen = useCallback(() => {
-		setIsQuickAddOpen(true);
-	}, []);
-
 	if (isLoading) {
 		return (
 			<output className="flex justify-center items-center min-h-screen bg-background">
@@ -151,7 +162,6 @@ export function FoodsPageClient() {
 
 	return (
 		<div className="min-h-screen bg-background">
-			<HeaderQuickAddButton onClick={handleQuickAddOpen} />
 			<main className="px-4 py-6 mx-auto max-w-5xl sm:px-6 sm:py-8 lg:px-8">
 				<FoodFilters
 					searchTerm={searchTerm}

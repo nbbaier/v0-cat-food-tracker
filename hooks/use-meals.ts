@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "@/lib/constants";
 import type { Meal, MealInput } from "@/lib/types";
@@ -9,11 +9,23 @@ export function useMeals() {
 	const [meals, setMeals] = useState<Meal[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<Error | null>(null);
+	const abortControllerRef = useRef<AbortController | null>(null);
 
 	const fetchMeals = useCallback(async () => {
+		if (abortControllerRef.current) {
+			abortControllerRef.current.abort();
+		}
+
+		const abortController = new AbortController();
+		abortControllerRef.current = abortController;
+
 		try {
 			setError(null);
-			const response = await fetch("/api/meals");
+			const response = await fetch("/api/meals", {
+				signal: abortController.signal,
+			});
+
+			if (abortController.signal.aborted) return;
 
 			if (response.ok) {
 				const data = await response.json();
@@ -27,17 +39,25 @@ export function useMeals() {
 				console.error("Failed to fetch meals:", errorData);
 			}
 		} catch (err) {
+			if (abortController.signal.aborted) return;
 			const errorMessage = ERROR_MESSAGES.CONNECTION_ERROR;
 			toast.error(errorMessage);
 			setError(err instanceof Error ? err : new Error(errorMessage));
 			console.error("Error fetching meals:", err);
 		} finally {
-			setIsLoading(false);
+			if (!abortController.signal.aborted) {
+				setIsLoading(false);
+			}
 		}
 	}, []);
 
 	useEffect(() => {
 		fetchMeals();
+		return () => {
+			if (abortControllerRef.current) {
+				abortControllerRef.current.abort();
+			}
+		};
 	}, [fetchMeals]);
 
 	const addMeal = useCallback(async (meal: MealInput): Promise<boolean> => {
@@ -90,12 +110,16 @@ export function useMeals() {
 		}
 	}, []);
 
+	const refreshMeals = useCallback(async () => {
+		await fetchMeals();
+	}, [fetchMeals]);
+
 	return {
 		meals,
 		isLoading,
 		error,
 		addMeal,
 		deleteMeal,
-		refreshMeals: fetchMeals,
+		refreshMeals,
 	};
 }

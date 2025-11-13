@@ -4,6 +4,7 @@ import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { AppHeader } from "@/components/app-header";
 import { HeaderActionsProvider } from "@/components/header-context";
+import { QuickAddDialogProvider } from "@/components/quick-add-context";
 import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
@@ -45,10 +46,12 @@ export default function RootLayout({
 					enableSystem
 					disableTransitionOnChange
 				>
-					<HeaderActionsProvider>
-						<AppHeader />
-						{children}
-					</HeaderActionsProvider>
+					<QuickAddDialogProvider>
+						<HeaderActionsProvider>
+							<AppHeader />
+							{children}
+						</HeaderActionsProvider>
+					</QuickAddDialogProvider>
 					<Toaster />
 				</ThemeProvider>
 				<Analytics />

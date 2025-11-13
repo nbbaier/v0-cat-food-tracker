@@ -1,13 +1,13 @@
 "use client";
 
 import { Utensils } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
-import { HeaderQuickAddButton } from "@/components/header-quick-add-button";
 import { MealCard } from "@/components/meal-card";
 import { MealFilters } from "@/components/meal-filters";
+import { useQuickAddDialog } from "@/components/quick-add-context";
 import { QuickAddDialog } from "@/components/quick-add-dialog";
-import { useFoods } from "@/hooks/use-foods";
+import { useFoodMutations } from "@/hooks/use-food-mutations";
 import { useMeals } from "@/hooks/use-meals";
 import type { FoodInput, Meal, MealInput } from "@/lib/types";
 
@@ -16,7 +16,8 @@ type MealSortOption = "date" | "time" | "food";
 
 export function MealsPageClient() {
 	const { meals, isLoading, addMeal, deleteMeal } = useMeals();
-	const { addFood } = useFoods();
+	const { addFood } = useFoodMutations();
+	const { registerDialog } = useQuickAddDialog();
 	const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
 	const [mealToDelete, setMealToDelete] = useState<string | null>(null);
 	const [searchTerm, setSearchTerm] = useState("");
@@ -24,6 +25,20 @@ export function MealsPageClient() {
 	const [sortBy, setSortBy] = useState<MealSortOption>("date");
 	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 	const [isFiltersMinimized, setIsFiltersMinimized] = useState(false);
+
+	const handleOpenDialog = useCallback(() => {
+		setIsQuickAddOpen(true);
+	}, []);
+
+	const registerDialogRef = useRef(registerDialog);
+	registerDialogRef.current = registerDialog;
+
+	useEffect(() => {
+		registerDialogRef.current(handleOpenDialog);
+		return () => {
+			registerDialogRef.current(() => {});
+		};
+	}, [handleOpenDialog]);
 
 	const handleAddMeal = async (meal: MealInput) => {
 		const success = await addMeal(meal);
@@ -52,10 +67,6 @@ export function MealsPageClient() {
 		setSortBy("date");
 		setSortOrder("desc");
 	};
-
-	const handleQuickAddOpen = useCallback(() => {
-		setIsQuickAddOpen(true);
-	}, []);
 
 	const filteredAndSortedMeals = useMemo(() => {
 		let filtered = [...meals];
@@ -137,7 +148,6 @@ export function MealsPageClient() {
 
 	return (
 		<div className="min-h-screen bg-background">
-			<HeaderQuickAddButton onClick={handleQuickAddOpen} />
 			<main className="px-4 py-6 mx-auto max-w-5xl sm:px-6 sm:py-8 lg:px-8">
 				<MealFilters
 					searchTerm={searchTerm}
