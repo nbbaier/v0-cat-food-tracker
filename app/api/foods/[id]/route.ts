@@ -22,9 +22,7 @@ export async function PATCH(
 		// Validate input with Zod
 		const validatedData = foodUpdateSchema.parse(body);
 
-		// Prepare updates with validated data
-		const updates: Record<string, unknown> = { ...validatedData };
-		updates.updatedAt = new Date().toISOString();
+		const updates = { ...validatedData, updatedAt: new Date().toISOString() };
 
 		await db.update(foods).set(updates).where(eq(foods.id, id));
 

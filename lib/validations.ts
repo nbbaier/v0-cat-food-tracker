@@ -29,21 +29,28 @@ export const foodInputSchema = z
 			.number()
 			.min(0, "Phosphorus percentage cannot be negative")
 			.max(100, "Phosphorus percentage cannot exceed 100")
+			.multipleOf(
+				0.01,
+				"Phosphorus percentage must have at most 2 decimal places",
+			)
 			.optional(),
 		proteinDmb: z
 			.number()
 			.min(0, "Protein percentage cannot be negative")
 			.max(100, "Protein percentage cannot exceed 100")
+			.multipleOf(0.01, "Protein percentage must have at most 2 decimal places")
 			.optional(),
 		fatDmb: z
 			.number()
 			.min(0, "Fat percentage cannot be negative")
 			.max(100, "Fat percentage cannot exceed 100")
+			.multipleOf(0.01, "Fat percentage must have at most 2 decimal places")
 			.optional(),
 		fiberDmb: z
 			.number()
 			.min(0, "Fiber percentage cannot be negative")
 			.max(100, "Fiber percentage cannot exceed 100")
+			.multipleOf(0.01, "Fiber percentage must have at most 2 decimal places")
 			.optional(),
 	})
 	.strict(); // Reject unknown fields
@@ -76,21 +83,28 @@ export const foodUpdateSchema = z
 			.number()
 			.min(0, "Phosphorus percentage cannot be negative")
 			.max(100, "Phosphorus percentage cannot exceed 100")
+			.multipleOf(
+				0.01,
+				"Phosphorus percentage must have at most 2 decimal places",
+			)
 			.optional(),
 		proteinDmb: z
 			.number()
 			.min(0, "Protein percentage cannot be negative")
 			.max(100, "Protein percentage cannot exceed 100")
+			.multipleOf(0.01, "Protein percentage must have at most 2 decimal places")
 			.optional(),
 		fatDmb: z
 			.number()
 			.min(0, "Fat percentage cannot be negative")
 			.max(100, "Fat percentage cannot exceed 100")
+			.multipleOf(0.01, "Fat percentage must have at most 2 decimal places")
 			.optional(),
 		fiberDmb: z
 			.number()
 			.min(0, "Fiber percentage cannot be negative")
 			.max(100, "Fiber percentage cannot exceed 100")
+			.multipleOf(0.01, "Fiber percentage must have at most 2 decimal places")
 			.optional(),
 	})
 	.strict()
@@ -105,28 +119,31 @@ export const foodUpdateSchema = z
 // ISO date string validation (YYYY-MM-DD format)
 const isoDateString = z.string().refine(
 	(val) => {
-		// Check format and valid date
 		const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
 		if (!dateRegex.test(val)) return false;
 		const date = new Date(val);
-		return !Number.isNaN(date.getTime());
+		if (Number.isNaN(date.getTime())) return false;
+
+		const minDate = new Date("2020-01-01");
+		const maxDate = new Date();
+		maxDate.setDate(maxDate.getDate() + 1);
+
+		return date >= minDate && date <= maxDate;
 	},
 	{
-		message: "Date must be in YYYY-MM-DD format",
+		message: "Date must be in YYYY-MM-DD format and within valid range",
 	},
 );
 
 // UUID validation
 const uuidString = z.string().uuid("Invalid food ID format");
 
-// Amount validation - supports formats like "100g", "2.5 cans", "1 cup"
 const amountString = z
 	.string()
 	.min(1, "Amount is required")
 	.max(50, "Amount description too long")
 	.refine(
 		(val) => {
-			// Allow numeric values with optional units
 			const amountRegex =
 				/^\d+(\.\d+)?\s*(g|ml|oz|lb|kg|can|cans|cup|cups|tbsp|tsp|pouch|pouches)?$/i;
 			return amountRegex.test(val.trim());
