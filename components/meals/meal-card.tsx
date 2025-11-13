@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Meal } from "@/lib/types";
-import { ConfirmDialog } from "./confirm-dialog";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 
 type MealCardProps = {
 	meal: Meal;

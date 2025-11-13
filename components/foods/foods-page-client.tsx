@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { FoodFilters } from "@/components/food-filters";
-import { FoodList } from "@/components/food-list";
-import { useQuickAddDialog } from "@/components/quick-add-context";
-import { QuickAddDialog } from "@/components/quick-add-dialog";
+import { FoodFilters } from "@/components/foods/food-filters";
+import { FoodList } from "@/components/foods/food-list";
+import { useQuickAddDialog } from "@/components/shared/quick-add-context";
+import { QuickAddDialog } from "@/components/layout/quick-add-dialog";
 import { useFoods } from "@/hooks/use-foods";
 import { useMealMutations } from "@/hooks/use-meal-mutations";
 import type {
@@ -14,7 +14,7 @@ import type {
 	MealInput,
 	SortOption,
 } from "@/lib/types";
-import { ConfirmDialog } from "./confirm-dialog";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 
 export function FoodsPageClient() {
 	const { foods, isLoading, addFood, updateFood, deleteFood } = useFoods();

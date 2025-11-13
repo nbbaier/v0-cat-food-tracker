@@ -3,8 +3,8 @@
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
-import AuthButtons from "./auth-buttons";
-import UserDropdown from "./user-dropdown";
+import AuthButtons from "@/components/auth/auth-buttons";
+import UserDropdown from "@/components/auth/user-dropdown";
 
 export default function UserButton() {
 	const session = authClient.useSession();

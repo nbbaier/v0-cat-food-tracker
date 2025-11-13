@@ -2,11 +2,11 @@
 
 import { Edit, MessageSquare, Package, Trash2, Utensils } from "lucide-react";
 import React, { useState } from "react";
-import { NutritionDisplay } from "@/components/nutrition-display";
+import { NutritionDisplay } from "@/components/shared/nutrition-display";
 import {
 	getPreferenceColor,
 	PreferenceIcon,
-} from "@/components/preference-icon";
+} from "@/components/shared/preference-icon";
 import { Button } from "@/components/ui/button";
 import {
 	Item,
@@ -17,8 +17,8 @@ import {
 	ItemTitle,
 } from "@/components/ui/item";
 import type { Food } from "@/lib/types";
-import { ConfirmDialog } from "./confirm-dialog";
-import { EditFoodDialog } from "./edit-food-dialog";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { EditFoodDialog } from "@/components/foods/edit-food-dialog";
 
 type FoodItemProps = {
 	food: Food;

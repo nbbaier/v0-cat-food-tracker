@@ -5,8 +5,8 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Food } from "@/lib/types";
-import { ConfirmDialog } from "./confirm-dialog";
-import { EditFoodDialog } from "./edit-food-dialog";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { EditFoodDialog } from "@/components/foods/edit-food-dialog";
 
 type FoodTableProps = {
 	foods: Food[];

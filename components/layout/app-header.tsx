@@ -3,13 +3,13 @@
 import { Package, Plus, Utensils } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { authClient } from "@/lib/auth-client";
-import AuthButtons from "./auth-buttons";
-import { useQuickAddDialog } from "./quick-add-context";
-import UserButton from "./user-button";
+import AuthButtons from "@/components/auth/auth-buttons";
+import { useQuickAddDialog } from "@/components/shared/quick-add-context";
+import UserButton from "@/components/auth/user-button";
 
 export function AppHeader() {
 	const pathname = usePathname();

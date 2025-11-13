@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { PreferenceRadioGroup } from "@/components/preference-radio-group";
+import { PreferenceRadioGroup } from "@/components/shared/preference-radio-group";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { SignUpForm, type SignUpFormValues } from "@/components/sign-up-form";
+import { SignUpForm, type SignUpFormValues } from "@/components/auth/sign-up-form";
 import { authClient } from "@/lib/auth-client";
 
 export default function SignUpPage() {
