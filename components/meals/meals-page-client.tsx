@@ -2,11 +2,11 @@
 
 import { Utensils } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { QuickAddDialog } from "@/components/layout/quick-add-dialog";
 import { MealCard } from "@/components/meals/meal-card";
 import { MealFilters } from "@/components/meals/meal-filters";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { useQuickAddDialog } from "@/components/shared/quick-add-context";
-import { QuickAddDialog } from "@/components/layout/quick-add-dialog";
 import { useFoodMutations } from "@/hooks/use-food-mutations";
 import { useMeals } from "@/hooks/use-meals";
 import type { FoodInput, Meal, MealInput } from "@/lib/types";

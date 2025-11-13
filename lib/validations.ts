@@ -14,7 +14,10 @@ export const foodInputSchema = z
 		preference: z.enum(["likes", "dislikes", "unknown"], {
 			message: "Preference must be 'likes', 'dislikes', or 'unknown'",
 		}),
-		notes: z.string().max(2000, "Notes must be less than 2000 characters").optional(),
+		notes: z
+			.string()
+			.max(2000, "Notes must be less than 2000 characters")
+			.optional(),
 		inventoryQuantity: z
 			.number()
 			.int("Inventory must be a whole number")
@@ -58,7 +61,10 @@ export const foodUpdateSchema = z
 				message: "Preference must be 'likes', 'dislikes', or 'unknown'",
 			})
 			.optional(),
-		notes: z.string().max(2000, "Notes must be less than 2000 characters").optional(),
+		notes: z
+			.string()
+			.max(2000, "Notes must be less than 2000 characters")
+			.optional(),
 		inventoryQuantity: z
 			.number()
 			.int("Inventory must be a whole number")
@@ -121,11 +127,13 @@ const amountString = z
 	.refine(
 		(val) => {
 			// Allow numeric values with optional units
-			const amountRegex = /^\d+(\.\d+)?\s*(g|ml|oz|lb|kg|can|cans|cup|cups|tbsp|tsp|pouch|pouches)?$/i;
+			const amountRegex =
+				/^\d+(\.\d+)?\s*(g|ml|oz|lb|kg|can|cans|cup|cups|tbsp|tsp|pouch|pouches)?$/i;
 			return amountRegex.test(val.trim());
 		},
 		{
-			message: "Amount must be a number with optional unit (e.g., '100g', '2 cans', '1.5 cups')",
+			message:
+				"Amount must be a number with optional unit (e.g., '100g', '2 cans', '1.5 cups')",
 		},
 	);
 
@@ -138,7 +146,10 @@ export const mealInputSchema = z
 		}),
 		foodId: uuidString,
 		amount: amountString,
-		notes: z.string().max(500, "Notes must be less than 500 characters").optional(),
+		notes: z
+			.string()
+			.max(500, "Notes must be less than 500 characters")
+			.optional(),
 	})
 	.strict(); // Reject unknown fields
 
@@ -153,7 +164,10 @@ export const mealUpdateSchema = z
 			.optional(),
 		foodId: uuidString.optional(),
 		amount: amountString.optional(),
-		notes: z.string().max(500, "Notes must be less than 500 characters").optional(),
+		notes: z
+			.string()
+			.max(500, "Notes must be less than 500 characters")
+			.optional(),
 	})
 	.strict()
 	.refine((data) => Object.keys(data).length > 0, {

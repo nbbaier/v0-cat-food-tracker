@@ -2,11 +2,11 @@
 
 import { Trash2 } from "lucide-react";
 import React, { useState } from "react";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Meal } from "@/lib/types";
-import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 
 type MealCardProps = {
 	meal: Meal;

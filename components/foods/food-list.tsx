@@ -1,8 +1,8 @@
 "use client";
 
-import type { Food } from "@/lib/types";
 import { FoodCard } from "@/components/foods/food-card";
 import { FoodItem } from "@/components/foods/food-item";
+import type { Food } from "@/lib/types";
 
 type FoodListProps = {
 	foods: Food[];
