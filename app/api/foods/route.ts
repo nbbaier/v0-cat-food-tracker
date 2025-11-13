@@ -40,29 +40,22 @@ export async function GET(request: NextRequest) {
 		const offset = Math.max(0, Number.isFinite(rawOffset) ? rawOffset : 0);
 
 		// Pre-aggregate meal counts to avoid expensive DISTINCT with FILTER
+		// Combine both counts in a single CTE to avoid scanning the meals table twice
 		const mealCounts = db.$with("meal_counts").as(
 			db
 				.select({
 					foodId: meals.foodId,
-					cnt: sql<number>`count(*)`.as("cnt"),
+					totalCount: sql<number>`count(*)`.as("total_count"),
+					commentCount: sql<number>`count(*) filter (where ${meals.notes} is not null and ${meals.notes} <> '')`.as(
+						"comment_count",
+					),
 				})
 				.from(meals)
-				.groupBy(meals.foodId),
-		);
-
-		const mealCommentCounts = db.$with("meal_comment_counts").as(
-			db
-				.select({
-					foodId: meals.foodId,
-					cnt: sql<number>`count(*)`.as("cnt"),
-				})
-				.from(meals)
-				.where(sql`${meals.notes} is not null and ${meals.notes} <> ''`)
 				.groupBy(meals.foodId),
 		);
 
 		const allFoods = await db
-			.with(mealCounts, mealCommentCounts)
+			.with(mealCounts)
 			.select({
 				id: foods.id,
 				name: foods.name,
@@ -75,14 +68,15 @@ export async function GET(request: NextRequest) {
 				fatDmb: foods.fatDmb,
 				fiberDmb: foods.fiberDmb,
 				createdAt: foods.createdAt,
-				mealCount: sql<number>`coalesce(${mealCounts.cnt}, 0)`.as("meal_count"),
-				mealCommentCount: sql<number>`coalesce(${mealCommentCounts.cnt}, 0)`.as(
+				mealCount: sql<number>`coalesce(${mealCounts.totalCount}, 0)`.as(
+					"meal_count",
+				),
+				mealCommentCount: sql<number>`coalesce(${mealCounts.commentCount}, 0)`.as(
 					"meal_comment_count",
 				),
 			})
 			.from(foods)
 			.leftJoin(mealCounts, eq(mealCounts.foodId, foods.id))
-			.leftJoin(mealCommentCounts, eq(mealCommentCounts.foodId, foods.id))
 			.orderBy(desc(foods.createdAt))
 			.limit(limit)
 			.offset(offset);
@@ -95,10 +89,10 @@ export async function GET(request: NextRequest) {
 			inventoryQuantity: food.inventoryQuantity,
 			archived: Boolean(food.archived),
 			addedAt: new Date(food.createdAt).getTime(),
-			phosphorusDmb: Number(food.phosphorusDmb),
-			proteinDmb: Number(food.proteinDmb),
-			fatDmb: Number(food.fatDmb),
-			fiberDmb: Number(food.fiberDmb),
+			phosphorusDmb: food.phosphorusDmb ? Number(food.phosphorusDmb) : 0,
+			proteinDmb: food.proteinDmb ? Number(food.proteinDmb) : 0,
+			fatDmb: food.fatDmb ? Number(food.fatDmb) : 0,
+			fiberDmb: food.fiberDmb ? Number(food.fiberDmb) : 0,
 			mealCount: Number(food.mealCount) ?? 0,
 			mealCommentCount: Number(food.mealCommentCount) ?? 0,
 		}));
@@ -110,7 +104,9 @@ export async function GET(request: NextRequest) {
 			},
 			{
 				headers: {
-					"Cache-Control": "private, max-age=30, stale-while-revalidate=300",
+					// Reduced stale-while-revalidate from 300s to 60s to minimize stale data
+					// for real-time inventory and preference tracking
+					"Cache-Control": "private, max-age=30, stale-while-revalidate=60",
 				},
 			},
 		);
@@ -119,7 +115,9 @@ export async function GET(request: NextRequest) {
 		return NextResponse.json(
 			{
 				error: "Failed to fetch foods",
-				details: error instanceof Error ? error.message : String(error),
+				...(process.env.NODE_ENV === "development" && {
+					details: error instanceof Error ? error.message : String(error),
+				}),
 			},
 			{ status: 500 },
 		);
@@ -196,7 +194,9 @@ export async function POST(request: NextRequest) {
 		return NextResponse.json(
 			{
 				error: "Failed to create food",
-				details: error instanceof Error ? error.message : String(error),
+				...(process.env.NODE_ENV === "development" && {
+					details: error instanceof Error ? error.message : String(error),
+				}),
 			},
 			{ status: 500 },
 		);

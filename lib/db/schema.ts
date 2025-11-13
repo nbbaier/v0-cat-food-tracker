@@ -56,6 +56,8 @@ export const foods = pgTable(
 		index("idx_foods_created_at").on(t.createdAt),
 		index("idx_foods_preference").on(t.preference),
 		index("idx_foods_inventory").on(t.inventoryQuantity),
+		// Composite index for common query pattern: filtering by archived status and sorting by creation date
+		index("idx_foods_archived_created").on(t.archived, t.createdAt.desc()),
 		pgPolicy("Allow public to delete foods", {
 			as: "permissive",
 			for: "delete",

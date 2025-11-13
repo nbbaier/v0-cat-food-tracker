@@ -80,7 +80,9 @@ export async function GET(request: NextRequest) {
 			},
 			{
 				headers: {
-					"Cache-Control": "private, max-age=30, stale-while-revalidate=300",
+					// Reduced stale-while-revalidate from 300s to 60s to minimize stale data
+					// for real-time meal tracking
+					"Cache-Control": "private, max-age=30, stale-while-revalidate=60",
 				},
 			},
 		);
@@ -89,7 +91,9 @@ export async function GET(request: NextRequest) {
 		return NextResponse.json(
 			{
 				error: "Failed to fetch meals",
-				details: error instanceof Error ? error.message : String(error),
+				...(process.env.NODE_ENV === "development" && {
+					details: error instanceof Error ? error.message : String(error),
+				}),
 			},
 			{ status: 500 },
 		);
@@ -159,7 +163,9 @@ export async function POST(request: NextRequest) {
 		return NextResponse.json(
 			{
 				error: "Failed to create meal",
-				details: error instanceof Error ? error.message : String(error),
+				...(process.env.NODE_ENV === "development" && {
+					details: error instanceof Error ? error.message : String(error),
+				}),
 			},
 			{ status: 500 },
 		);

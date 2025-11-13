@@ -1,1 +1,1 @@
-CREATE INDEX "idx_meals_mealdate_mealtime" ON "meals" USING btree ("mealDate","mealTime");
+CREATE INDEX IF NOT EXISTS "idx_meals_mealdate_mealtime" ON "meals" USING btree ("mealDate","mealTime");
