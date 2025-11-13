@@ -1,18 +1,19 @@
-import { asc, desc, eq } from "drizzle-orm";
+import { asc, desc, eq, lt } from "drizzle-orm";
 import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { auth } from "@/lib/auth";
+import { PAGINATION } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { foods, meals } from "@/lib/db/schema";
 import { mealInputSchema } from "@/lib/validations";
 
 /**
- * GET /api/meals - Fetch meals with pagination support
+ * GET /api/meals - Fetch meals with cursor-based pagination support
  *
  * Query parameters:
- * - limit: Number of items to return (default: 300, max: 500)
- * - offset: Number of items to skip (default: 0)
+ * - limit: Number of items to return (default: 100, max: 500)
+ * - cursor: Timestamp (milliseconds) to fetch items created before this time (optional)
  *
  * Response format:
  * {
@@ -20,9 +21,10 @@ import { mealInputSchema } from "@/lib/validations";
  *   hasMore: boolean  // Indicates if more results are available
  * }
  *
- * Note: Frontend pagination UI is not yet implemented. Currently, the frontend
- * only fetches the first page (default limit). Future work should implement
- * infinite scroll or "Load More" functionality to leverage pagination.
+ * Cursor-based pagination:
+ * - First request: Don't include cursor parameter
+ * - Subsequent requests: Use the smallest `createdAt` timestamp from previous results as cursor
+ * - Results are ordered by mealDate DESC, mealTime ASC
  */
 export async function GET(request: NextRequest) {
 	const session = await auth.api.getSession({ headers: await headers() });
@@ -34,12 +36,19 @@ export async function GET(request: NextRequest) {
 		const rawLimit = Number.parseInt(searchParams.get("limit") ?? "", 10);
 		const limit = Math.max(
 			1,
-			Math.min(Number.isFinite(rawLimit) ? rawLimit : 300, 500),
+			Math.min(
+				Number.isFinite(rawLimit) ? rawLimit : PAGINATION.DEFAULT_PAGE_SIZE,
+				PAGINATION.MAX_PAGE_SIZE,
+			),
 		);
-		const rawOffset = Number.parseInt(searchParams.get("offset") ?? "", 10);
-		const offset = Math.max(0, Number.isFinite(rawOffset) ? rawOffset : 0);
+		const rawCursor = searchParams.get("cursor");
+		const cursor = rawCursor ? Number.parseInt(rawCursor, 10) : null;
+		const cursorDate =
+			cursor && Number.isFinite(cursor) && cursor > 0
+				? new Date(cursor).toISOString()
+				: null;
 
-		const allMeals = await db
+		const baseMealsQuery = db
 			.select({
 				id: meals.id,
 				mealDate: meals.mealDate,
@@ -56,12 +65,20 @@ export async function GET(request: NextRequest) {
 				},
 			})
 			.from(meals)
-			.leftJoin(foods, eq(meals.foodId, foods.id))
-			.orderBy(desc(meals.mealDate), asc(meals.mealTime))
-			.limit(limit)
-			.offset(offset);
+			.leftJoin(foods, eq(meals.foodId, foods.id));
 
-		const formattedMeals = allMeals.map((meal) => ({
+		const mealsQuery = cursorDate
+			? baseMealsQuery.where(lt(meals.createdAt, cursorDate))
+			: baseMealsQuery;
+
+		const allMeals = await mealsQuery
+			.orderBy(desc(meals.mealDate), asc(meals.mealTime))
+			.limit(limit + 1);
+
+		const hasMore = allMeals.length > limit;
+		const mealsToReturn = hasMore ? allMeals.slice(0, limit) : allMeals;
+
+		const formattedMeals = mealsToReturn.map((meal) => ({
 			id: meal.id,
 			mealDate: meal.mealDate,
 			mealTime: meal.mealTime,
@@ -74,10 +91,7 @@ export async function GET(request: NextRequest) {
 		}));
 
 		return NextResponse.json(
-			{
-				meals: formattedMeals,
-				hasMore: formattedMeals.length === limit,
-			},
+			{ meals: formattedMeals, hasMore },
 			{
 				headers: {
 					"Cache-Control": "private, max-age=30, stale-while-revalidate=60",

@@ -2,12 +2,25 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "@/lib/constants";
+import { ERROR_MESSAGES, PAGINATION, SUCCESS_MESSAGES } from "@/lib/constants";
 import type { Food, FoodInput } from "@/lib/types";
 import { invalidateFoodSummariesCache } from "./use-food-summaries";
 
-const PAGE_SIZE = 100;
-
+/**
+ * Custom hook for managing foods with cursor-based pagination
+ *
+ * @returns An object containing:
+ * - foods: Array of Food objects (currently loaded)
+ * - isLoading: Boolean indicating if initial load is in progress
+ * - isFetchingMore: Boolean indicating if loading more items is in progress
+ * - error: Error object if an error occurred, null otherwise
+ * - hasMore: Boolean indicating if more items are available to load
+ * - addFood: Function to add a new food (returns Promise<boolean>)
+ * - updateFood: Function to update an existing food (returns Promise<boolean>)
+ * - deleteFood: Function to delete a food (returns Promise<boolean>)
+ * - refreshFoods: Function to refresh the foods list
+ * - loadMoreFoods: Function to load the next page of foods (returns Promise<void>)
+ */
 export function useFoods() {
 	const [foods, setFoods] = useState<Food[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
@@ -15,7 +28,7 @@ export function useFoods() {
 	const [hasMore, setHasMore] = useState(false);
 	const [error, setError] = useState<Error | null>(null);
 	const abortControllerRef = useRef<AbortController | null>(null);
-	const offsetRef = useRef(0);
+	const cursorRef = useRef<number | null>(null);
 
 	const fetchFoods = useCallback(async ({ append = false } = {}) => {
 		if (abortControllerRef.current) {
@@ -26,8 +39,10 @@ export function useFoods() {
 		abortControllerRef.current = abortController;
 
 		const params = new URLSearchParams();
-		params.set("limit", PAGE_SIZE.toString());
-		params.set("offset", append ? offsetRef.current.toString() : "0");
+		params.set("limit", PAGINATION.DEFAULT_PAGE_SIZE.toString());
+		if (append && cursorRef.current !== null) {
+			params.set("cursor", cursorRef.current.toString());
+		}
 		params.set("archived", "false");
 
 		try {
@@ -48,12 +63,24 @@ export function useFoods() {
 				const data = await response.json();
 				const items: Food[] = data.foods || data;
 
-				setHasMore(Boolean(data.hasMore ?? items.length === PAGE_SIZE));
+				setHasMore(
+					Boolean(
+						data.hasMore ?? items.length === PAGINATION.DEFAULT_PAGE_SIZE,
+					),
+				);
 
 				if (append) {
 					setFoods((prev) => [...prev, ...items]);
 				} else {
 					setFoods(items);
+					cursorRef.current = null;
+				}
+
+				if (items.length > 0) {
+					const lastItem = items[items.length - 1];
+					cursorRef.current = lastItem.addedAt;
+				} else {
+					cursorRef.current = null;
 				}
 			} else {
 				const errorData = await response.json().catch(() => ({}));
@@ -89,9 +116,16 @@ export function useFoods() {
 	const foodsRef = useRef<Food[]>([]);
 	useEffect(() => {
 		foodsRef.current = foods;
-		offsetRef.current = foods.length;
 	}, [foods]);
 
+	/**
+	 * Adds a new food to the database
+	 *
+	 * @param food - The food data to add
+	 * @returns Promise that resolves to true if successful, false otherwise
+	 * @throws Does not throw - errors are handled internally and displayed via toast
+	 * @remarks On failure: Shows error toast, logs error to console, returns false
+	 */
 	const addFood = useCallback(async (food: FoodInput): Promise<boolean> => {
 		try {
 			const response = await fetch("/api/foods", {
@@ -119,6 +153,14 @@ export function useFoods() {
 		}
 	}, []);
 
+	/**
+	 * Updates an existing food in the database
+	 *
+	 * @param id - The ID of the food to update
+	 * @param updates - Partial food data to update
+	 * @returns Promise that resolves to true if successful, false otherwise
+	 * @remarks On failure: Reverts optimistic update, shows error toast, logs error, returns false
+	 */
 	const updateFood = useCallback(
 		async (id: string, updates: Partial<Food>): Promise<boolean> => {
 			const prev = foodsRef.current;
@@ -154,6 +196,13 @@ export function useFoods() {
 		[],
 	);
 
+	/**
+	 * Deletes a food from the database
+	 *
+	 * @param id - The ID of the food to delete
+	 * @returns Promise that resolves to true if successful, false otherwise
+	 * @remarks On failure: Shows error toast, logs error to console, returns false
+	 */
 	const deleteFood = useCallback(async (id: string): Promise<boolean> => {
 		const foodToDelete = foodsRef.current.find((f) => f.id === id);
 		const foodName = foodToDelete?.name ?? "Food";
@@ -182,10 +231,25 @@ export function useFoods() {
 		}
 	}, []);
 
+	/**
+	 * Refreshes the foods list by fetching from the beginning
+	 *
+	 * @returns Promise that resolves when the refresh is complete
+	 */
 	const refreshFoods = useCallback(async () => {
 		await fetchFoods({ append: false });
 	}, [fetchFoods]);
 
+	/**
+	 * Loads the next page of foods using cursor-based pagination
+	 *
+	 * @returns Promise<void> - Does not return a value
+	 * @remarks
+	 * - Only fetches if hasMore is true and isFetchingMore is false
+	 * - Uses cursor-based pagination with createdAt timestamp
+	 * - Appends new items to the existing foods array
+	 * - Automatically updates hasMore based on response
+	 */
 	const loadMoreFoods = useCallback(async () => {
 		if (!hasMore || isFetchingMore) return;
 		await fetchFoods({ append: true });

@@ -24,3 +24,8 @@ export const SUCCESS_MESSAGES = {
 			? `Deleted ${name} successfully!`
 			: `${resource} deleted successfully!`,
 } as const;
+
+export const PAGINATION = {
+	DEFAULT_PAGE_SIZE: 100,
+	MAX_PAGE_SIZE: 500,
+} as const;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { PAGINATION } from "@/lib/constants";
 import type { Food, FoodSummary } from "@/lib/types";
 
 let cachedFoods: FoodSummary[] | null = null;
@@ -17,7 +18,9 @@ async function fetchFoodSummaries(): Promise<FoodSummary[]> {
 
 	fetchPromise = (async () => {
 		try {
-			const response = await fetch("/api/foods?archived=false&limit=500");
+			const response = await fetch(
+				`/api/foods?archived=false&limit=${PAGINATION.MAX_PAGE_SIZE}`,
+			);
 			if (response.ok) {
 				const data = await response.json();
 				const items: Food[] = data.foods || data;

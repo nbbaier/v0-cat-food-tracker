@@ -1,18 +1,20 @@
-import { desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, lt, sql } from "drizzle-orm";
 import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { auth } from "@/lib/auth";
+import { PAGINATION } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { foods, meals } from "@/lib/db/schema";
 import { foodInputSchema } from "@/lib/validations";
 
 /**
- * GET /api/foods - Fetch foods with pagination support
+ * GET /api/foods - Fetch foods with cursor-based pagination support
  *
  * Query parameters:
- * - limit: Number of items to return (default: 300, max: 500)
- * - offset: Number of items to skip (default: 0)
+ * - limit: Number of items to return (default: 100, max: 500)
+ * - cursor: Timestamp (milliseconds) to fetch items created before this time (optional)
+ * - archived: Filter by archived status ("true" | "false", optional)
  *
  * Response format:
  * {
@@ -20,14 +22,10 @@ import { foodInputSchema } from "@/lib/validations";
  *   hasMore: boolean  // Indicates if more results are available
  * }
  *
- * BREAKING CHANGE: The response format changed from returning a flat array (Food[])
- * to an object with `foods` and `hasMore` properties. The hooks provide backward
- * compatibility via `data.foods || data`, but direct API consumers must be updated.
- * Consider API versioning or query parameters if external consumers exist.
- *
- * Note: Frontend pagination UI is not yet implemented. Currently, the frontend
- * only fetches the first page (default limit). Future work should implement
- * infinite scroll or "Load More" functionality to leverage pagination.
+ * Cursor-based pagination:
+ * - First request: Don't include cursor parameter
+ * - Subsequent requests: Use the smallest `addedAt` timestamp from previous results as cursor
+ * - Results are ordered by createdAt DESC (newest first)
  */
 export async function GET(request: NextRequest) {
 	const session = await auth.api.getSession({ headers: await headers() });
@@ -39,24 +37,17 @@ export async function GET(request: NextRequest) {
 		const rawLimit = Number.parseInt(searchParams.get("limit") ?? "", 10);
 		const limit = Math.max(
 			1,
-			Math.min(Number.isFinite(rawLimit) ? rawLimit : 300, 500),
+			Math.min(
+				Number.isFinite(rawLimit) ? rawLimit : PAGINATION.DEFAULT_PAGE_SIZE,
+				PAGINATION.MAX_PAGE_SIZE,
+			),
 		);
-		const rawOffset = Number.parseInt(searchParams.get("offset") ?? "", 10);
-		const offset = Math.max(0, Number.isFinite(rawOffset) ? rawOffset : 0);
-
-		const mealCounts = db.$with("meal_counts").as(
-			db
-				.select({
-					foodId: meals.foodId,
-					totalCount: sql<number>`count(*)`.as("total_count"),
-					commentCount:
-						sql<number>`count(*) filter (where ${meals.notes} is not null and ${meals.notes} <> '')`.as(
-							"comment_count",
-						),
-				})
-				.from(meals)
-				.groupBy(meals.foodId),
-		);
+		const rawCursor = searchParams.get("cursor");
+		const cursor = rawCursor ? Number.parseInt(rawCursor, 10) : null;
+		const cursorDate =
+			cursor && Number.isFinite(cursor) && cursor > 0
+				? new Date(cursor).toISOString()
+				: null;
 
 		const archivedParam = searchParams.get("archived");
 		let archivedFilter: boolean | null = null;
@@ -67,6 +58,38 @@ export async function GET(request: NextRequest) {
 			} else if (normalized === "false") {
 				archivedFilter = false;
 			}
+		}
+
+		const mealCountsSubquery = db
+			.select({
+				foodId: meals.foodId,
+				totalCount: sql<number>`count(*)`.as("total_count"),
+				commentCount:
+					sql<number>`count(*) filter (where ${meals.notes} is not null and ${meals.notes} <> '')`.as(
+						"comment_count",
+					),
+			})
+			.from(meals)
+			.innerJoin(foods, eq(meals.foodId, foods.id))
+			.where(
+				archivedFilter !== null
+					? eq(foods.archived, archivedFilter)
+					: undefined,
+			)
+			.groupBy(meals.foodId);
+
+		const mealCountsCTEBuilder = db.$with("meal_counts");
+		const _mealCountsTypeHelper = mealCountsCTEBuilder.as(mealCountsSubquery);
+		type MealCountsCTE = typeof _mealCountsTypeHelper;
+
+		let mealCounts: MealCountsCTE;
+		try {
+			mealCounts = mealCountsCTEBuilder.as(mealCountsSubquery);
+		} catch (error) {
+			console.error("[v0] GET /api/foods CTE construction error:", error);
+			throw new Error(
+				`Failed to construct meal_counts CTE: ${error instanceof Error ? error.message : String(error)}`,
+			);
 		}
 
 		const baseFoodsQuery = db
@@ -94,17 +117,27 @@ export async function GET(request: NextRequest) {
 			.from(foods)
 			.leftJoin(mealCounts, eq(mealCounts.foodId, foods.id));
 
+		const whereConditions = [];
+		if (archivedFilter !== null) {
+			whereConditions.push(eq(foods.archived, archivedFilter));
+		}
+		if (cursorDate) {
+			whereConditions.push(lt(foods.createdAt, cursorDate));
+		}
+
 		const foodsQuery =
-			archivedFilter !== null
-				? baseFoodsQuery.where(eq(foods.archived, archivedFilter))
+			whereConditions.length > 0
+				? baseFoodsQuery.where(and(...whereConditions))
 				: baseFoodsQuery;
 
 		const allFoods = await foodsQuery
 			.orderBy(desc(foods.createdAt))
-			.limit(limit)
-			.offset(offset);
+			.limit(limit + 1);
 
-		const formattedFoods = allFoods.map((food) => ({
+		const hasMore = allFoods.length > limit;
+		const foodsToReturn = hasMore ? allFoods.slice(0, limit) : allFoods;
+
+		const formattedFoods = foodsToReturn.map((food) => ({
 			id: food.id,
 			name: food.name,
 			preference: food.preference,
@@ -112,10 +145,10 @@ export async function GET(request: NextRequest) {
 			inventoryQuantity: food.inventoryQuantity,
 			archived: Boolean(food.archived),
 			addedAt: new Date(food.createdAt).getTime(),
-			phosphorusDmb: Number(food.phosphorusDmb),
-			proteinDmb: Number(food.proteinDmb),
-			fatDmb: Number(food.fatDmb),
-			fiberDmb: Number(food.fiberDmb),
+			phosphorusDmb: food.phosphorusDmb,
+			proteinDmb: food.proteinDmb,
+			fatDmb: food.fatDmb,
+			fiberDmb: food.fiberDmb,
 			mealCount: Number(food.mealCount),
 			mealCommentCount: Number(food.mealCommentCount),
 		}));
@@ -123,7 +156,7 @@ export async function GET(request: NextRequest) {
 		return NextResponse.json(
 			{
 				foods: formattedFoods,
-				hasMore: formattedFoods.length === limit,
+				hasMore,
 			},
 			{
 				headers: {
@@ -189,10 +222,10 @@ export async function POST(request: NextRequest) {
 			inventoryQuantity: newFood.inventoryQuantity,
 			archived: Boolean(newFood.archived),
 			addedAt: new Date(newFood.createdAt).getTime(),
-			phosphorusDmb: Number(newFood.phosphorusDmb),
-			proteinDmb: Number(newFood.proteinDmb),
-			fatDmb: Number(newFood.fatDmb),
-			fiberDmb: Number(newFood.fiberDmb),
+			phosphorusDmb: newFood.phosphorusDmb,
+			proteinDmb: newFood.proteinDmb,
+			fatDmb: newFood.fatDmb,
+			fiberDmb: newFood.fiberDmb,
 		};
 
 		return NextResponse.json(formattedFood, { status: 201 });
