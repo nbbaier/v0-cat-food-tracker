@@ -7,6 +7,23 @@ import { db } from "@/lib/db";
 import { foods, meals } from "@/lib/db/schema";
 import { foodInputSchema } from "@/lib/validations";
 
+/**
+ * GET /api/foods - Fetch foods with pagination support
+ *
+ * Query parameters:
+ * - limit: Number of items to return (default: 50, max: 200)
+ * - offset: Number of items to skip (default: 0)
+ *
+ * Response format:
+ * {
+ *   foods: Food[],
+ *   hasMore: boolean  // Indicates if more results are available
+ * }
+ *
+ * Note: Frontend pagination UI is not yet implemented. Currently, the frontend
+ * only fetches the first page (default limit). Future work should implement
+ * infinite scroll or "Load More" functionality to leverage pagination.
+ */
 export async function GET(request: NextRequest) {
 	const session = await auth.api.getSession({ headers: await headers() });
 	if (!session) {

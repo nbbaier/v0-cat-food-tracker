@@ -93,26 +93,40 @@ export function useFoods() {
 		}
 	}, []);
 
-	const updateFood = useCallback(async (id: string, updates: Partial<Food>) => {
-		const prev = foodsRef.current;
-		setFoods((p) => p.map((f) => (f.id === id ? { ...f, ...updates } : f)));
+	const updateFood = useCallback(
+		async (id: string, updates: Partial<Food>): Promise<boolean> => {
+			const prev = foodsRef.current;
+			setFoods((p) => p.map((f) => (f.id === id ? { ...f, ...updates } : f)));
 
-		try {
-			const response = await fetch(`/api/foods/${id}`, {
-				method: "PATCH",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(updates),
-			});
+			try {
+				const response = await fetch(`/api/foods/${id}`, {
+					method: "PATCH",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify(updates),
+				});
 
-			if (!response.ok) {
+				if (response.ok) {
+					invalidateFoodSummariesCache();
+					toast.success(SUCCESS_MESSAGES.UPDATED("Food"));
+					return true;
+				}
+
 				setFoods(prev);
+				const errorData = await response.json().catch(() => ({}));
+				const errorMessage =
+					errorData.error ?? ERROR_MESSAGES.UPDATE_FAILED("food");
+				toast.error(errorMessage);
+				console.error("Failed to update food:", errorData);
+				return false;
+			} catch (err) {
+				setFoods(prev);
+				toast.error(ERROR_MESSAGES.CONNECTION_ERROR);
+				console.error("Error updating food:", err);
+				return false;
 			}
-		} catch (err) {
-			setFoods(prev);
-			toast.error(ERROR_MESSAGES.CONNECTION_ERROR);
-			console.error("Error updating food:", err);
-		}
-	}, []);
+		},
+		[],
+	);
 
 	const deleteFood = useCallback(async (id: string): Promise<boolean> => {
 		const foodToDelete = foodsRef.current.find((f) => f.id === id);

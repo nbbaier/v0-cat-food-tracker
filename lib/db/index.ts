@@ -9,8 +9,9 @@ if (!connectionString) {
 
 const pool = new Pool({
 	connectionString: connectionString,
-	max: 5,
-	idleTimeoutMillis: 0,
+	max: 10,
+	idleTimeoutMillis: 30000, // Close idle connections after 30 seconds
+	connectionTimeoutMillis: 10000, // Fail fast if DB is overloaded
 });
 
 export const db = drizzle({ client: pool });
