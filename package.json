@@ -4,8 +4,8 @@
 	"private": true,
 	"packageManager": "bun@1",
 	"engines": {
- 		"bun": ">=1.0.0"
- 	},
+		"bun": ">=1.0.0"
+	},
 	"scripts": {
 		"build": "next build",
 		"dev": "next dev",
