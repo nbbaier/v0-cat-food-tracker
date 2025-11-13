@@ -1,10 +1,10 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { authClient } from "@/lib/auth-client";
 import AuthButtons from "@/components/auth/auth-buttons";
 import UserDropdown from "@/components/auth/user-dropdown";
+import { Button } from "@/components/ui/button";
+import { authClient } from "@/lib/auth-client";
 
 export default function UserButton() {
 	const session = authClient.useSession();

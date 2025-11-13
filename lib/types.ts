@@ -3,24 +3,24 @@
  */
 
 export type Food = {
-    id: string;
-    name: string;
-    preference: "likes" | "dislikes" | "unknown";
-    notes: string;
-    inventoryQuantity: number;
-    archived?: boolean;
-    addedAt: number;
-    phosphorusDmb?: number;
-    proteinDmb?: number;
-    fatDmb?: number;
-    fiberDmb?: number;
-    mealCount?: number;
-    mealCommentCount?: number;
+	id: string;
+	name: string;
+	preference: "likes" | "dislikes" | "unknown";
+	notes: string;
+	inventoryQuantity: number;
+	archived?: boolean;
+	addedAt: number;
+	phosphorusDmb?: number;
+	proteinDmb?: number;
+	fatDmb?: number;
+	fiberDmb?: number;
+	mealCount?: number;
+	mealCommentCount?: number;
 };
 
 export type FoodInput = Omit<
-    Food,
-    "id" | "addedAt" | "mealCount" | "mealCommentCount"
+	Food,
+	"id" | "addedAt" | "mealCount" | "mealCommentCount"
 >;
 
 export type FoodUpdate = Partial<
@@ -41,7 +41,13 @@ export type Meal = {
 	updatedAt: string;
 };
 
-export type MealInput = Omit<Meal, "id" | "food" | "createdAt" | "updatedAt">;
+export type MealInput = {
+	mealDate: string;
+	mealTime: "morning" | "evening";
+	foodId: string;
+	amount: string;
+	notes?: string;
+};
 
 export type SortOption = "name" | "preference" | "inventory" | "date";
 

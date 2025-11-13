@@ -2,11 +2,11 @@
 
 import { HelpCircle, ThumbsDown, ThumbsUp, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { EditFoodDialog } from "@/components/foods/edit-food-dialog";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Food } from "@/lib/types";
-import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import { EditFoodDialog } from "@/components/foods/edit-food-dialog";
 
 type FoodTableProps = {
 	foods: Food[];

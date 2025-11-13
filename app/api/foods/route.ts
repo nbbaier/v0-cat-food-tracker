@@ -94,20 +94,21 @@ export async function POST(request: NextRequest) {
 			fiberDmb,
 		} = validatedData;
 
-		const [newFood] = await db
-			.insert(foods)
-			.values({
-				name,
-				preference,
-				notes: notes ?? "",
-				inventoryQuantity: inventoryQuantity ?? 0,
-				archived: archived ?? false,
-				phosphorusDmb,
-				proteinDmb,
-				fatDmb,
-				fiberDmb,
-			})
-			.returning();
+		// Build values object with proper typing
+		// Nutrition fields are optional - if not provided, DB defaults (0) will be used
+		const insertValues = {
+			name,
+			preference,
+			notes: notes ?? "",
+			inventoryQuantity: inventoryQuantity ?? 0,
+			archived: archived ?? false,
+			...(phosphorusDmb !== undefined && { phosphorusDmb }),
+			...(proteinDmb !== undefined && { proteinDmb }),
+			...(fatDmb !== undefined && { fatDmb }),
+			...(fiberDmb !== undefined && { fiberDmb }),
+		};
+
+		const [newFood] = await db.insert(foods).values(insertValues).returning();
 
 		const formattedFood = {
 			id: newFood.id,

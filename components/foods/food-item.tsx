@@ -2,6 +2,8 @@
 
 import { Edit, MessageSquare, Package, Trash2, Utensils } from "lucide-react";
 import React, { useState } from "react";
+import { EditFoodDialog } from "@/components/foods/edit-food-dialog";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { NutritionDisplay } from "@/components/shared/nutrition-display";
 import {
 	getPreferenceColor,
@@ -17,8 +19,6 @@ import {
 	ItemTitle,
 } from "@/components/ui/item";
 import type { Food } from "@/lib/types";
-import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import { EditFoodDialog } from "@/components/foods/edit-food-dialog";
 
 type FoodItemProps = {
 	food: Food;

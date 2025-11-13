@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FoodFilters } from "@/components/foods/food-filters";
 import { FoodList } from "@/components/foods/food-list";
-import { useQuickAddDialog } from "@/components/shared/quick-add-context";
 import { QuickAddDialog } from "@/components/layout/quick-add-dialog";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { useQuickAddDialog } from "@/components/shared/quick-add-context";
 import { useFoods } from "@/hooks/use-foods";
 import { useMealMutations } from "@/hooks/use-meal-mutations";
 import type {
@@ -14,7 +15,6 @@ import type {
 	MealInput,
 	SortOption,
 } from "@/lib/types";
-import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 
 export function FoodsPageClient() {
 	const { foods, isLoading, addFood, updateFood, deleteFood } = useFoods();
@@ -54,8 +54,8 @@ export function FoodsPageClient() {
 	};
 
 	const handleAddMeal = async (meal: MealInput) => {
-		const success = await addMeal(meal);
-		if (success) {
+		const result = await addMeal(meal);
+		if (result.success) {
 			setIsQuickAddOpen(false);
 		}
 	};

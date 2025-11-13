@@ -11,6 +11,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -24,8 +25,10 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useFoodSummaries } from "@/hooks/use-food-summaries";
+import type { MealMutationResult } from "@/hooks/use-meal-mutations";
 import type { FoodInput, MealInput } from "@/lib/types";
 import { getDateString } from "@/lib/utils";
+import { mealInputSchema } from "@/lib/validations";
 
 type QuickAddDialogProps = {
 	open: boolean;
@@ -51,10 +54,12 @@ export function QuickAddDialog({
 	const [foodId, setFoodId] = useState("");
 	const [amount, setAmount] = useState("");
 	const [mealNotes, setMealNotes] = useState("");
+	const [errors, setErrors] = useState<Record<string, string>>({});
 
 	useEffect(() => {
 		if (open) {
 			setActiveTab(defaultTab);
+			setErrors({});
 		}
 	}, [open, defaultTab]);
 
@@ -73,22 +78,61 @@ export function QuickAddDialog({
 
 	const handleMealSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		if (!mealDate || !mealTime || !foodId || !amount.trim()) return;
+		setErrors({});
+
+		const mealData = {
+			mealDate,
+			mealTime,
+			foodId,
+			amount: amount.trim(),
+			notes: mealNotes.trim() || undefined,
+		};
+
+		const result = mealInputSchema.safeParse(mealData);
+		if (!result.success) {
+			const fieldErrors: Record<string, string> = {};
+			for (const issue of result.error.issues) {
+				const field = issue.path[0] as string;
+				fieldErrors[field] = issue.message;
+			}
+			setErrors(fieldErrors);
+			return;
+		}
 
 		try {
-			await onAddMeal({
-				mealDate,
-				mealTime,
-				foodId,
-				amount: amount.trim(),
-				notes: mealNotes.trim(),
-			});
+			const response = await onAddMeal(result.data as MealInput);
 
-			setMealDate(getDateString());
-			setMealTime("morning");
-			setFoodId("");
-			setAmount("");
-			setMealNotes("");
+			if (
+				response !== undefined &&
+				response !== null &&
+				typeof response === "object" &&
+				"success" in response
+			) {
+				const mealResult = response as MealMutationResult;
+				if (
+					!mealResult.success &&
+					"errors" in mealResult &&
+					mealResult.errors
+				) {
+					setErrors(mealResult.errors);
+					return;
+				}
+				if (mealResult.success) {
+					setMealDate(getDateString());
+					setMealTime("morning");
+					setFoodId("");
+					setAmount("");
+					setMealNotes("");
+					setErrors({});
+				}
+			} else {
+				setMealDate(getDateString());
+				setMealTime("morning");
+				setFoodId("");
+				setAmount("");
+				setMealNotes("");
+				setErrors({});
+			}
 		} catch (error) {
 			toast.error(
 				error instanceof Error
@@ -135,18 +179,38 @@ export function QuickAddDialog({
 										id="mealDate"
 										type="date"
 										value={mealDate}
-										onChange={(e) => setMealDate(e.target.value)}
+										onChange={(e) => {
+											setMealDate(e.target.value);
+											if (errors.mealDate) {
+												setErrors((prev) => {
+													const next = { ...prev };
+													delete next.mealDate;
+													return next;
+												});
+											}
+										}}
 										autoFocus
+										aria-invalid={!!errors.mealDate}
 									/>
+									{errors.mealDate && (
+										<FieldError>{errors.mealDate}</FieldError>
+									)}
 								</div>
 
 								<div className="space-y-3">
 									<Label>Meal Time</Label>
 									<RadioGroup
 										value={mealTime}
-										onValueChange={(v) =>
-											setMealTime(v as "morning" | "evening")
-										}
+										onValueChange={(v) => {
+											setMealTime(v as "morning" | "evening");
+											if (errors.mealTime) {
+												setErrors((prev) => {
+													const next = { ...prev };
+													delete next.mealTime;
+													return next;
+												});
+											}
+										}}
 									>
 										<div className="flex items-center space-x-2">
 											<RadioGroupItem value="morning" id="quick-morning" />
@@ -161,16 +225,28 @@ export function QuickAddDialog({
 											</Label>
 										</div>
 									</RadioGroup>
+									{errors.mealTime && (
+										<FieldError>{errors.mealTime}</FieldError>
+									)}
 								</div>
 
 								<div className="space-y-2">
 									<Label htmlFor="food">Food</Label>
 									<Select
 										value={foodId}
-										onValueChange={setFoodId}
+										onValueChange={(value) => {
+											setFoodId(value);
+											if (errors.foodId) {
+												setErrors((prev) => {
+													const next = { ...prev };
+													delete next.foodId;
+													return next;
+												});
+											}
+										}}
 										disabled={isLoadingFoods}
 									>
-										<SelectTrigger id="food">
+										<SelectTrigger id="food" aria-invalid={!!errors.foodId}>
 											<SelectValue
 												placeholder={
 													isLoadingFoods ? "Loading foods..." : "Select a food"
@@ -195,6 +271,7 @@ export function QuickAddDialog({
 											)}
 										</SelectContent>
 									</Select>
+									{errors.foodId && <FieldError>{errors.foodId}</FieldError>}
 								</div>
 
 								<div className="space-y-2">
@@ -203,8 +280,19 @@ export function QuickAddDialog({
 										id="amount"
 										placeholder='e.g., "1 can", "1/2 cup", "50g"'
 										value={amount}
-										onChange={(e) => setAmount(e.target.value)}
+										onChange={(e) => {
+											setAmount(e.target.value);
+											if (errors.amount) {
+												setErrors((prev) => {
+													const next = { ...prev };
+													delete next.amount;
+													return next;
+												});
+											}
+										}}
+										aria-invalid={!!errors.amount}
 									/>
+									{errors.amount && <FieldError>{errors.amount}</FieldError>}
 								</div>
 
 								<div className="space-y-2">
@@ -213,9 +301,20 @@ export function QuickAddDialog({
 										id="mealNotes"
 										placeholder="Any observations..."
 										value={mealNotes}
-										onChange={(e) => setMealNotes(e.target.value)}
+										onChange={(e) => {
+											setMealNotes(e.target.value);
+											if (errors.notes) {
+												setErrors((prev) => {
+													const next = { ...prev };
+													delete next.notes;
+													return next;
+												});
+											}
+										}}
 										rows={3}
+										aria-invalid={!!errors.notes}
 									/>
+									{errors.notes && <FieldError>{errors.notes}</FieldError>}
 								</div>
 							</div>
 
@@ -227,12 +326,7 @@ export function QuickAddDialog({
 								>
 									Cancel
 								</Button>
-								<Button
-									type="submit"
-									disabled={!mealDate || !mealTime || !foodId || !amount.trim()}
-								>
-									Log Meal
-								</Button>
+								<Button type="submit">Log Meal</Button>
 							</div>
 						</form>
 					</TabsContent>
