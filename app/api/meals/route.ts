@@ -7,12 +7,21 @@ import { db } from "@/lib/db";
 import { foods, meals } from "@/lib/db/schema";
 import { mealInputSchema } from "@/lib/validations";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
 	const session = await auth.api.getSession({ headers: await headers() });
 	if (!session) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 	try {
+		const { searchParams } = new URL(request.url);
+		const rawLimit = Number.parseInt(searchParams.get("limit") ?? "", 10);
+		const limit = Math.max(
+			1,
+			Math.min(Number.isFinite(rawLimit) ? rawLimit : 100, 500),
+		);
+		const rawOffset = Number.parseInt(searchParams.get("offset") ?? "", 10);
+		const offset = Math.max(0, Number.isFinite(rawOffset) ? rawOffset : 0);
+
 		const allMeals = await db
 			.select({
 				id: meals.id,
@@ -31,7 +40,9 @@ export async function GET() {
 			})
 			.from(meals)
 			.leftJoin(foods, eq(meals.foodId, foods.id))
-			.orderBy(desc(meals.mealDate), asc(meals.mealTime));
+			.orderBy(desc(meals.mealDate), asc(meals.mealTime))
+			.limit(limit)
+			.offset(offset);
 
 		const formattedMeals = allMeals.map((meal) => ({
 			id: meal.id,
@@ -45,7 +56,17 @@ export async function GET() {
 			updatedAt: meal.updatedAt,
 		}));
 
-		return NextResponse.json(formattedMeals);
+		return NextResponse.json(
+			{
+				meals: formattedMeals,
+				hasMore: formattedMeals.length === limit,
+			},
+			{
+				headers: {
+					"Cache-Control": "private, max-age=30, stale-while-revalidate=300",
+				},
+			},
+		);
 	} catch (error) {
 		console.error("[v0] GET /api/meals error:", error);
 		return NextResponse.json(

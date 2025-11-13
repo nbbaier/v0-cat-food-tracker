@@ -29,7 +29,7 @@ export function useMeals() {
 
 			if (response.ok) {
 				const data = await response.json();
-				setMeals(data);
+				setMeals(data.meals || data);
 			} else {
 				const errorData = await response.json().catch(() => ({}));
 				const errorMessage =
