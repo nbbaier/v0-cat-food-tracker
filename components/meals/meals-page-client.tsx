@@ -7,6 +7,7 @@ import { MealCard } from "@/components/meals/meal-card";
 import { MealFilters } from "@/components/meals/meal-filters";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { useQuickAddDialog } from "@/components/shared/quick-add-context";
+import { Button } from "@/components/ui/button";
 import { useFoodMutations } from "@/hooks/use-food-mutations";
 import { useMeals } from "@/hooks/use-meals";
 import type { FoodInput, Meal, MealInput } from "@/lib/types";
@@ -23,7 +24,15 @@ type MealTimeFilter = "all" | "morning" | "evening";
 type MealSortOption = "date" | "time" | "food";
 
 export function MealsPageClient() {
-	const { meals, isLoading, addMeal, deleteMeal } = useMeals();
+	const {
+		meals,
+		isLoading,
+		isFetchingMore,
+		hasMore,
+		addMeal,
+		deleteMeal,
+		loadMoreMeals,
+	} = useMeals();
 	const { addFood } = useFoodMutations();
 	const { registerDialog } = useQuickAddDialog();
 	const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
@@ -227,6 +236,17 @@ export function MealsPageClient() {
 								</div>
 							);
 						})}
+					</div>
+				)}
+				{hasMore && (
+					<div className="flex justify-center mt-6">
+						<Button
+							variant="outline"
+							onClick={loadMoreMeals}
+							disabled={isFetchingMore}
+						>
+							{isFetchingMore ? "Loading..." : "Load More"}
+						</Button>
 					</div>
 				)}
 			</main>

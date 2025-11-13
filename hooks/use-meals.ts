@@ -5,13 +5,18 @@ import { toast } from "sonner";
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "@/lib/constants";
 import type { Meal, MealInput } from "@/lib/types";
 
+const PAGE_SIZE = 100;
+
 export function useMeals() {
 	const [meals, setMeals] = useState<Meal[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
+	const [isFetchingMore, setIsFetchingMore] = useState(false);
+	const [hasMore, setHasMore] = useState(false);
 	const [error, setError] = useState<Error | null>(null);
 	const abortControllerRef = useRef<AbortController | null>(null);
+	const offsetRef = useRef(0);
 
-	const fetchMeals = useCallback(async () => {
+	const fetchMeals = useCallback(async ({ append = false } = {}) => {
 		if (abortControllerRef.current) {
 			abortControllerRef.current.abort();
 		}
@@ -19,9 +24,19 @@ export function useMeals() {
 		const abortController = new AbortController();
 		abortControllerRef.current = abortController;
 
+		const params = new URLSearchParams();
+		params.set("limit", PAGE_SIZE.toString());
+		params.set("offset", append ? offsetRef.current.toString() : "0");
+
 		try {
-			setError(null);
-			const response = await fetch("/api/meals", {
+			if (!append) {
+				setError(null);
+				setIsLoading(true);
+			} else {
+				setIsFetchingMore(true);
+			}
+
+			const response = await fetch(`/api/meals?${params.toString()}`, {
 				signal: abortController.signal,
 			});
 
@@ -29,7 +44,15 @@ export function useMeals() {
 
 			if (response.ok) {
 				const data = await response.json();
-				setMeals(data.meals || data);
+				const items: Meal[] = data.meals || data;
+
+				setHasMore(Boolean(data.hasMore ?? items.length === PAGE_SIZE));
+
+				if (append) {
+					setMeals((prev) => [...prev, ...items]);
+				} else {
+					setMeals(items);
+				}
 			} else {
 				const errorData = await response.json().catch(() => ({}));
 				const errorMessage =
@@ -47,6 +70,7 @@ export function useMeals() {
 		} finally {
 			if (!abortController.signal.aborted) {
 				setIsLoading(false);
+				setIsFetchingMore(false);
 			}
 		}
 	}, []);
@@ -59,6 +83,10 @@ export function useMeals() {
 			}
 		};
 	}, [fetchMeals]);
+
+	useEffect(() => {
+		offsetRef.current = meals.length;
+	}, [meals]);
 
 	const addMeal = useCallback(
 		async (
@@ -129,15 +157,23 @@ export function useMeals() {
 	}, []);
 
 	const refreshMeals = useCallback(async () => {
-		await fetchMeals();
+		await fetchMeals({ append: false });
 	}, [fetchMeals]);
+
+	const loadMoreMeals = useCallback(async () => {
+		if (!hasMore || isFetchingMore) return;
+		await fetchMeals({ append: true });
+	}, [fetchMeals, hasMore, isFetchingMore]);
 
 	return {
 		meals,
 		isLoading,
+		isFetchingMore,
 		error,
+		hasMore,
 		addMeal,
 		deleteMeal,
 		refreshMeals,
+		loadMoreMeals,
 	};
 }
