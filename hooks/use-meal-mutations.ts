@@ -19,7 +19,7 @@ export function useMealMutations() {
 				return true;
 			}
 			const errorData = await response.json().catch(() => ({}));
-			const errorMessage = errorData.error || ERROR_MESSAGES.ADD_FAILED("meal");
+			const errorMessage = errorData.error ?? ERROR_MESSAGES.ADD_FAILED("meal");
 			toast.error(errorMessage);
 			console.error("Failed to add meal:", errorData);
 			return false;

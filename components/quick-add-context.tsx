@@ -10,7 +10,9 @@ import {
 } from "react";
 
 type QuickAddDialogContextType = {
-	registerDialog: (openHandler: (defaultTab?: "food" | "meal") => void) => void;
+	registerDialog: (
+		openHandler: (defaultTab?: "food" | "meal") => void,
+	) => () => void;
 	openDialog: (defaultTab?: "food" | "meal") => void;
 };
 
@@ -26,6 +28,11 @@ export function QuickAddDialogProvider({ children }: { children: ReactNode }) {
 	const registerDialog = useCallback(
 		(handler: (defaultTab?: "food" | "meal") => void) => {
 			openHandlerRef.current = handler;
+			return () => {
+				if (openHandlerRef.current === handler) {
+					openHandlerRef.current = null;
+				}
+			};
 		},
 		[],
 	);

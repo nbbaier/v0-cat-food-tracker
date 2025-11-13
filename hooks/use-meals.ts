@@ -33,7 +33,7 @@ export function useMeals() {
 			} else {
 				const errorData = await response.json().catch(() => ({}));
 				const errorMessage =
-					errorData.error || ERROR_MESSAGES.FETCH_FAILED("meals");
+					errorData.error ?? ERROR_MESSAGES.FETCH_FAILED("meals");
 				toast.error(errorMessage);
 				setError(new Error(errorMessage));
 				console.error("Failed to fetch meals:", errorData);
@@ -75,7 +75,7 @@ export function useMeals() {
 				return true;
 			}
 			const errorData = await response.json().catch(() => ({}));
-			const errorMessage = errorData.error || ERROR_MESSAGES.ADD_FAILED("meal");
+			const errorMessage = errorData.error ?? ERROR_MESSAGES.ADD_FAILED("meal");
 			toast.error(errorMessage);
 			console.error("Failed to add meal:", errorData);
 			return false;
@@ -99,7 +99,7 @@ export function useMeals() {
 			}
 			const errorData = await response.json().catch(() => ({}));
 			const errorMessage =
-				errorData.error || ERROR_MESSAGES.DELETE_FAILED("meal");
+				errorData.error ?? ERROR_MESSAGES.DELETE_FAILED("meal");
 			toast.error(errorMessage);
 			console.error("Failed to delete meal:", errorData);
 			return false;

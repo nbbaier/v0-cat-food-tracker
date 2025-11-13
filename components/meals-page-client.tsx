@@ -34,9 +34,9 @@ export function MealsPageClient() {
 	registerDialogRef.current = registerDialog;
 
 	useEffect(() => {
-		registerDialogRef.current(handleOpenDialog);
+		const unregister = registerDialogRef.current(handleOpenDialog);
 		return () => {
-			registerDialogRef.current(() => {});
+			unregister();
 		};
 	}, [handleOpenDialog]);
 

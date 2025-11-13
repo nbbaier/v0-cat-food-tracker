@@ -34,7 +34,7 @@ export function useFoods() {
 			} else {
 				const errorData = await response.json().catch(() => ({}));
 				const errorMessage =
-					errorData.error || ERROR_MESSAGES.FETCH_FAILED("foods");
+					errorData.error ?? ERROR_MESSAGES.FETCH_FAILED("foods");
 				toast.error(errorMessage);
 				setError(new Error(errorMessage));
 				console.error("Failed to fetch foods:", errorData);
@@ -77,7 +77,7 @@ export function useFoods() {
 				return true;
 			}
 			const errorData = await response.json().catch(() => ({}));
-			const errorMessage = errorData.error || ERROR_MESSAGES.ADD_FAILED("food");
+			const errorMessage = errorData.error ?? ERROR_MESSAGES.ADD_FAILED("food");
 			toast.error(errorMessage);
 			console.error("Failed to add food:", errorData);
 			return false;
@@ -115,7 +115,7 @@ export function useFoods() {
 				setFoods(previousFoods);
 				const errorData = await response.json().catch(() => ({}));
 				const errorMessage =
-					errorData.error || ERROR_MESSAGES.UPDATE_FAILED("food");
+					errorData.error ?? ERROR_MESSAGES.UPDATE_FAILED("food");
 				toast.error(errorMessage);
 				console.error("Failed to update food:", errorData);
 				return false;
@@ -148,7 +148,7 @@ export function useFoods() {
 				}
 				const errorData = await response.json().catch(() => ({}));
 				const errorMessage =
-					errorData.error || ERROR_MESSAGES.DELETE_FAILED("food");
+					errorData.error ?? ERROR_MESSAGES.DELETE_FAILED("food");
 				toast.error(errorMessage);
 				console.error("Failed to delete food:", errorData);
 				return false;

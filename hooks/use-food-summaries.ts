@@ -48,6 +48,7 @@ export function useFoodSummaries(shouldFetch: boolean) {
 
 	const refresh = useCallback(() => {
 		cachedFoods = null;
+		fetchPromise = null;
 		if (shouldFetch) {
 			setIsLoading(true);
 			fetchFoodSummaries()
