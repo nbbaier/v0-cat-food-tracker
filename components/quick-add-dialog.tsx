@@ -1,7 +1,7 @@
 "use client";
 
-import type React from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { FoodForm } from "@/components/food-form";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,13 +23,15 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import type { FoodInput, FoodSummary, MealInput } from "@/lib/types";
+import { useFoodSummaries } from "@/hooks/use-food-summaries";
+import type { FoodInput, MealInput } from "@/lib/types";
+import { getDateString } from "@/lib/utils";
 
 type QuickAddDialogProps = {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	onAddFood: (food: FoodInput) => void;
-	onAddMeal: (meal: MealInput) => void;
+	onAddFood: (food: FoodInput) => void | Promise<void>;
+	onAddMeal: (meal: MealInput) => void | Promise<void>;
 	defaultTab?: "food" | "meal";
 };
 
@@ -42,62 +44,59 @@ export function QuickAddDialog({
 }: QuickAddDialogProps) {
 	const [activeTab, setActiveTab] = useState(defaultTab);
 
-	// Meal form state
-	const [foods, setFoods] = useState<FoodSummary[]>([]);
-	const [mealDate, setMealDate] = useState(
-		new Date().toISOString().split("T")[0],
-	);
+	const { foods, isLoading: isLoadingFoods } = useFoodSummaries(open);
+
+	const [mealDate, setMealDate] = useState(getDateString());
 	const [mealTime, setMealTime] = useState<"morning" | "evening">("morning");
 	const [foodId, setFoodId] = useState("");
 	const [amount, setAmount] = useState("");
 	const [mealNotes, setMealNotes] = useState("");
 
-	const fetchFoods = useCallback(async () => {
-		try {
-			const response = await fetch("/api/foods");
-			if (response.ok) {
-				const data = await response.json();
-				// Filter out archived foods
-				const activeFoods = data.filter(
-					(food: { archived?: boolean }) => !food.archived,
-				);
-				setFoods(activeFoods);
-			}
-		} catch (error) {
-			console.error("Error fetching foods:", error);
-		}
-	}, []);
-
-	// Fetch foods when dialog opens
 	useEffect(() => {
 		if (open) {
-			fetchFoods();
 			setActiveTab(defaultTab);
 		}
-	}, [open, fetchFoods, defaultTab]);
+	}, [open, defaultTab]);
 
-	const handleFoodSubmit = (data: FoodInput) => {
-		onAddFood(data);
+	const handleFoodSubmit = async (data: FoodInput) => {
+		try {
+			await onAddFood(data);
+		} catch (error) {
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "Failed to add food. Please try again.",
+			);
+			console.error("Error adding food:", error);
+		}
 	};
 
-	const handleMealSubmit = (e: React.FormEvent) => {
+	const handleMealSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!mealDate || !mealTime || !foodId || !amount.trim()) return;
 
-		onAddMeal({
-			mealDate,
-			mealTime,
-			foodId,
-			amount: amount.trim(),
-			notes: mealNotes.trim(),
-		});
+		try {
+			await onAddMeal({
+				mealDate,
+				mealTime,
+				foodId,
+				amount: amount.trim(),
+				notes: mealNotes.trim(),
+			});
 
-		// Reset meal form
-		setMealDate(new Date().toISOString().split("T")[0]);
-		setMealTime("morning");
-		setFoodId("");
-		setAmount("");
-		setMealNotes("");
+			setMealDate(getDateString());
+			setMealTime("morning");
+			setFoodId("");
+			setAmount("");
+			setMealNotes("");
+		} catch (error) {
+			toast.error(
+				error instanceof Error
+					? error.message
+					: "Failed to add meal. Please try again.",
+			);
+			console.error("Error adding meal:", error);
+		}
 	};
 
 	return (
@@ -166,16 +165,34 @@ export function QuickAddDialog({
 
 								<div className="space-y-2">
 									<Label htmlFor="food">Food</Label>
-									<Select value={foodId} onValueChange={setFoodId}>
+									<Select
+										value={foodId}
+										onValueChange={setFoodId}
+										disabled={isLoadingFoods}
+									>
 										<SelectTrigger id="food">
-											<SelectValue placeholder="Select a food" />
+											<SelectValue
+												placeholder={
+													isLoadingFoods ? "Loading foods..." : "Select a food"
+												}
+											/>
 										</SelectTrigger>
 										<SelectContent>
-											{foods.map((food) => (
-												<SelectItem key={food.id} value={food.id}>
-													{food.name}
+											{isLoadingFoods ? (
+												<SelectItem value="loading" disabled>
+													Loading foods...
 												</SelectItem>
-											))}
+											) : foods.length === 0 ? (
+												<SelectItem value="no-foods" disabled>
+													No foods available
+												</SelectItem>
+											) : (
+												foods.map((food) => (
+													<SelectItem key={food.id} value={food.id}>
+														{food.name}
+													</SelectItem>
+												))
+											)}
 										</SelectContent>
 									</Select>
 								</div>

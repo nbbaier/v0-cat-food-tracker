@@ -1,7 +1,6 @@
 "use client";
 
 import { Plus } from "lucide-react";
-import type { ReactNode } from "react";
 import { useLayoutEffect } from "react";
 import { useHeaderActions } from "@/components/header-context";
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,7 @@ interface HeaderQuickAddButtonProps {
 
 export function HeaderQuickAddButton({
 	onClick,
-}: HeaderQuickAddButtonProps): ReactNode {
+}: HeaderQuickAddButtonProps): React.ReactElement | null {
 	const { setActions } = useHeaderActions();
 
 	useLayoutEffect(() => {
