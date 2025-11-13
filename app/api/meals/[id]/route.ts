@@ -1,9 +1,11 @@
 import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
+import { ZodError } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { meals } from "@/lib/db/schema";
+import { mealUpdateSchema } from "@/lib/validations";
 
 export async function PATCH(
 	request: NextRequest,
@@ -17,27 +19,28 @@ export async function PATCH(
 		const { id } = await params;
 		const body = await request.json();
 
-		const updates: Record<string, unknown> = {};
+		// Validate input with Zod
+		const validatedData = mealUpdateSchema.parse(body);
 
-		if (body.mealDate !== undefined) updates.mealDate = body.mealDate;
-		if (body.mealTime !== undefined) updates.mealTime = body.mealTime;
-		if (body.foodId !== undefined) updates.foodId = body.foodId;
-		if (body.amount !== undefined) updates.amount = body.amount;
-		if (body.notes !== undefined) updates.notes = body.notes;
-
-		if (Object.keys(updates).length === 0) {
-			return NextResponse.json(
-				{ error: "No fields to update" },
-				{ status: 400 },
-			);
-		}
-
+		// Prepare updates with validated data
+		const updates: Record<string, unknown> = { ...validatedData };
 		updates.updatedAt = new Date().toISOString();
 
 		await db.update(meals).set(updates).where(eq(meals.id, id));
 
 		return NextResponse.json({ success: true });
 	} catch (error) {
+		// Handle Zod validation errors
+		if (error instanceof ZodError) {
+			return NextResponse.json(
+				{
+					error: "Validation failed",
+					details: error.issues.map((e) => `${e.path.join(".")}: ${e.message}`),
+				},
+				{ status: 400 },
+			);
+		}
+
 		console.error("[v0] PATCH /api/meals/[id] error:", error);
 		return NextResponse.json(
 			{

@@ -1,9 +1,11 @@
 import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
+import { ZodError } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { foods } from "@/lib/db/schema";
+import { foodUpdateSchema } from "@/lib/validations";
 
 export async function PATCH(
 	request: NextRequest,
@@ -17,33 +19,28 @@ export async function PATCH(
 		const { id } = await params;
 		const body = await request.json();
 
-		const updates: Record<string, unknown> = {};
+		// Validate input with Zod
+		const validatedData = foodUpdateSchema.parse(body);
 
-		if (body.name !== undefined) updates.name = body.name;
-		if (body.preference !== undefined) updates.preference = body.preference;
-		if (body.notes !== undefined) updates.notes = body.notes;
-		if (body.inventoryQuantity !== undefined)
-			updates.inventoryQuantity = body.inventoryQuantity;
-		if (body.archived !== undefined) updates.archived = body.archived;
-		if (body.phosphorusDmb !== undefined)
-			updates.phosphorusDmb = body.phosphorusDmb;
-		if (body.proteinDmb !== undefined) updates.proteinDmb = body.proteinDmb;
-		if (body.fatDmb !== undefined) updates.fatDmb = body.fatDmb;
-		if (body.fiberDmb !== undefined) updates.fiberDmb = body.fiberDmb;
-
-		if (Object.keys(updates).length === 0) {
-			return NextResponse.json(
-				{ error: "No fields to update" },
-				{ status: 400 },
-			);
-		}
-
+		// Prepare updates with validated data
+		const updates: Record<string, unknown> = { ...validatedData };
 		updates.updatedAt = new Date().toISOString();
 
 		await db.update(foods).set(updates).where(eq(foods.id, id));
 
 		return NextResponse.json({ success: true });
 	} catch (error) {
+		// Handle Zod validation errors
+		if (error instanceof ZodError) {
+			return NextResponse.json(
+				{
+					error: "Validation failed",
+					details: error.issues.map((e) => `${e.path.join(".")}: ${e.message}`),
+				},
+				{ status: 400 },
+			);
+		}
+
 		console.error("[v0] PATCH /api/foods/[id] error:", error);
 		return NextResponse.json(
 			{
