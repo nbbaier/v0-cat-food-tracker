@@ -20,6 +20,11 @@ import { foodInputSchema } from "@/lib/validations";
  *   hasMore: boolean  // Indicates if more results are available
  * }
  *
+ * BREAKING CHANGE: The response format changed from returning a flat array (Food[])
+ * to an object with `foods` and `hasMore` properties. The hooks provide backward
+ * compatibility via `data.foods || data`, but direct API consumers must be updated.
+ * Consider API versioning or query parameters if external consumers exist.
+ *
  * Note: Frontend pagination UI is not yet implemented. Currently, the frontend
  * only fetches the first page (default limit). Future work should implement
  * infinite scroll or "Load More" functionality to leverage pagination.
@@ -89,10 +94,11 @@ export async function GET(request: NextRequest) {
 			inventoryQuantity: food.inventoryQuantity,
 			archived: Boolean(food.archived),
 			addedAt: new Date(food.createdAt).getTime(),
-			phosphorusDmb: food.phosphorusDmb ? Number(food.phosphorusDmb) : 0,
-			proteinDmb: food.proteinDmb ? Number(food.proteinDmb) : 0,
-			fatDmb: food.fatDmb ? Number(food.fatDmb) : 0,
-			fiberDmb: food.fiberDmb ? Number(food.fiberDmb) : 0,
+			// Schema defines nutrition fields as .default(0).notNull(), so they're always numbers
+			phosphorusDmb: Number(food.phosphorusDmb),
+			proteinDmb: Number(food.proteinDmb),
+			fatDmb: Number(food.fatDmb),
+			fiberDmb: Number(food.fiberDmb),
 			mealCount: Number(food.mealCount) ?? 0,
 			mealCommentCount: Number(food.mealCommentCount) ?? 0,
 		}));
