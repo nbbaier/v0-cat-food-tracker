@@ -1,13 +1,10 @@
 "use client";
 
-import { Plus } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { FoodFilters } from "@/components/food-filters";
 import { FoodList } from "@/components/food-list";
-import { useHeaderActions } from "@/components/header-context";
+import { HeaderQuickAddButton } from "@/components/header-quick-add-button";
 import { QuickAddDialog } from "@/components/quick-add-dialog";
-import { Button } from "@/components/ui/button";
-import { ButtonGroup } from "@/components/ui/button-group";
 import { useFoods } from "@/hooks/use-foods";
 import { useMeals } from "@/hooks/use-meals";
 import type {
@@ -17,12 +14,12 @@ import type {
 	MealInput,
 	SortOption,
 } from "@/lib/types";
+import { ConfirmDialog } from "./confirm-dialog";
 
 export function FoodsPageClient() {
 	const { foods, isLoading, addFood, updateFood, deleteFood } = useFoods();
 	const { addMeal } = useMeals();
 	const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
-	const { setActions } = useHeaderActions();
 
 	const [searchTerm, setSearchTerm] = useState("");
 	const [preferenceFilters, setPreferenceFilters] = useState<
@@ -33,7 +30,7 @@ export function FoodsPageClient() {
 	const [sortBy, setSortBy] = useState<SortOption>("date");
 	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 	const [isFiltersMinimized, setIsFiltersMinimized] = useState(false);
-
+	const [foodToDelete, setFoodToDelete] = useState<string | null>(null);
 	const handleAddFood = async (food: FoodInput) => {
 		const success = await addFood(food);
 		if (success) {
@@ -52,8 +49,15 @@ export function FoodsPageClient() {
 		await updateFood(id, updates);
 	};
 
-	const handleDeleteFood = async (id: string) => {
-		await deleteFood(id);
+	const handleDeleteFood = async () => {
+		if (foodToDelete) {
+			await deleteFood(foodToDelete);
+			setFoodToDelete(null);
+		}
+	};
+
+	const confirmDeleteFood = (id: string) => {
+		setFoodToDelete(id);
 	};
 
 	const filteredAndSortedFoods = useMemo(() => {
@@ -133,26 +137,6 @@ export function FoodsPageClient() {
 		setSortOrder("desc");
 	};
 
-	useEffect(() => {
-		setActions(
-			<ButtonGroup className="shrink-0">
-				<Button
-					variant="default"
-					size="icon-lg"
-					onClick={() => setIsQuickAddOpen(true)}
-					className="sm:w-auto sm:px-4"
-				>
-					<Plus className="size-4" />
-					<span className="hidden sm:inline sm:ml-2">Quick Add</span>
-				</Button>
-			</ButtonGroup>,
-		);
-
-		return () => {
-			setActions(null);
-		};
-	}, [setActions]);
-
 	if (isLoading) {
 		return (
 			<output className="flex justify-center items-center min-h-screen bg-background">
@@ -163,6 +147,7 @@ export function FoodsPageClient() {
 
 	return (
 		<div className="min-h-screen bg-background">
+			<HeaderQuickAddButton onClick={() => setIsQuickAddOpen(true)} />
 			<main className="px-4 py-6 mx-auto max-w-5xl sm:px-6 sm:py-8 lg:px-8">
 				<FoodFilters
 					searchTerm={searchTerm}
@@ -184,7 +169,7 @@ export function FoodsPageClient() {
 				<FoodList
 					foods={filteredAndSortedFoods}
 					onUpdate={handleUpdateFood}
-					onDelete={handleDeleteFood}
+					onDelete={confirmDeleteFood}
 					viewMode="compact"
 				/>
 			</main>
@@ -195,6 +180,15 @@ export function FoodsPageClient() {
 				onAddFood={handleAddFood}
 				onAddMeal={handleAddMeal}
 				defaultTab="food"
+			/>
+			<ConfirmDialog
+				open={foodToDelete !== null}
+				onOpenChange={(open) => !open && setFoodToDelete(null)}
+				onConfirm={handleDeleteFood}
+				title="Delete Food"
+				description="Are you sure you want to delete this food? This action cannot be undone."
+				confirmLabel="Delete"
+				variant="destructive"
 			/>
 		</div>
 	);
