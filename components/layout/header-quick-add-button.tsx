@@ -2,7 +2,7 @@
 
 import { Plus } from "lucide-react";
 import { useLayoutEffect } from "react";
-import { useHeaderActions } from "@/components/header-context";
+import { useHeaderActions } from "@/components/layout/header-context";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 

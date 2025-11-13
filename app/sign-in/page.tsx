@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { SignInForm, type SignInFormValues } from "@/components/sign-in-form";
+import { SignInForm, type SignInFormValues } from "@/components/auth/sign-in-form";
 import { authClient } from "@/lib/auth-client";
 
 export default function SignInPage() {

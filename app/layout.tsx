@@ -2,9 +2,9 @@ import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
-import { AppHeader } from "@/components/app-header";
-import { HeaderActionsProvider } from "@/components/header-context";
-import { QuickAddDialogProvider } from "@/components/quick-add-context";
+import { AppHeader } from "@/components/layout/app-header";
+import { HeaderActionsProvider } from "@/components/layout/header-context";
+import { QuickAddDialogProvider } from "@/components/shared/quick-add-context";
 import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {

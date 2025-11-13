@@ -1,6 +1,6 @@
 "use client";
 
-import { FoodForm } from "@/components/food-form";
+import { FoodForm } from "@/components/foods/food-form";
 import {
 	Dialog,
 	DialogContent,
@@ -8,38 +8,40 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import type { FoodInput } from "@/lib/types";
+import type { Food, FoodUpdate } from "@/lib/types";
 
-type AddFoodDialogProps = {
+type EditFoodDialogProps = {
+	food: Food;
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	onAdd: (food: FoodInput) => void;
+	onSave: (updates: FoodUpdate) => void;
 };
 
-export function AddFoodDialog({
+export function EditFoodDialog({
+	food,
 	open,
 	onOpenChange,
-	onAdd,
-}: AddFoodDialogProps) {
-	const handleSubmit = (data: FoodInput) => {
-		onAdd(data);
-		onOpenChange(false);
+	onSave,
+}: EditFoodDialogProps) {
+	const handleSubmit = (data: FoodUpdate) => {
+		onSave(data);
 	};
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="sm:max-w-[500px]">
 				<DialogHeader>
-					<DialogTitle>Add New Food</DialogTitle>
+					<DialogTitle>Edit Food</DialogTitle>
 					<DialogDescription>
-						Add a new food item to track your cat&apos;s preferences and
-						inventory.
+						Update the details for this food item.
 					</DialogDescription>
 				</DialogHeader>
 				<FoodForm
+					initialValues={food}
 					onSubmit={handleSubmit}
 					onCancel={() => onOpenChange(false)}
-					submitLabel="Add Food"
+					submitLabel="Save Changes"
+					isEdit
 				/>
 			</DialogContent>
 		</Dialog>

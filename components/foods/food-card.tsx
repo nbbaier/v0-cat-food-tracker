@@ -2,8 +2,8 @@
 
 import { Edit, MessageSquare, Package, Trash2, Utensils } from "lucide-react";
 import React, { useState } from "react";
-import { NutritionDisplay } from "@/components/nutrition-display";
-import { PreferenceIcon } from "@/components/preference-icon";
+import { NutritionDisplay } from "@/components/shared/nutrition-display";
+import { PreferenceIcon } from "@/components/shared/preference-icon";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -12,8 +12,8 @@ import {
 	CardHeader,
 } from "@/components/ui/card";
 import type { Food } from "@/lib/types";
-import { ConfirmDialog } from "./confirm-dialog";
-import { EditFoodDialog } from "./edit-food-dialog";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { EditFoodDialog } from "@/components/foods/edit-food-dialog";
 
 type FoodCardProps = {
 	food: Food;

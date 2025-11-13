@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { FoodForm } from "@/components/food-form";
+import { FoodForm } from "@/components/foods/food-form";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,

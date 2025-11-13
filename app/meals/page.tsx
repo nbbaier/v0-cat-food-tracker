@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { MealsPageClient } from "@/components/meals-page-client";
+import { MealsPageClient } from "@/components/meals/meals-page-client";
 import { auth } from "@/lib/auth";
 
 export default async function MealsPage() {
