@@ -54,7 +54,6 @@ export const MealCard = React.memo(function MealCard({
 				onOpenChange={setIsDeleteOpen}
 				onConfirm={() => {
 					onDelete(meal.id);
-					setIsDeleteOpen(false);
 				}}
 				title="Delete Meal"
 				description={`Are you sure you want to delete this meal entry for "${meal.food.name}"? This action cannot be undone.`}

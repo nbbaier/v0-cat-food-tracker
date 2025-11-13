@@ -67,7 +67,6 @@ export function FoodsPageClient() {
 	const handleDeleteFood = async () => {
 		if (foodToDelete) {
 			await deleteFood(foodToDelete);
-			setFoodToDelete(null);
 		}
 	};
 
