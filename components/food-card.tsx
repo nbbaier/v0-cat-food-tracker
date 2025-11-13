@@ -23,10 +23,10 @@ type FoodCardProps = {
 export const FoodCard = React.memo(function FoodCard({
 	food,
 	onUpdate,
-	onDelete,
+	onDelete: _onDelete,
 }: FoodCardProps) {
 	const [isEditOpen, setIsEditOpen] = useState(false);
-
+	const [_isDeleteOpen, setIsDeleteOpen] = useState(false);
 	const handlePreferenceChange = (preference: Food["preference"]) => {
 		onUpdate(food.id, { preference });
 	};
@@ -141,7 +141,7 @@ export const FoodCard = React.memo(function FoodCard({
 						variant="outline"
 						size="sm"
 						className="bg-transparent text-destructive hover:bg-destructive hover:text-destructive-foreground"
-						onClick={() => onDelete(food.id)}
+						onClick={() => setIsDeleteOpen(true)}
 					>
 						<Trash2 className="size-3" />
 					</Button>
