@@ -3,7 +3,6 @@
 import { Edit, MessageSquare, Package, Trash2, Utensils } from "lucide-react";
 import React, { useState } from "react";
 import { EditFoodDialog } from "@/components/foods/edit-food-dialog";
-import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { NutritionDisplay } from "@/components/shared/nutrition-display";
 import { PreferenceIcon } from "@/components/shared/preference-icon";
 import { Button } from "@/components/ui/button";
@@ -27,7 +26,6 @@ export const FoodCard = React.memo(function FoodCard({
 	onDelete,
 }: FoodCardProps) {
 	const [isEditOpen, setIsEditOpen] = useState(false);
-	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 	const handlePreferenceChange = (preference: Food["preference"]) => {
 		onUpdate(food.id, { preference });
 	};
@@ -142,7 +140,7 @@ export const FoodCard = React.memo(function FoodCard({
 						variant="outline"
 						size="sm"
 						className="bg-transparent text-destructive hover:bg-destructive hover:text-destructive-foreground"
-						onClick={() => setIsDeleteOpen(true)}
+						onClick={() => onDelete(food.id)}
 					>
 						<Trash2 className="size-3" />
 					</Button>
@@ -157,17 +155,6 @@ export const FoodCard = React.memo(function FoodCard({
 					onUpdate(food.id, updates);
 					setIsEditOpen(false);
 				}}
-			/>
-			<ConfirmDialog
-				open={isDeleteOpen}
-				onOpenChange={setIsDeleteOpen}
-				onConfirm={() => {
-					onDelete(food.id);
-				}}
-				title="Delete Food"
-				description={`Are you sure you want to delete "${food.name}"? This action cannot be undone.`}
-				confirmLabel="Delete"
-				variant="destructive"
 			/>
 		</>
 	);
