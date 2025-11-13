@@ -19,7 +19,7 @@ export function MealsPageClient() {
 	const { addFood } = useFoodMutations();
 	const { registerDialog } = useQuickAddDialog();
 	const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
-	const [mealToDelete, setMealToDelete] = useState<string | null>(null);
+	const [mealToDelete, setMealToDelete] = useState<Meal | null>(null);
 	const [searchTerm, setSearchTerm] = useState("");
 	const [mealTimeFilter, setMealTimeFilter] = useState<MealTimeFilter>("all");
 	const [sortBy, setSortBy] = useState<MealSortOption>("date");
@@ -56,8 +56,7 @@ export function MealsPageClient() {
 
 	const handleDeleteMeal = async () => {
 		if (mealToDelete) {
-			await deleteMeal(mealToDelete);
-			setMealToDelete(null);
+			await deleteMeal(mealToDelete.id);
 		}
 	};
 
@@ -232,7 +231,11 @@ export function MealsPageClient() {
 				onOpenChange={(open) => !open && setMealToDelete(null)}
 				onConfirm={handleDeleteMeal}
 				title="Delete Meal"
-				description="Are you sure you want to delete this meal? This action cannot be undone."
+				description={
+					mealToDelete
+						? `Are you sure you want to delete the ${mealToDelete.mealTime} meal of "${mealToDelete.food.name}"? This action cannot be undone.`
+						: "Are you sure you want to delete this meal? This action cannot be undone."
+				}
 				confirmLabel="Delete"
 				variant="destructive"
 			/>

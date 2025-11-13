@@ -45,7 +45,7 @@ export function FoodsPageClient() {
 	const [sortBy, setSortBy] = useState<SortOption>("date");
 	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 	const [isFiltersMinimized, setIsFiltersMinimized] = useState(false);
-	const [foodToDelete, setFoodToDelete] = useState<string | null>(null);
+	const [foodToDelete, setFoodToDelete] = useState<Food | null>(null);
 	const handleAddFood = async (food: FoodInput) => {
 		const success = await addFood(food);
 		if (success) {
@@ -66,13 +66,12 @@ export function FoodsPageClient() {
 
 	const handleDeleteFood = async () => {
 		if (foodToDelete) {
-			await deleteFood(foodToDelete);
-			setFoodToDelete(null);
+			await deleteFood(foodToDelete.id);
 		}
 	};
 
-	const confirmDeleteFood = (id: string) => {
-		setFoodToDelete(id);
+	const confirmDeleteFood = (food: Food) => {
+		setFoodToDelete(food);
 	};
 
 	const filteredAndSortedFoods = useMemo(() => {
@@ -200,7 +199,11 @@ export function FoodsPageClient() {
 				onOpenChange={(open) => !open && setFoodToDelete(null)}
 				onConfirm={handleDeleteFood}
 				title="Delete Food"
-				description="Are you sure you want to delete this food? This action cannot be undone."
+				description={
+					foodToDelete
+						? `Are you sure you want to delete "${foodToDelete.name}"? This action cannot be undone.`
+						: "Are you sure you want to delete this food? This action cannot be undone."
+				}
 				confirmLabel="Delete"
 				variant="destructive"
 			/>
