@@ -6,6 +6,7 @@ import { FoodList } from "@/components/foods/food-list";
 import { QuickAddDialog } from "@/components/layout/quick-add-dialog";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { useQuickAddDialog } from "@/components/shared/quick-add-context";
+import { Button } from "@/components/ui/button";
 import { useFoods } from "@/hooks/use-foods";
 import { useMealMutations } from "@/hooks/use-meal-mutations";
 import type {
@@ -17,7 +18,16 @@ import type {
 } from "@/lib/types";
 
 export function FoodsPageClient() {
-	const { foods, isLoading, addFood, updateFood, deleteFood } = useFoods();
+	const {
+		foods,
+		isLoading,
+		isFetchingMore,
+		hasMore,
+		addFood,
+		updateFood,
+		deleteFood,
+		loadMoreFoods,
+	} = useFoods();
 	const { addMeal } = useMealMutations();
 	const { registerDialog } = useQuickAddDialog();
 	const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
@@ -185,6 +195,17 @@ export function FoodsPageClient() {
 					onDelete={confirmDeleteFood}
 					viewMode="compact"
 				/>
+				{hasMore && (
+					<div className="flex justify-center mt-6">
+						<Button
+							variant="outline"
+							onClick={loadMoreFoods}
+							disabled={isFetchingMore}
+						>
+							{isFetchingMore ? "Loading..." : "Load More"}
+						</Button>
+					</div>
+				)}
 			</main>
 
 			<QuickAddDialog

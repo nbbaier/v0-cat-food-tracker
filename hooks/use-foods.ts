@@ -6,13 +6,18 @@ import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "@/lib/constants";
 import type { Food, FoodInput } from "@/lib/types";
 import { invalidateFoodSummariesCache } from "./use-food-summaries";
 
+const PAGE_SIZE = 100;
+
 export function useFoods() {
 	const [foods, setFoods] = useState<Food[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
+	const [isFetchingMore, setIsFetchingMore] = useState(false);
+	const [hasMore, setHasMore] = useState(false);
 	const [error, setError] = useState<Error | null>(null);
 	const abortControllerRef = useRef<AbortController | null>(null);
+	const offsetRef = useRef(0);
 
-	const fetchFoods = useCallback(async () => {
+	const fetchFoods = useCallback(async ({ append = false } = {}) => {
 		if (abortControllerRef.current) {
 			abortControllerRef.current.abort();
 		}
@@ -20,9 +25,20 @@ export function useFoods() {
 		const abortController = new AbortController();
 		abortControllerRef.current = abortController;
 
+		const params = new URLSearchParams();
+		params.set("limit", PAGE_SIZE.toString());
+		params.set("offset", append ? offsetRef.current.toString() : "0");
+		params.set("archived", "false");
+
 		try {
-			setError(null);
-			const response = await fetch("/api/foods", {
+			if (!append) {
+				setError(null);
+				setIsLoading(true);
+			} else {
+				setIsFetchingMore(true);
+			}
+
+			const response = await fetch(`/api/foods?${params.toString()}`, {
 				signal: abortController.signal,
 			});
 
@@ -30,7 +46,15 @@ export function useFoods() {
 
 			if (response.ok) {
 				const data = await response.json();
-				setFoods(data.foods || data);
+				const items: Food[] = data.foods || data;
+
+				setHasMore(Boolean(data.hasMore ?? items.length === PAGE_SIZE));
+
+				if (append) {
+					setFoods((prev) => [...prev, ...items]);
+				} else {
+					setFoods(items);
+				}
 			} else {
 				const errorData = await response.json().catch(() => ({}));
 				const errorMessage =
@@ -48,6 +72,7 @@ export function useFoods() {
 		} finally {
 			if (!abortController.signal.aborted) {
 				setIsLoading(false);
+				setIsFetchingMore(false);
 			}
 		}
 	}, []);
@@ -64,6 +89,7 @@ export function useFoods() {
 	const foodsRef = useRef<Food[]>([]);
 	useEffect(() => {
 		foodsRef.current = foods;
+		offsetRef.current = foods.length;
 	}, [foods]);
 
 	const addFood = useCallback(async (food: FoodInput): Promise<boolean> => {
@@ -157,16 +183,24 @@ export function useFoods() {
 	}, []);
 
 	const refreshFoods = useCallback(async () => {
-		await fetchFoods();
+		await fetchFoods({ append: false });
 	}, [fetchFoods]);
+
+	const loadMoreFoods = useCallback(async () => {
+		if (!hasMore || isFetchingMore) return;
+		await fetchFoods({ append: true });
+	}, [fetchFoods, hasMore, isFetchingMore]);
 
 	return {
 		foods,
 		isLoading,
+		isFetchingMore,
 		error,
+		hasMore,
 		addFood,
 		updateFood,
 		deleteFood,
 		refreshFoods,
+		loadMoreFoods,
 	};
 }
