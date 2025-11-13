@@ -194,6 +194,17 @@ export function MealsPageClient() {
 						{sortedDates.map((date) => {
 							const dateMeals = mealsByDate[date];
 
+							const sortedMeals = [...dateMeals].sort((a, b) => {
+								if (sortBy === "time") {
+									const timeA = a.mealTime === "morning" ? 0 : 1;
+									const timeB = b.mealTime === "morning" ? 0 : 1;
+									if (timeA !== timeB) {
+										return sortOrder === "asc" ? timeA - timeB : timeB - timeA;
+									}
+								}
+								return 0;
+							});
+
 							return (
 								<div key={date}>
 									<h2 className="mb-3 text-lg font-semibold">
@@ -205,7 +216,7 @@ export function MealsPageClient() {
 										})}
 									</h2>
 									<div className="gap-4 grid grid-cols-1 md:grid-cols-2">
-										{dateMeals.map((meal) => (
+										{sortedMeals.map((meal) => (
 											<MealCard
 												key={meal.id}
 												meal={meal}
