@@ -17,7 +17,7 @@ import type { Food } from "@/lib/types";
 type FoodCardProps = {
 	food: Food;
 	onUpdate: (id: string, updates: Partial<Food>) => void;
-	onDelete: (id: string) => void;
+	onDelete: (food: Food) => void;
 };
 
 export const FoodCard = React.memo(function FoodCard({
@@ -140,7 +140,7 @@ export const FoodCard = React.memo(function FoodCard({
 						variant="outline"
 						size="sm"
 						className="bg-transparent text-destructive hover:bg-destructive hover:text-destructive-foreground"
-						onClick={() => onDelete(food.id)}
+						onClick={() => onDelete(food)}
 					>
 						<Trash2 className="size-3" />
 					</Button>

@@ -11,7 +11,7 @@ import type { Food } from "@/lib/types";
 type FoodTableProps = {
 	foods: Food[];
 	onUpdate: (id: string, updates: Partial<Food>) => void;
-	onDelete: (id: string) => void;
+	onDelete: (food: Food) => void;
 };
 
 export function FoodTable({ foods, onUpdate, onDelete }: FoodTableProps) {
@@ -172,7 +172,7 @@ export function FoodTable({ foods, onUpdate, onDelete }: FoodTableProps) {
 					open={!!foodToDelete}
 					onOpenChange={(open) => !open && setFoodToDelete(null)}
 					onConfirm={() => {
-						onDelete(foodToDelete.id);
+						onDelete(foodToDelete);
 					}}
 					title="Delete Food"
 					description={`Are you sure you want to delete "${foodToDelete.name}"? This action cannot be undone.`}

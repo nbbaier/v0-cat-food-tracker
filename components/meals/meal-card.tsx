@@ -9,7 +9,7 @@ import type { Meal } from "@/lib/types";
 
 type MealCardProps = {
 	meal: Meal;
-	onDelete: (id: string) => void;
+	onDelete: (meal: Meal) => void;
 };
 
 export const MealCard = React.memo(function MealCard({
@@ -31,7 +31,7 @@ export const MealCard = React.memo(function MealCard({
 				<Button
 					variant="ghost"
 					size="icon"
-					onClick={() => onDelete(meal.id)}
+					onClick={() => onDelete(meal)}
 					className="size-8 -mt-1 -mr-2 text-muted-foreground hover:text-destructive"
 				>
 					<Trash2 className="size-4" />

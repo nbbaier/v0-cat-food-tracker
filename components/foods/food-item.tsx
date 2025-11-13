@@ -22,7 +22,7 @@ import type { Food } from "@/lib/types";
 type FoodItemProps = {
 	food: Food;
 	onUpdate: (id: string, updates: Partial<Food>) => void;
-	onDelete: (id: string) => void;
+	onDelete: (food: Food) => void;
 };
 
 export const FoodItem = React.memo(function FoodItem({
@@ -95,7 +95,7 @@ export const FoodItem = React.memo(function FoodItem({
 					<Button
 						variant="ghost"
 						size="icon-sm"
-						onClick={() => onDelete(food.id)}
+						onClick={() => onDelete(food)}
 						title="Delete food"
 						className="text-destructive hover:text-destructive"
 					>

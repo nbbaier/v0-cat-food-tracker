@@ -7,7 +7,7 @@ import type { Food } from "@/lib/types";
 type FoodListProps = {
 	foods: Food[];
 	onUpdate: (id: string, updates: Partial<Food>) => void;
-	onDelete: (id: string) => void;
+	onDelete: (food: Food) => void;
 	viewMode: "compact" | "full";
 };
 
