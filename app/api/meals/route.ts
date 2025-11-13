@@ -11,7 +11,7 @@ import { mealInputSchema } from "@/lib/validations";
  * GET /api/meals - Fetch meals with pagination support
  *
  * Query parameters:
- * - limit: Number of items to return (default: 100, max: 500)
+ * - limit: Number of items to return (default: 300, max: 500)
  * - offset: Number of items to skip (default: 0)
  *
  * Response format:
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
 		const rawLimit = Number.parseInt(searchParams.get("limit") ?? "", 10);
 		const limit = Math.max(
 			1,
-			Math.min(Number.isFinite(rawLimit) ? rawLimit : 100, 500),
+			Math.min(Number.isFinite(rawLimit) ? rawLimit : 300, 500),
 		);
 		const rawOffset = Number.parseInt(searchParams.get("offset") ?? "", 10);
 		const offset = Math.max(0, Number.isFinite(rawOffset) ? rawOffset : 0);
@@ -80,8 +80,6 @@ export async function GET(request: NextRequest) {
 			},
 			{
 				headers: {
-					// Reduced stale-while-revalidate from 300s to 60s to minimize stale data
-					// for real-time meal tracking
 					"Cache-Control": "private, max-age=30, stale-while-revalidate=60",
 				},
 			},

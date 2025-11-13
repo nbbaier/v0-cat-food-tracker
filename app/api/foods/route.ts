@@ -11,7 +11,7 @@ import { foodInputSchema } from "@/lib/validations";
  * GET /api/foods - Fetch foods with pagination support
  *
  * Query parameters:
- * - limit: Number of items to return (default: 50, max: 200)
+ * - limit: Number of items to return (default: 300, max: 500)
  * - offset: Number of items to skip (default: 0)
  *
  * Response format:
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
 		const rawLimit = Number.parseInt(searchParams.get("limit") ?? "", 10);
 		const limit = Math.max(
 			1,
-			Math.min(Number.isFinite(rawLimit) ? rawLimit : 50, 200),
+			Math.min(Number.isFinite(rawLimit) ? rawLimit : 300, 500),
 		);
 		const rawOffset = Number.parseInt(searchParams.get("offset") ?? "", 10);
 		const offset = Math.max(0, Number.isFinite(rawOffset) ? rawOffset : 0);
@@ -51,9 +51,10 @@ export async function GET(request: NextRequest) {
 				.select({
 					foodId: meals.foodId,
 					totalCount: sql<number>`count(*)`.as("total_count"),
-					commentCount: sql<number>`count(*) filter (where ${meals.notes} is not null and ${meals.notes} <> '')`.as(
-						"comment_count",
-					),
+					commentCount:
+						sql<number>`count(*) filter (where ${meals.notes} is not null and ${meals.notes} <> '')`.as(
+							"comment_count",
+						),
 				})
 				.from(meals)
 				.groupBy(meals.foodId),
@@ -76,9 +77,10 @@ export async function GET(request: NextRequest) {
 				mealCount: sql<number>`coalesce(${mealCounts.totalCount}, 0)`.as(
 					"meal_count",
 				),
-				mealCommentCount: sql<number>`coalesce(${mealCounts.commentCount}, 0)`.as(
-					"meal_comment_count",
-				),
+				mealCommentCount:
+					sql<number>`coalesce(${mealCounts.commentCount}, 0)`.as(
+						"meal_comment_count",
+					),
 			})
 			.from(foods)
 			.leftJoin(mealCounts, eq(mealCounts.foodId, foods.id))
