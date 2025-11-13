@@ -12,6 +12,7 @@ export async function GET() {
 				preference: foods.preference,
 				notes: foods.notes,
 				inventoryQuantity: foods.inventoryQuantity,
+				archived: foods.archived,
 				phosphorusDmb: foods.phosphorusDmb,
 				proteinDmb: foods.proteinDmb,
 				fatDmb: foods.fatDmb,
@@ -37,6 +38,7 @@ export async function GET() {
 			preference: food.preference,
 			notes: food.notes || "",
 			inventoryQuantity: food.inventoryQuantity,
+			archived: Boolean(food.archived),
 			addedAt: new Date(food.createdAt).getTime(),
 			phosphorusDmb: food.phosphorusDmb
 				? Number(food.phosphorusDmb)
@@ -69,6 +71,7 @@ export async function POST(request: NextRequest) {
 			preference,
 			notes,
 			inventoryQuantity,
+			archived,
 			phosphorusDmb,
 			proteinDmb,
 			fatDmb,
@@ -88,11 +91,12 @@ export async function POST(request: NextRequest) {
 				name,
 				preference,
 				notes: notes || "",
-				inventoryQuantity: inventoryQuantity || 0,
-				phosphorusDmb: phosphorusDmb?.toString(),
-				proteinDmb: proteinDmb?.toString(),
-				fatDmb: fatDmb?.toString(),
-				fiberDmb: fiberDmb?.toString(),
+				inventoryQuantity: inventoryQuantity ?? 0,
+				archived: archived ?? false,
+				phosphorusDmb,
+				proteinDmb,
+				fatDmb,
+				fiberDmb,
 			})
 			.returning();
 
@@ -102,6 +106,7 @@ export async function POST(request: NextRequest) {
 			preference: newFood.preference,
 			notes: newFood.notes || "",
 			inventoryQuantity: newFood.inventoryQuantity,
+			archived: Boolean(newFood.archived),
 			addedAt: new Date(newFood.createdAt).getTime(),
 			phosphorusDmb: newFood.phosphorusDmb
 				? Number(newFood.phosphorusDmb)

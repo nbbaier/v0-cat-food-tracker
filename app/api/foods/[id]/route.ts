@@ -18,6 +18,7 @@ export async function PATCH(
 		if (body.notes !== undefined) updates.notes = body.notes;
 		if (body.inventoryQuantity !== undefined)
 			updates.inventoryQuantity = body.inventoryQuantity;
+		if (body.archived !== undefined) updates.archived = body.archived;
 		if (body.phosphorusDmb !== undefined)
 			updates.phosphorusDmb = body.phosphorusDmb;
 		if (body.proteinDmb !== undefined) updates.proteinDmb = body.proteinDmb;
