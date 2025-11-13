@@ -1,9 +1,17 @@
 import { asc, desc, eq } from "drizzle-orm";
+import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
+import { ZodError } from "zod";
+import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { foods, meals } from "@/lib/db/schema";
+import { mealInputSchema } from "@/lib/validations";
 
 export async function GET() {
+	const session = await auth.api.getSession({ headers: await headers() });
+	if (!session) {
+		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+	}
 	try {
 		const allMeals = await db
 			.select({
@@ -32,7 +40,7 @@ export async function GET() {
 			foodId: meal.foodId,
 			food: meal.food,
 			amount: meal.amount,
-			notes: meal.notes || "",
+			notes: meal.notes ?? "",
 			createdAt: meal.createdAt,
 			updatedAt: meal.updatedAt,
 		}));
@@ -51,16 +59,17 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+	const session = await auth.api.getSession({ headers: await headers() });
+	if (!session) {
+		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+	}
 	try {
 		const body = await request.json();
-		const { mealDate, mealTime, foodId, amount, notes } = body;
 
-		if (!mealDate || !mealTime || !foodId || !amount) {
-			return NextResponse.json(
-				{ error: "Missing required fields" },
-				{ status: 400 },
-			);
-		}
+		// Validate input with Zod
+		const validatedData = mealInputSchema.parse(body);
+
+		const { mealDate, mealTime, foodId, amount, notes } = validatedData;
 
 		const [newMeal] = await db
 			.insert(meals)
@@ -69,7 +78,7 @@ export async function POST(request: NextRequest) {
 				mealTime,
 				foodId,
 				amount,
-				notes: notes || "",
+				notes: notes ?? "",
 			})
 			.returning();
 
@@ -88,15 +97,26 @@ export async function POST(request: NextRequest) {
 			mealDate: newMeal.mealDate,
 			mealTime: newMeal.mealTime,
 			foodId: newMeal.foodId,
-			food: food || null,
+			food: food ?? null,
 			amount: newMeal.amount,
-			notes: newMeal.notes || "",
+			notes: newMeal.notes ?? "",
 			createdAt: newMeal.createdAt,
 			updatedAt: newMeal.updatedAt,
 		};
 
 		return NextResponse.json(formattedMeal, { status: 201 });
 	} catch (error) {
+		// Handle Zod validation errors
+		if (error instanceof ZodError) {
+			return NextResponse.json(
+				{
+					error: "Validation failed",
+					details: error.issues.map((e) => `${e.path.join(".")}: ${e.message}`),
+				},
+				{ status: 400 },
+			);
+		}
+
 		console.error("[v0] POST /api/meals error:", error);
 		return NextResponse.json(
 			{

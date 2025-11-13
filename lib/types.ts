@@ -3,21 +3,25 @@
  */
 
 export type Food = {
-	id: string;
-	name: string;
-	preference: "likes" | "dislikes" | "unknown";
-	notes: string;
-	inventoryQuantity: number;
-	addedAt: number;
-	phosphorusDmb?: number;
-	proteinDmb?: number;
-	fatDmb?: number;
-	fiberDmb?: number;
-	mealCount?: number;
-	mealCommentCount?: number;
+    id: string;
+    name: string;
+    preference: "likes" | "dislikes" | "unknown";
+    notes: string;
+    inventoryQuantity: number;
+    archived?: boolean;
+    addedAt: number;
+    phosphorusDmb?: number;
+    proteinDmb?: number;
+    fatDmb?: number;
+    fiberDmb?: number;
+    mealCount?: number;
+    mealCommentCount?: number;
 };
 
-export type FoodInput = Omit<Food, "id" | "addedAt" | "mealCount" | "mealCommentCount">;
+export type FoodInput = Omit<
+    Food,
+    "id" | "addedAt" | "mealCount" | "mealCommentCount"
+>;
 
 export type FoodUpdate = Partial<
 	Omit<Food, "id" | "addedAt" | "mealCount" | "mealCommentCount">

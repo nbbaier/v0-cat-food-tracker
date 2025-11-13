@@ -82,7 +82,7 @@ export function SignUpForm({
 		if (isEmailNotAllowedError) {
 			form.setError("email", {
 				type: "server",
-				message: errorMessage || "This email is not allowed to sign up.",
+				message: errorMessage ?? "This email is not allowed to sign up.",
 			});
 		} else if (errorMessage) {
 			form.setError("root", {

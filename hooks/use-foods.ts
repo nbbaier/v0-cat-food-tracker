@@ -1,19 +1,32 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from "@/lib/constants";
 import type { Food, FoodInput } from "@/lib/types";
+import { invalidateFoodSummariesCache } from "./use-food-summaries";
 
 export function useFoods() {
 	const [foods, setFoods] = useState<Food[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<Error | null>(null);
+	const abortControllerRef = useRef<AbortController | null>(null);
 
 	const fetchFoods = useCallback(async () => {
+		if (abortControllerRef.current) {
+			abortControllerRef.current.abort();
+		}
+
+		const abortController = new AbortController();
+		abortControllerRef.current = abortController;
+
 		try {
 			setError(null);
-			const response = await fetch("/api/foods");
+			const response = await fetch("/api/foods", {
+				signal: abortController.signal,
+			});
+
+			if (abortController.signal.aborted) return;
 
 			if (response.ok) {
 				const data = await response.json();
@@ -21,23 +34,31 @@ export function useFoods() {
 			} else {
 				const errorData = await response.json().catch(() => ({}));
 				const errorMessage =
-					errorData.error || ERROR_MESSAGES.FETCH_FAILED("foods");
+					errorData.error ?? ERROR_MESSAGES.FETCH_FAILED("foods");
 				toast.error(errorMessage);
 				setError(new Error(errorMessage));
 				console.error("Failed to fetch foods:", errorData);
 			}
 		} catch (err) {
+			if (abortController.signal.aborted) return;
 			const errorMessage = ERROR_MESSAGES.CONNECTION_ERROR;
 			toast.error(errorMessage);
 			setError(err instanceof Error ? err : new Error(errorMessage));
 			console.error("Error fetching foods:", err);
 		} finally {
-			setIsLoading(false);
+			if (!abortController.signal.aborted) {
+				setIsLoading(false);
+			}
 		}
 	}, []);
 
 	useEffect(() => {
 		fetchFoods();
+		return () => {
+			if (abortControllerRef.current) {
+				abortControllerRef.current.abort();
+			}
+		};
 	}, [fetchFoods]);
 
 	const addFood = useCallback(async (food: FoodInput): Promise<boolean> => {
@@ -51,11 +72,12 @@ export function useFoods() {
 			if (response.ok) {
 				const newFood = await response.json();
 				setFoods((prev) => [newFood, ...prev]);
+				invalidateFoodSummariesCache();
 				toast.success(SUCCESS_MESSAGES.ADDED("Food", food.name));
 				return true;
 			}
 			const errorData = await response.json().catch(() => ({}));
-			const errorMessage = errorData.error || ERROR_MESSAGES.ADD_FAILED("food");
+			const errorMessage = errorData.error ?? ERROR_MESSAGES.ADD_FAILED("food");
 			toast.error(errorMessage);
 			console.error("Failed to add food:", errorData);
 			return false;
@@ -84,6 +106,7 @@ export function useFoods() {
 				});
 
 				if (response.ok) {
+					invalidateFoodSummariesCache();
 					toast.success(SUCCESS_MESSAGES.UPDATED("Food"));
 					return true;
 				}
@@ -92,7 +115,7 @@ export function useFoods() {
 				setFoods(previousFoods);
 				const errorData = await response.json().catch(() => ({}));
 				const errorMessage =
-					errorData.error || ERROR_MESSAGES.UPDATE_FAILED("food");
+					errorData.error ?? ERROR_MESSAGES.UPDATE_FAILED("food");
 				toast.error(errorMessage);
 				console.error("Failed to update food:", errorData);
 				return false;
@@ -110,7 +133,7 @@ export function useFoods() {
 	const deleteFood = useCallback(
 		async (id: string): Promise<boolean> => {
 			const foodToDelete = foods.find((f) => f.id === id);
-			const foodName = foodToDelete?.name || "Food";
+			const foodName = foodToDelete?.name ?? "Food";
 
 			try {
 				const response = await fetch(`/api/foods/${id}`, {
@@ -119,12 +142,13 @@ export function useFoods() {
 
 				if (response.ok) {
 					setFoods((prev) => prev.filter((food) => food.id !== id));
+					invalidateFoodSummariesCache();
 					toast.success(SUCCESS_MESSAGES.DELETED("Food", foodName));
 					return true;
 				}
 				const errorData = await response.json().catch(() => ({}));
 				const errorMessage =
-					errorData.error || ERROR_MESSAGES.DELETE_FAILED("food");
+					errorData.error ?? ERROR_MESSAGES.DELETE_FAILED("food");
 				toast.error(errorMessage);
 				console.error("Failed to delete food:", errorData);
 				return false;
@@ -137,6 +161,10 @@ export function useFoods() {
 		[foods],
 	);
 
+	const refreshFoods = useCallback(async () => {
+		await fetchFoods();
+	}, [fetchFoods]);
+
 	return {
 		foods,
 		isLoading,
@@ -144,6 +172,6 @@ export function useFoods() {
 		addFood,
 		updateFood,
 		deleteFood,
-		refreshFoods: fetchFoods,
+		refreshFoods,
 	};
 }

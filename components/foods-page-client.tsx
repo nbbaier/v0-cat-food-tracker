@@ -1,21 +1,40 @@
 "use client";
 
-import { LayoutGrid, List } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { AddFoodDialog } from "@/components/add-food-dialog";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FoodFilters } from "@/components/food-filters";
 import { FoodList } from "@/components/food-list";
-import { useHeaderActions } from "@/components/header-context";
-import { Button } from "@/components/ui/button";
-import { ButtonGroup } from "@/components/ui/button-group";
+import { useQuickAddDialog } from "@/components/quick-add-context";
+import { QuickAddDialog } from "@/components/quick-add-dialog";
 import { useFoods } from "@/hooks/use-foods";
-import type { Food, FoodInput, InventoryFilter, SortOption } from "@/lib/types";
+import { useMealMutations } from "@/hooks/use-meal-mutations";
+import type {
+	Food,
+	FoodInput,
+	InventoryFilter,
+	MealInput,
+	SortOption,
+} from "@/lib/types";
+import { ConfirmDialog } from "./confirm-dialog";
 
 export function FoodsPageClient() {
 	const { foods, isLoading, addFood, updateFood, deleteFood } = useFoods();
-	const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-	const [viewMode, setViewMode] = useState<"compact" | "full">("compact");
-	const { setActions } = useHeaderActions();
+	const { addMeal } = useMealMutations();
+	const { registerDialog } = useQuickAddDialog();
+	const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
+
+	const handleOpenDialog = useCallback(() => {
+		setIsQuickAddOpen(true);
+	}, []);
+
+	const registerDialogRef = useRef(registerDialog);
+	registerDialogRef.current = registerDialog;
+
+	useEffect(() => {
+		const unregister = registerDialogRef.current(handleOpenDialog);
+		return () => {
+			unregister();
+		};
+	}, [handleOpenDialog]);
 
 	const [searchTerm, setSearchTerm] = useState("");
 	const [preferenceFilters, setPreferenceFilters] = useState<
@@ -26,11 +45,18 @@ export function FoodsPageClient() {
 	const [sortBy, setSortBy] = useState<SortOption>("date");
 	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 	const [isFiltersMinimized, setIsFiltersMinimized] = useState(false);
-
+	const [foodToDelete, setFoodToDelete] = useState<string | null>(null);
 	const handleAddFood = async (food: FoodInput) => {
 		const success = await addFood(food);
 		if (success) {
-			setIsAddDialogOpen(false);
+			setIsQuickAddOpen(false);
+		}
+	};
+
+	const handleAddMeal = async (meal: MealInput) => {
+		const success = await addMeal(meal);
+		if (success) {
+			setIsQuickAddOpen(false);
 		}
 	};
 
@@ -38,8 +64,15 @@ export function FoodsPageClient() {
 		await updateFood(id, updates);
 	};
 
-	const handleDeleteFood = async (id: string) => {
-		await deleteFood(id);
+	const handleDeleteFood = async () => {
+		if (foodToDelete) {
+			await deleteFood(foodToDelete);
+			setFoodToDelete(null);
+		}
+	};
+
+	const confirmDeleteFood = (id: string) => {
+		setFoodToDelete(id);
 	};
 
 	const filteredAndSortedFoods = useMemo(() => {
@@ -119,35 +152,6 @@ export function FoodsPageClient() {
 		setSortOrder("desc");
 	};
 
-	useEffect(() => {
-		setActions(
-			<ButtonGroup className="shrink-0">
-				<Button
-					variant="outline"
-					size="icon-lg"
-					onClick={() => setViewMode("compact")}
-					className={viewMode === "compact" ? "bg-accent" : ""}
-					title="Compact view"
-				>
-					<List className="size-4" />
-				</Button>
-				<Button
-					variant="outline"
-					size="icon-lg"
-					onClick={() => setViewMode("full")}
-					className={viewMode === "full" ? "bg-accent" : ""}
-					title="Full card view"
-				>
-					<LayoutGrid className="size-4" />
-				</Button>
-			</ButtonGroup>,
-		);
-
-		return () => {
-			setActions(null);
-		};
-	}, [viewMode, setActions]);
-
 	if (isLoading) {
 		return (
 			<output className="flex justify-center items-center min-h-screen bg-background">
@@ -175,20 +179,30 @@ export function FoodsPageClient() {
 					onReset={resetFilters}
 					isMinimized={isFiltersMinimized}
 					onToggleMinimize={() => setIsFiltersMinimized(!isFiltersMinimized)}
-					onAddFood={() => setIsAddDialogOpen(true)}
 				/>
 				<FoodList
 					foods={filteredAndSortedFoods}
 					onUpdate={handleUpdateFood}
-					onDelete={handleDeleteFood}
-					viewMode={viewMode}
+					onDelete={confirmDeleteFood}
+					viewMode="compact"
 				/>
 			</main>
 
-			<AddFoodDialog
-				open={isAddDialogOpen}
-				onOpenChange={setIsAddDialogOpen}
-				onAdd={handleAddFood}
+			<QuickAddDialog
+				open={isQuickAddOpen}
+				onOpenChange={setIsQuickAddOpen}
+				onAddFood={handleAddFood}
+				onAddMeal={handleAddMeal}
+				defaultTab="food"
+			/>
+			<ConfirmDialog
+				open={foodToDelete !== null}
+				onOpenChange={(open) => !open && setFoodToDelete(null)}
+				onConfirm={handleDeleteFood}
+				title="Delete Food"
+				description="Are you sure you want to delete this food? This action cannot be undone."
+				confirmLabel="Delete"
+				variant="destructive"
 			/>
 		</div>
 	);

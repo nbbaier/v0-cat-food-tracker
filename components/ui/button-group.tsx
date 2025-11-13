@@ -40,7 +40,7 @@ function ButtonGroupText({
 	className,
 	asChild = false,
 	...props
-}: React.ComponentProps<"div"> & {
+}: React.ComponentPropsWithoutRef<"div"> & {
 	asChild?: boolean;
 }) {
 	const Comp = asChild ? Slot : "div";
@@ -66,7 +66,7 @@ function ButtonGroupSeparator({
 			data-slot="button-group-separator"
 			orientation={orientation}
 			className={cn(
-				"bg-input relative !m-0 self-stretch data-[orientation=vertical]:h-auto",
+				"bg-input relative m-0 self-stretch data-[orientation=vertical]:h-auto",
 				className,
 			)}
 			{...props}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Package, Utensils } from "lucide-react";
+import { Package, Plus, Utensils } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -8,15 +8,22 @@ import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { authClient } from "@/lib/auth-client";
 import AuthButtons from "./auth-buttons";
-import { useHeaderActions } from "./header-context";
+import { useQuickAddDialog } from "./quick-add-context";
 import UserButton from "./user-button";
 
 export function AppHeader() {
 	const pathname = usePathname();
-	const { actions } = useHeaderActions();
+	const { openDialog } = useQuickAddDialog();
 	const session = authClient.useSession();
 	const isAuthenticated = !!session.data?.user;
 	const isLoading = session.isPending;
+
+	const handleQuickAddClick = () => {
+		const defaultTab = pathname === "/meals" ? "meal" : "food";
+		openDialog(defaultTab);
+	};
+
+	const showQuickAddButton = pathname === "/meals" || pathname === "/foods";
 
 	const getPageTitle = () => {
 		if (pathname === "/meals") {
@@ -57,7 +64,17 @@ export function AppHeader() {
 						)}
 					</div>
 					<div className="flex flex-wrap gap-2 items-center sm:flex-nowrap">
-						{!isLoading && isAuthenticated && actions}
+						{!isLoading && isAuthenticated && showQuickAddButton && (
+							<ButtonGroup className="shrink-0">
+								<Button
+									variant="outline"
+									size="icon-lg"
+									onClick={handleQuickAddClick}
+								>
+									<Plus className="size-4" />
+								</Button>
+							</ButtonGroup>
+						)}
 						{!isLoading && isAuthenticated && (
 							<ButtonGroup className="shrink-0">
 								{pathname === "/meals" ? (

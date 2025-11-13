@@ -1,22 +1,24 @@
 "use client";
 
-import { Trash2, Utensils } from "lucide-react";
-import { useMemo, useState } from "react";
-import { AddMealDialog } from "@/components/add-meal-dialog";
+import { Utensils } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { MealCard } from "@/components/meal-card";
 import { MealFilters } from "@/components/meal-filters";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useQuickAddDialog } from "@/components/quick-add-context";
+import { QuickAddDialog } from "@/components/quick-add-dialog";
+import { useFoodMutations } from "@/hooks/use-food-mutations";
 import { useMeals } from "@/hooks/use-meals";
-import type { Meal, MealInput } from "@/lib/types";
+import type { FoodInput, Meal, MealInput } from "@/lib/types";
 
 type MealTimeFilter = "all" | "morning" | "evening";
 type MealSortOption = "date" | "time" | "food";
 
 export function MealsPageClient() {
 	const { meals, isLoading, addMeal, deleteMeal } = useMeals();
-	const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+	const { addFood } = useFoodMutations();
+	const { registerDialog } = useQuickAddDialog();
+	const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
 	const [mealToDelete, setMealToDelete] = useState<string | null>(null);
 	const [searchTerm, setSearchTerm] = useState("");
 	const [mealTimeFilter, setMealTimeFilter] = useState<MealTimeFilter>("all");
@@ -24,10 +26,31 @@ export function MealsPageClient() {
 	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 	const [isFiltersMinimized, setIsFiltersMinimized] = useState(false);
 
+	const handleOpenDialog = useCallback(() => {
+		setIsQuickAddOpen(true);
+	}, []);
+
+	const registerDialogRef = useRef(registerDialog);
+	registerDialogRef.current = registerDialog;
+
+	useEffect(() => {
+		const unregister = registerDialogRef.current(handleOpenDialog);
+		return () => {
+			unregister();
+		};
+	}, [handleOpenDialog]);
+
 	const handleAddMeal = async (meal: MealInput) => {
 		const success = await addMeal(meal);
 		if (success) {
-			setIsAddDialogOpen(false);
+			setIsQuickAddOpen(false);
+		}
+	};
+
+	const handleAddFood = async (food: FoodInput) => {
+		const success = await addFood(food);
+		if (success) {
+			setIsQuickAddOpen(false);
 		}
 	};
 
@@ -140,7 +163,6 @@ export function MealsPageClient() {
 					onReset={resetFilters}
 					isMinimized={isFiltersMinimized}
 					onToggleMinimize={() => setIsFiltersMinimized(!isFiltersMinimized)}
-					onLogMeal={() => setIsAddDialogOpen(true)}
 				/>
 				{filteredAndSortedMeals.length === 0 ? (
 					<div className="flex flex-col justify-center items-center py-12 text-center">
@@ -152,7 +174,7 @@ export function MealsPageClient() {
 						</h2>
 						<p className="mb-4 text-sm text-muted-foreground">
 							{meals.length === 0
-								? "Start tracking your cat's meals by clicking the Log Meal button above."
+								? "Start tracking your cat's meals by clicking the Quick Add button above."
 								: "Try adjusting your filters to see more results."}
 						</p>
 					</div>
@@ -184,38 +206,11 @@ export function MealsPageClient() {
 									</h2>
 									<div className="gap-4 grid grid-cols-1 md:grid-cols-2">
 										{sortedMeals.map((meal) => (
-											<Card key={meal.id}>
-												<CardHeader className="flex flex-row justify-between items-start pb-3">
-													<div className="space-y-1">
-														<CardTitle className="text-base">
-															{meal.food.name}
-														</CardTitle>
-														<div className="flex gap-2 items-center">
-															<Badge variant="outline" className="capitalize">
-																{meal.mealTime}
-															</Badge>
-															<span className="text-sm text-muted-foreground">
-																{meal.amount}
-															</span>
-														</div>
-													</div>
-													<Button
-														variant="ghost"
-														size="icon"
-														onClick={() => setMealToDelete(meal.id)}
-														className="size-8 -mt-1 -mr-2 text-muted-foreground hover:text-destructive"
-													>
-														<Trash2 className="size-4" />
-													</Button>
-												</CardHeader>
-												{meal.notes && (
-													<CardContent className="pt-0">
-														<p className="text-sm text-muted-foreground">
-															{meal.notes}
-														</p>
-													</CardContent>
-												)}
-											</Card>
+											<MealCard
+												key={meal.id}
+												meal={meal}
+												onDelete={setMealToDelete}
+											/>
 										))}
 									</div>
 								</div>
@@ -225,10 +220,12 @@ export function MealsPageClient() {
 				)}
 			</main>
 
-			<AddMealDialog
-				open={isAddDialogOpen}
-				onOpenChange={setIsAddDialogOpen}
-				onAdd={handleAddMeal}
+			<QuickAddDialog
+				open={isQuickAddOpen}
+				onOpenChange={setIsQuickAddOpen}
+				onAddFood={handleAddFood}
+				onAddMeal={handleAddMeal}
+				defaultTab="meal"
 			/>
 			<ConfirmDialog
 				open={mealToDelete !== null}

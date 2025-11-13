@@ -1,15 +1,10 @@
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
-import type React from "react";
 import "./globals.css";
-import {
-	Geist as V0_Font_Geist,
-	Geist_Mono as V0_Font_Geist_Mono,
-	Source_Serif_4 as V0_Font_Source_Serif_4,
-} from "next/font/google";
 import { AppHeader } from "@/components/app-header";
 import { HeaderActionsProvider } from "@/components/header-context";
+import { QuickAddDialogProvider } from "@/components/quick-add-context";
 import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
@@ -35,19 +30,7 @@ export const metadata: Metadata = {
 	},
 };
 
-// Initialize fonts
-const _geist = V0_Font_Geist({
-	subsets: ["latin"],
-	weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
-});
-const _geistMono = V0_Font_Geist_Mono({
-	subsets: ["latin"],
-	weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
-});
-const _sourceSerif_4 = V0_Font_Source_Serif_4({
-	subsets: ["latin"],
-	weight: ["200", "300", "400", "500", "600", "700", "800", "900"],
-});
+// Note: Using system fonts to avoid Google Fonts fetch during restricted builds.
 
 export default function RootLayout({
 	children,
@@ -63,10 +46,12 @@ export default function RootLayout({
 					enableSystem
 					disableTransitionOnChange
 				>
-					<HeaderActionsProvider>
-						<AppHeader />
-						{children}
-					</HeaderActionsProvider>
+					<QuickAddDialogProvider>
+						<HeaderActionsProvider>
+							<AppHeader />
+							{children}
+						</HeaderActionsProvider>
+					</QuickAddDialogProvider>
 					<Toaster />
 				</ThemeProvider>
 				<Analytics />

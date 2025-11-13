@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 
-export default function Error({
+export default function AppError({
 	error,
 	reset,
 }: {
@@ -14,7 +14,7 @@ export default function Error({
 			<div className="space-y-4 text-center">
 				<h2 className="font-semibold text-2xl">Something went wrong!</h2>
 				<p className="text-muted-foreground">
-					{error.message || "An unexpected error occurred"}
+					{error.message ?? "An unexpected error occurred"}
 				</p>
 				<Button onClick={() => reset()}>Try again</Button>
 			</div>

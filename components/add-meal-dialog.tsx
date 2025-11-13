@@ -1,7 +1,6 @@
 "use client";
 
-import type React from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -22,7 +21,9 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { FoodSummary, MealInput } from "@/lib/types";
+import { useFoodSummaries } from "@/hooks/use-food-summaries";
+import type { MealInput } from "@/lib/types";
+import { getDateString } from "@/lib/utils";
 
 type AddMealDialogProps = {
 	open: boolean;
@@ -35,37 +36,13 @@ export function AddMealDialog({
 	onOpenChange,
 	onAdd,
 }: AddMealDialogProps) {
-	const [foods, setFoods] = useState<FoodSummary[]>([]);
-	const [mealDate, setMealDate] = useState(
-		new Date().toISOString().split("T")[0],
-	);
+	const { foods, isLoading: isLoadingFoods } = useFoodSummaries(open);
+
+	const [mealDate, setMealDate] = useState(getDateString());
 	const [mealTime, setMealTime] = useState<"morning" | "evening">("morning");
 	const [foodId, setFoodId] = useState("");
 	const [amount, setAmount] = useState("");
 	const [notes, setNotes] = useState("");
-
-	const fetchFoods = useCallback(async () => {
-		try {
-			const response = await fetch("/api/foods");
-			if (response.ok) {
-				const data = await response.json();
-				// Filter out archived foods
-				const activeFoods = data.filter(
-					(food: { archived?: boolean }) => !food.archived,
-				);
-				setFoods(activeFoods);
-			}
-		} catch (error) {
-			console.error("Error fetching foods:", error);
-		}
-	}, []);
-
-	// Fetch foods when dialog opens
-	useEffect(() => {
-		if (open) {
-			fetchFoods();
-		}
-	}, [open, fetchFoods]);
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
@@ -80,7 +57,7 @@ export function AddMealDialog({
 		});
 
 		// Reset form
-		setMealDate(new Date().toISOString().split("T")[0]);
+		setMealDate(getDateString());
 		setMealTime("morning");
 		setFoodId("");
 		setAmount("");
@@ -133,16 +110,34 @@ export function AddMealDialog({
 
 						<div className="space-y-2">
 							<Label htmlFor="food">Food</Label>
-							<Select value={foodId} onValueChange={setFoodId}>
+							<Select
+								value={foodId}
+								onValueChange={setFoodId}
+								disabled={isLoadingFoods}
+							>
 								<SelectTrigger id="food">
-									<SelectValue placeholder="Select a food" />
+									<SelectValue
+										placeholder={
+											isLoadingFoods ? "Loading foods..." : "Select a food"
+										}
+									/>
 								</SelectTrigger>
 								<SelectContent>
-									{foods.map((food) => (
-										<SelectItem key={food.id} value={food.id}>
-											{food.name}
+									{isLoadingFoods ? (
+										<SelectItem value="loading" disabled>
+											Loading foods...
 										</SelectItem>
-									))}
+									) : foods.length === 0 ? (
+										<SelectItem value="no-foods" disabled>
+											No foods available
+										</SelectItem>
+									) : (
+										foods.map((food) => (
+											<SelectItem key={food.id} value={food.id}>
+												{food.name}
+											</SelectItem>
+										))
+									)}
 								</SelectContent>
 							</Select>
 						</div>

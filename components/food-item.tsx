@@ -17,6 +17,7 @@ import {
 	ItemTitle,
 } from "@/components/ui/item";
 import type { Food } from "@/lib/types";
+import { ConfirmDialog } from "./confirm-dialog";
 import { EditFoodDialog } from "./edit-food-dialog";
 
 type FoodItemProps = {
@@ -31,6 +32,7 @@ export const FoodItem = React.memo(function FoodItem({
 	onDelete,
 }: FoodItemProps) {
 	const [isEditOpen, setIsEditOpen] = useState(false);
+	const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
 	const cyclePreference = () => {
 		const preferenceOrder: Food["preference"][] = [
@@ -95,7 +97,7 @@ export const FoodItem = React.memo(function FoodItem({
 					<Button
 						variant="ghost"
 						size="icon-sm"
-						onClick={() => onDelete(food.id)}
+						onClick={() => setIsDeleteOpen(true)}
 						title="Delete food"
 						className="text-destructive hover:text-destructive"
 					>
@@ -112,6 +114,18 @@ export const FoodItem = React.memo(function FoodItem({
 					onUpdate(food.id, updates);
 					setIsEditOpen(false);
 				}}
+			/>
+			<ConfirmDialog
+				open={isDeleteOpen}
+				onOpenChange={setIsDeleteOpen}
+				onConfirm={() => {
+					onDelete(food.id);
+					setIsDeleteOpen(false);
+				}}
+				title="Delete Food"
+				description={`Are you sure you want to delete "${food.name}"? This action cannot be undone.`}
+				confirmLabel="Delete"
+				variant="destructive"
 			/>
 		</>
 	);

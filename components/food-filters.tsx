@@ -6,7 +6,6 @@ import {
 	ChevronDown,
 	ChevronUp,
 	HelpCircle,
-	Plus,
 	RotateCcw,
 	Search,
 	ThumbsDown,
@@ -38,7 +37,6 @@ type FoodFiltersProps = {
 	onReset: () => void;
 	isMinimized: boolean;
 	onToggleMinimize: () => void;
-	onAddFood: () => void;
 };
 
 export function FoodFilters({
@@ -55,7 +53,6 @@ export function FoodFilters({
 	onReset,
 	isMinimized,
 	onToggleMinimize,
-	onAddFood,
 }: FoodFiltersProps) {
 	return (
 		<div className="flex flex-col gap-4 p-4 mb-6 rounded-lg border bg-card">
@@ -82,10 +79,6 @@ export function FoodFilters({
 					<RotateCcw className="size-4" />
 					<span className="">Reset</span>
 				</Button>
-				<Button onClick={onAddFood} size="default" className="shadow-none">
-					<Plus className="size-4" />
-					Add Food
-				</Button>{" "}
 				<Button
 					variant="outline"
 					size="icon"
