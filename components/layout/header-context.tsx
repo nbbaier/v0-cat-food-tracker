@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, type ReactNode, useContext, useState } from "react";
+import { createContext, type ReactNode, useState } from "react";
 
 type HeaderActionsContextType = {
 	actions: ReactNode | null;
@@ -19,14 +19,4 @@ export function HeaderActionsProvider({ children }: { children: ReactNode }) {
 			{children}
 		</HeaderActionsContext.Provider>
 	);
-}
-
-export function useHeaderActions() {
-	const context = useContext(HeaderActionsContext);
-	if (context === undefined) {
-		throw new Error(
-			"useHeaderActions must be used within HeaderActionsProvider",
-		);
-	}
-	return context;
 }
