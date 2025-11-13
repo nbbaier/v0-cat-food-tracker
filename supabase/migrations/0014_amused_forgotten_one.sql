@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS "idx_foods_archived_created"

@@ -6,6 +6,7 @@ import { auth } from "@/lib/auth";
 import { PAGINATION } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { foods, meals } from "@/lib/db/schema";
+import { getErrorDetails, safeLogError } from "@/lib/utils";
 import { foodInputSchema } from "@/lib/validations";
 
 /**
@@ -24,7 +25,7 @@ import { foodInputSchema } from "@/lib/validations";
  *
  * Cursor-based pagination:
  * - First request: Don't include cursor parameter
- * - Subsequent requests: Use the smallest `addedAt` timestamp from previous results as cursor
+ * - Subsequent requests: Use the smallest `createdAt` timestamp from previous results as cursor
  * - Results are ordered by createdAt DESC (newest first)
  */
 export async function GET(request: NextRequest) {
@@ -79,18 +80,7 @@ export async function GET(request: NextRequest) {
 			.groupBy(meals.foodId);
 
 		const mealCountsCTEBuilder = db.$with("meal_counts");
-		const _mealCountsTypeHelper = mealCountsCTEBuilder.as(mealCountsSubquery);
-		type MealCountsCTE = typeof _mealCountsTypeHelper;
-
-		let mealCounts: MealCountsCTE;
-		try {
-			mealCounts = mealCountsCTEBuilder.as(mealCountsSubquery);
-		} catch (error) {
-			console.error("[v0] GET /api/foods CTE construction error:", error);
-			throw new Error(
-				`Failed to construct meal_counts CTE: ${error instanceof Error ? error.message : String(error)}`,
-			);
-		}
+		const mealCounts = mealCountsCTEBuilder.as(mealCountsSubquery);
 
 		const baseFoodsQuery = db
 			.with(mealCounts)
@@ -145,6 +135,7 @@ export async function GET(request: NextRequest) {
 			inventoryQuantity: food.inventoryQuantity,
 			archived: Boolean(food.archived),
 			addedAt: new Date(food.createdAt).getTime(),
+			createdAt: food.createdAt,
 			phosphorusDmb: food.phosphorusDmb,
 			proteinDmb: food.proteinDmb,
 			fatDmb: food.fatDmb,
@@ -165,13 +156,12 @@ export async function GET(request: NextRequest) {
 			},
 		);
 	} catch (error) {
-		console.error("[v0] GET /api/foods error:", error);
+		safeLogError("GET /api/foods", error);
+		const details = getErrorDetails(error);
 		return NextResponse.json(
 			{
 				error: "Failed to fetch foods",
-				...(process.env.NODE_ENV === "development" && {
-					details: error instanceof Error ? error.message : String(error),
-				}),
+				...(details && { details }),
 			},
 			{ status: 500 },
 		);
@@ -222,6 +212,7 @@ export async function POST(request: NextRequest) {
 			inventoryQuantity: newFood.inventoryQuantity,
 			archived: Boolean(newFood.archived),
 			addedAt: new Date(newFood.createdAt).getTime(),
+			createdAt: newFood.createdAt,
 			phosphorusDmb: newFood.phosphorusDmb,
 			proteinDmb: newFood.proteinDmb,
 			fatDmb: newFood.fatDmb,
@@ -231,22 +222,25 @@ export async function POST(request: NextRequest) {
 		return NextResponse.json(formattedFood, { status: 201 });
 	} catch (error) {
 		if (error instanceof ZodError) {
+			const details =
+				process.env.NODE_ENV === "development"
+					? error.issues.map((e) => `${e.path.join(".")}: ${e.message}`)
+					: undefined;
 			return NextResponse.json(
 				{
 					error: "Validation failed",
-					details: error.issues.map((e) => `${e.path.join(".")}: ${e.message}`),
+					...(details && { details }),
 				},
 				{ status: 400 },
 			);
 		}
 
-		console.error("[v0] POST /api/foods error:", error);
+		safeLogError("POST /api/foods", error);
+		const details = getErrorDetails(error);
 		return NextResponse.json(
 			{
 				error: "Failed to create food",
-				...(process.env.NODE_ENV === "development" && {
-					details: error instanceof Error ? error.message : String(error),
-				}),
+				...(details && { details }),
 			},
 			{ status: 500 },
 		);

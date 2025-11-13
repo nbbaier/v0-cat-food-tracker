@@ -6,6 +6,7 @@ import { auth } from "@/lib/auth";
 import { PAGINATION } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { foods, meals } from "@/lib/db/schema";
+import { getErrorDetails, safeLogError } from "@/lib/utils";
 import { mealInputSchema } from "@/lib/validations";
 
 /**
@@ -99,13 +100,12 @@ export async function GET(request: NextRequest) {
 			},
 		);
 	} catch (error) {
-		console.error("[v0] GET /api/meals error:", error);
+		safeLogError("GET /api/meals", error);
+		const details = getErrorDetails(error);
 		return NextResponse.json(
 			{
 				error: "Failed to fetch meals",
-				...(process.env.NODE_ENV === "development" && {
-					details: error instanceof Error ? error.message : String(error),
-				}),
+				...(details && { details }),
 			},
 			{ status: 500 },
 		);
@@ -160,24 +160,26 @@ export async function POST(request: NextRequest) {
 
 		return NextResponse.json(formattedMeal, { status: 201 });
 	} catch (error) {
-		// Handle Zod validation errors
 		if (error instanceof ZodError) {
+			const details =
+				process.env.NODE_ENV === "development"
+					? error.issues.map((e) => `${e.path.join(".")}: ${e.message}`)
+					: undefined;
 			return NextResponse.json(
 				{
 					error: "Validation failed",
-					details: error.issues.map((e) => `${e.path.join(".")}: ${e.message}`),
+					...(details && { details }),
 				},
 				{ status: 400 },
 			);
 		}
 
-		console.error("[v0] POST /api/meals error:", error);
+		safeLogError("POST /api/meals", error);
+		const details = getErrorDetails(error);
 		return NextResponse.json(
 			{
 				error: "Failed to create meal",
-				...(process.env.NODE_ENV === "development" && {
-					details: error instanceof Error ? error.message : String(error),
-				}),
+				...(details && { details }),
 			},
 			{ status: 500 },
 		);

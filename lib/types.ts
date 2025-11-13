@@ -10,6 +10,7 @@ export type Food = {
 	inventoryQuantity: number;
 	archived?: boolean;
 	addedAt: number;
+	createdAt: string;
 	phosphorusDmb?: number;
 	proteinDmb?: number;
 	fatDmb?: number;
@@ -20,11 +21,11 @@ export type Food = {
 
 export type FoodInput = Omit<
 	Food,
-	"id" | "addedAt" | "mealCount" | "mealCommentCount"
+	"id" | "addedAt" | "createdAt" | "mealCount" | "mealCommentCount"
 >;
 
 export type FoodUpdate = Partial<
-	Omit<Food, "id" | "addedAt" | "mealCount" | "mealCommentCount">
+	Omit<Food, "id" | "addedAt" | "createdAt" | "mealCount" | "mealCommentCount">
 >;
 
 export type FoodSummary = Pick<Food, "id" | "name" | "preference">;

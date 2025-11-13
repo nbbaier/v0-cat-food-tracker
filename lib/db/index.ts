@@ -10,10 +10,10 @@ if (!connectionString) {
 // Configure postgres-js for serverless environments (Vercel)
 // This is more efficient than node-postgres pooling in serverless functions
 const client = postgres(connectionString, {
-	max: 10, // Maximum number of connections
-	idle_timeout: 30, // Close idle connections after 30 seconds
-	connect_timeout: 10, // Fail fast if DB is overloaded (10 seconds)
-	prepare: false, // Disable prepared statements for better serverless compatibility
+	max: 10,
+	idle_timeout: 30,
+	connect_timeout: 5,
+	prepare: false,
 });
 
 export const db = drizzle({ client });

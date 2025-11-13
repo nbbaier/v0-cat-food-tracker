@@ -26,3 +26,22 @@ export function parseValidationErrors(
 	}
 	return errors;
 }
+
+export function safeLogError(context: string, error: unknown): void {
+	if (process.env.NODE_ENV === "development") {
+		console.error(`[${context}]`, error);
+	} else {
+		const sanitizedError =
+			error instanceof Error
+				? { name: error.name, message: error.message }
+				: { type: typeof error, value: String(error) };
+		console.error(`[${context}]`, sanitizedError);
+	}
+}
+
+export function getErrorDetails(error: unknown): string | undefined {
+	if (process.env.NODE_ENV === "development") {
+		return error instanceof Error ? error.message : String(error);
+	}
+	return undefined;
+}

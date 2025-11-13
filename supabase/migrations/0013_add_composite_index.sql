@@ -1,1 +1,1 @@
-CREATE INDEX IF NOT EXISTS "idx_foods_archived_created" ON "foods" USING btree ("archived","created_at" DESC);
+CREATE INDEX IF NOT EXISTS "idx_foods_archived_created" ON "foods" USING btree ("archived", "created_at" DESC);

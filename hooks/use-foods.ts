@@ -78,7 +78,8 @@ export function useFoods() {
 
 				if (items.length > 0) {
 					const lastItem = items[items.length - 1];
-					cursorRef.current = lastItem.addedAt;
+					const lastCreatedAt = new Date(lastItem.createdAt).getTime();
+					cursorRef.current = lastCreatedAt;
 				} else {
 					cursorRef.current = null;
 				}

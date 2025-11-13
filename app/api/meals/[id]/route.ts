@@ -5,6 +5,7 @@ import { ZodError } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { meals } from "@/lib/db/schema";
+import { getErrorDetails, safeLogError } from "@/lib/utils";
 import { mealUpdateSchema } from "@/lib/validations";
 
 export async function PATCH(
@@ -28,22 +29,26 @@ export async function PATCH(
 
 		return NextResponse.json({ success: true });
 	} catch (error) {
-		// Handle Zod validation errors
 		if (error instanceof ZodError) {
+			const details =
+				process.env.NODE_ENV === "development"
+					? error.issues.map((e) => `${e.path.join(".")}: ${e.message}`)
+					: undefined;
 			return NextResponse.json(
 				{
 					error: "Validation failed",
-					details: error.issues.map((e) => `${e.path.join(".")}: ${e.message}`),
+					...(details && { details }),
 				},
 				{ status: 400 },
 			);
 		}
 
-		console.error("[v0] PATCH /api/meals/[id] error:", error);
+		safeLogError("PATCH /api/meals/[id]", error);
+		const details = getErrorDetails(error);
 		return NextResponse.json(
 			{
 				error: "Failed to update meal",
-				details: error instanceof Error ? error.message : String(error),
+				...(details && { details }),
 			},
 			{ status: 500 },
 		);
@@ -64,11 +69,12 @@ export async function DELETE(
 
 		return NextResponse.json({ success: true });
 	} catch (error) {
-		console.error("[v0] DELETE /api/meals/[id] error:", error);
+		safeLogError("DELETE /api/meals/[id]", error);
+		const details = getErrorDetails(error);
 		return NextResponse.json(
 			{
 				error: "Failed to delete meal",
-				details: error instanceof Error ? error.message : String(error),
+				...(details && { details }),
 			},
 			{ status: 500 },
 		);
