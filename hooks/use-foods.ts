@@ -177,7 +177,6 @@ export function useFoods() {
 				if (response.ok) {
 					invalidateFoodSummariesCache();
 					toast.success(SUCCESS_MESSAGES.UPDATED("Food"));
-					console.log("food updated =>", updates);
 					return true;
 				}
 
