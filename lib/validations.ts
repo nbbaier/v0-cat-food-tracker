@@ -11,8 +11,8 @@ export const foodInputSchema = z
 			.string()
 			.min(1, "Food name is required")
 			.max(200, "Food name must be less than 200 characters"),
-		preference: z.enum(["likes", "dislikes", "unknown"], {
-			message: "Preference must be 'likes', 'dislikes', or 'unknown'",
+		preference: z.enum(["likes", "neutral", "dislikes", "unknown"], {
+			message: "Preference must be 'likes', 'neutral', 'dislikes', or 'unknown'",
 		}),
 		notes: z
 			.string()
@@ -64,8 +64,8 @@ export const foodUpdateSchema = z
 			.max(200, "Food name must be less than 200 characters")
 			.optional(),
 		preference: z
-			.enum(["likes", "dislikes", "unknown"], {
-				message: "Preference must be 'likes', 'dislikes', or 'unknown'",
+			.enum(["likes", "neutral", "dislikes", "unknown"], {
+				message: "Preference must be 'likes', 'neutral', 'dislikes', or 'unknown'",
 			})
 			.optional(),
 		notes: z

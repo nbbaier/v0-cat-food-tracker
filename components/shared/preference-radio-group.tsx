@@ -1,6 +1,6 @@
 "use client";
 
-import { HelpCircle, ThumbsDown, ThumbsUp } from "lucide-react";
+import { HelpCircle, Minus, ThumbsDown, ThumbsUp } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import type { Food } from "@/lib/types";
@@ -20,7 +20,7 @@ export function PreferenceRadioGroup({
 		<RadioGroup
 			value={value}
 			onValueChange={(v) =>
-				onValueChange(v as "likes" | "dislikes" | "unknown")
+				onValueChange(v as "likes" | "neutral" | "dislikes" | "unknown")
 			}
 		>
 			<div className="flex items-center space-x-2">
@@ -31,6 +31,16 @@ export function PreferenceRadioGroup({
 				>
 					<ThumbsUp className="size-4 text-success" />
 					Likes
+				</Label>
+			</div>
+			<div className="flex items-center space-x-2">
+				<RadioGroupItem value="neutral" id={`${idPrefix}neutral`} />
+				<Label
+					htmlFor={`${idPrefix}neutral`}
+					className="flex items-center gap-2 font-normal"
+				>
+					<Minus className="size-4 text-warning" />
+					Neutral
 				</Label>
 			</div>
 			<div className="flex items-center space-x-2">
