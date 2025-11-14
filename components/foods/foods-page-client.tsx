@@ -48,7 +48,7 @@ export function FoodsPageClient() {
 
 	const [searchTerm, setSearchTerm] = useState("");
 	const [preferenceFilters, setPreferenceFilters] = useState<
-		Set<"likes" | "dislikes" | "unknown">
+		Set<Food["preference"]>
 	>(new Set());
 	const [inventoryFilter, setInventoryFilter] =
 		useState<InventoryFilter>("all");
@@ -113,7 +113,12 @@ export function FoodsPageClient() {
 					comparison = a.name.localeCompare(b.name);
 					break;
 				case "preference": {
-					const preferenceOrder = { likes: 0, unknown: 1, dislikes: 2 };
+					const preferenceOrder = {
+						likes: 0,
+						neutral: 1,
+						unknown: 2,
+						dislikes: 3,
+					};
 					comparison =
 						preferenceOrder[a.preference] - preferenceOrder[b.preference];
 					break;
@@ -139,9 +144,7 @@ export function FoodsPageClient() {
 		sortOrder,
 	]);
 
-	const togglePreferenceFilter = (
-		preference: "likes" | "dislikes" | "unknown",
-	) => {
+	const togglePreferenceFilter = (preference: Food["preference"]) => {
 		setPreferenceFilters((prev) => {
 			const newSet = new Set(prev);
 			if (newSet.has(preference)) {

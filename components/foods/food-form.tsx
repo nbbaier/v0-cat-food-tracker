@@ -25,9 +25,9 @@ export function FoodForm({
 	isEdit = false,
 }: FoodFormProps) {
 	const [name, setName] = useState(initialValues?.name ?? "");
-	const [preference, setPreference] = useState<
-		"likes" | "dislikes" | "unknown"
-	>(initialValues?.preference ?? "unknown");
+	const [preference, setPreference] = useState<Food["preference"]>(
+		initialValues?.preference ?? "unknown",
+	);
 	const [notes, setNotes] = useState(initialValues?.notes ?? "");
 	const [inventoryQuantity, setInventoryQuantity] = useState(
 		initialValues?.inventoryQuantity ?? 0,
