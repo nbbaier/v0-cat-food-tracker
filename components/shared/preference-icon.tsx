@@ -1,6 +1,6 @@
 "use client";
 
-import { HelpCircle, ThumbsDown, ThumbsUp } from "lucide-react";
+import { HelpCircle, Minus, ThumbsDown, ThumbsUp } from "lucide-react";
 import type { Food } from "@/lib/types";
 
 type PreferenceIconProps = {
@@ -15,6 +15,8 @@ export function PreferenceIcon({
 	switch (preference) {
 		case "likes":
 			return <ThumbsUp className={className} />;
+		case "neutral":
+			return <Minus className={className} />;
 		case "dislikes":
 			return <ThumbsDown className={className} />;
 		case "unknown":
@@ -26,6 +28,8 @@ export function getPreferenceColor(preference: Food["preference"]): string {
 	switch (preference) {
 		case "likes":
 			return "text-success";
+		case "neutral":
+			return "text-warning";
 		case "dislikes":
 			return "text-destructive";
 		case "unknown":

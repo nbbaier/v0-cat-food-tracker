@@ -18,6 +18,7 @@ import {
 	ItemTitle,
 } from "@/components/ui/item";
 import type { Food } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 type FoodItemProps = {
 	food: Food;
@@ -35,6 +36,7 @@ export const FoodItem = React.memo(function FoodItem({
 	const cyclePreference = () => {
 		const preferenceOrder: Food["preference"][] = [
 			"likes",
+			"neutral",
 			"dislikes",
 			"unknown",
 		];
@@ -48,13 +50,13 @@ export const FoodItem = React.memo(function FoodItem({
 		<>
 			<Item>
 				<ItemIcon
-					className="cursor-pointer hover:bg-accent rounded-sm transition-colors"
+					className="cursor-pointer rounded-sm transition-colors"
 					onClick={cyclePreference}
 					title="Click to cycle preference"
 				>
 					<PreferenceIcon
 						preference={food.preference}
-						className={`size-4 ${getPreferenceColor(food.preference)}`}
+						className={cn("size-4", getPreferenceColor(food.preference))}
 					/>
 				</ItemIcon>
 				<ItemContent>

@@ -13,6 +13,7 @@ import {
 export const mealTimeEnum = pgEnum("meal_time_type", ["morning", "evening"]);
 export const preferenceEnum = pgEnum("preference", [
 	"likes",
+	"neutral",
 	"dislikes",
 	"unknown",
 ]);

@@ -5,7 +5,7 @@
 export type Food = {
 	id: string;
 	name: string;
-	preference: "likes" | "dislikes" | "unknown";
+	preference: "likes" | "neutral" | "dislikes" | "unknown";
 	notes: string;
 	inventoryQuantity: number;
 	archived?: boolean;

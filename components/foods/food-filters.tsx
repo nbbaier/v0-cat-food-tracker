@@ -6,6 +6,7 @@ import {
 	ChevronDown,
 	ChevronUp,
 	HelpCircle,
+	Minus,
 	RotateCcw,
 	Search,
 	ThumbsDown,
@@ -21,13 +22,13 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import type { InventoryFilter, SortOption } from "@/lib/types";
+import type { Food, InventoryFilter, SortOption } from "@/lib/types";
 
 type FoodFiltersProps = {
 	searchTerm: string;
 	onSearchChange: (value: string) => void;
-	preferenceFilters: Set<"likes" | "dislikes" | "unknown">;
-	onTogglePreference: (preference: "likes" | "dislikes" | "unknown") => void;
+	preferenceFilters: Set<Food["preference"]>;
+	onTogglePreference: (preference: Food["preference"]) => void;
 	inventoryFilter: InventoryFilter;
 	onInventoryFilterChange: (value: InventoryFilter) => void;
 	sortBy: SortOption;
@@ -108,6 +109,17 @@ export function FoodFilters({
 								className="shadow-none"
 							>
 								<ThumbsUp className="size-4" />
+							</Button>
+							<Button
+								variant={
+									preferenceFilters.has("neutral") ? "secondary" : "outline"
+								}
+								size="sm"
+								onClick={() => onTogglePreference("neutral")}
+								title="Filter by neutral"
+								className="shadow-none"
+							>
+								<Minus className="size-4" />
 							</Button>
 							<Button
 								variant={
