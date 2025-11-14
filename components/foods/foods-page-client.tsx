@@ -196,7 +196,6 @@ export function FoodsPageClient() {
 					foods={filteredAndSortedFoods}
 					onUpdate={handleUpdateFood}
 					onDelete={confirmDeleteFood}
-					viewMode="compact"
 				/>
 				{hasMore && (
 					<div className="flex justify-center mt-6">

@@ -1,6 +1,5 @@
 "use client";
 
-import { FoodCard } from "@/components/foods/food-card";
 import { FoodItem } from "@/components/foods/food-item";
 import type { Food } from "@/lib/types";
 
@@ -8,15 +7,9 @@ type FoodListProps = {
 	foods: Food[];
 	onUpdate: (id: string, updates: Partial<Food>) => void;
 	onDelete: (food: Food) => void;
-	viewMode: "compact" | "full";
 };
 
-export function FoodList({
-	foods,
-	onUpdate,
-	onDelete,
-	viewMode,
-}: FoodListProps) {
+export function FoodList({ foods, onUpdate, onDelete }: FoodListProps) {
 	if (foods.length === 0) {
 		return (
 			<div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
@@ -31,25 +24,10 @@ export function FoodList({
 		);
 	}
 
-	if (viewMode === "compact") {
-		return (
-			<div className="space-y-2">
-				{foods.map((food) => (
-					<FoodItem
-						key={food.id}
-						food={food}
-						onUpdate={onUpdate}
-						onDelete={onDelete}
-					/>
-				))}
-			</div>
-		);
-	}
-
 	return (
-		<div className="grid gap-4 sm:grid-cols-2">
+		<div className="space-y-2">
 			{foods.map((food) => (
-				<FoodCard
+				<FoodItem
 					key={food.id}
 					food={food}
 					onUpdate={onUpdate}
