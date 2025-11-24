@@ -2,10 +2,13 @@ import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
+import { headers } from "next/headers";
+import { FeedbackButton } from "@/components/feedback";
 import { AppHeader } from "@/components/layout/app-header";
 import { HeaderActionsProvider } from "@/components/layout/header-context";
 import { QuickAddDialogProvider } from "@/components/shared/quick-add-context";
 import { Toaster } from "@/components/ui/sonner";
+import { auth } from "@/lib/auth";
 
 export const metadata: Metadata = {
 	title: "Ygritte's Picky Picks",
@@ -32,11 +35,14 @@ export const metadata: Metadata = {
 
 // Note: Using system fonts to avoid Google Fonts fetch during restricted builds.
 
-export default function RootLayout({
+export default async function RootLayout({
 	children,
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
+	const session = await auth.api.getSession({
+		headers: await headers(),
+	});
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<body className={`font-sans antialiased`}>
@@ -53,6 +59,8 @@ export default function RootLayout({
 						</HeaderActionsProvider>
 					</QuickAddDialogProvider>
 					<Toaster />
+					{/* Show FeedbackButton only if signed in */}
+					{session ? <FeedbackButton /> : null}
 				</ThemeProvider>
 				<Analytics />
 			</body>
