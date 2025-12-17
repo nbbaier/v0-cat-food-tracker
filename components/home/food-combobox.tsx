@@ -1,7 +1,7 @@
 "use client";
 
-import { Check, Plus, Search } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Check, Plus, Search, X } from "lucide-react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import type { FoodSummary } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -31,6 +31,7 @@ export function FoodCombobox({
 	const inputRef = useRef<HTMLInputElement>(null);
 	const listRef = useRef<HTMLDivElement>(null);
 	const blurTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+	const listboxId = useId();
 
 	const selectedFood = foods.find((f) => f.id === value);
 
@@ -61,9 +62,14 @@ export function FoodCombobox({
 
 	const handleSelect = (foodId: string) => {
 		onChange(foodId);
-		const food = foods.find((f) => f.id === foodId);
-		setSearch(food?.name ?? "");
+		setSearch("");
 		setIsOpen(false);
+	};
+
+	const handleClearSelection = () => {
+		onChange("");
+		setSearch("");
+		inputRef.current?.focus();
 	};
 
 	const handleCreate = () => {
@@ -105,6 +111,21 @@ export function FoodCombobox({
 
 	return (
 		<div className="relative">
+			{selectedFood && (
+				<div className="flex items-center gap-2 mb-2 px-3 py-2 rounded-md border bg-accent/50">
+					<Check className="size-4 text-primary" />
+					<span className="flex-1 font-medium">{selectedFood.name}</span>
+					<button
+						type="button"
+						onClick={handleClearSelection}
+						className="size-5 flex items-center justify-center rounded-full hover:bg-muted"
+						aria-label="Clear selection"
+					>
+						<X className="size-3" />
+					</button>
+				</div>
+			)}
+
 			<div className="relative">
 				<Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
 				<Input
@@ -117,34 +138,45 @@ export function FoodCombobox({
 						setIsOpen(true);
 						if (value) onChange("");
 					}}
-					onFocus={() => setIsOpen(true)}
+					onFocus={() => {
+						if (blurTimeoutRef.current) {
+							clearTimeout(blurTimeoutRef.current);
+							blurTimeoutRef.current = null;
+						}
+						setIsOpen(true);
+					}}
 					onBlur={() => {
+						if (blurTimeoutRef.current) {
+							clearTimeout(blurTimeoutRef.current);
+						}
 						blurTimeoutRef.current = setTimeout(() => setIsOpen(false), 200);
 					}}
 					onKeyDown={handleKeyDown}
 					disabled={disabled || isLoading}
 					className={cn("pl-9", error && "border-destructive")}
+					role="combobox"
+					aria-expanded={isOpen}
+					aria-controls={listboxId}
+					aria-haspopup="listbox"
 					aria-invalid={!!error}
 					aria-label="Search or add food"
 					autoComplete="off"
 				/>
 			</div>
 
-			{selectedFood && !isOpen && (
-				<div className="mt-2 text-sm text-muted-foreground">
-					Selected: <span className="font-medium">{selectedFood.name}</span>
-				</div>
-			)}
-
 			{isOpen && (filtered.length > 0 || showCreateOption) && (
 				<div
 					ref={listRef}
+					id={listboxId}
+					role="listbox"
 					className="absolute z-50 mt-1 w-full max-h-60 overflow-auto rounded-md border bg-popover shadow-md"
 				>
 					{filtered.map((food, index) => (
 						<button
 							key={food.id}
 							type="button"
+							role="option"
+							aria-selected={value === food.id}
 							className={cn(
 								"flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-accent",
 								highlightedIndex === index && "bg-accent",
@@ -164,6 +196,8 @@ export function FoodCombobox({
 					{showCreateOption && (
 						<button
 							type="button"
+							role="option"
+							aria-selected={false}
 							className={cn(
 								"flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-accent border-t",
 								highlightedIndex === filtered.length && "bg-accent",

@@ -19,7 +19,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
-import { useFoodSummaries } from "@/hooks/use-food-summaries";
+import {
+	invalidateFoodSummariesCache,
+	useFoodSummaries,
+} from "@/hooks/use-food-summaries";
 import type { Food, FoodSummary, Meal, MealInput } from "@/lib/types";
 import { getDateString } from "@/lib/utils";
 import { mealInputSchema } from "@/lib/validations";
@@ -62,8 +65,8 @@ export function HomePageClient() {
 						setLastMeal({ meal, food: meal.food });
 					}
 				}
-			} catch {
-				// silent fail
+			} catch (error) {
+				console.error("Failed to fetch last meal:", error);
 			} finally {
 				setIsLoadingLastMeal(false);
 			}
@@ -94,12 +97,14 @@ export function HomePageClient() {
 
 	const handleCreateFood = useCallback(
 		async (name: string) => {
+			const trimmedName = name.trim();
+			if (!trimmedName) return;
 			try {
 				const res = await fetch("/api/foods", {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({
-						name,
+						name: trimmedName,
 						preference: "unknown",
 						notes: "",
 						inventoryQuantity: 0,
@@ -107,7 +112,8 @@ export function HomePageClient() {
 				});
 				if (res.ok) {
 					const newFood = await res.json();
-					toast.success(`Added "${name}"`);
+					toast.success(`Added "${trimmedName}"`);
+					invalidateFoodSummariesCache();
 					refresh();
 					setFoodId(newFood.id);
 				} else {
