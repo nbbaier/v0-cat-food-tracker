@@ -46,7 +46,7 @@ export function FoodCombobox({
 
 	const totalOptions = filtered.length + (showCreateOption ? 1 : 0);
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: search is intentionally included to reset highlight when filtering
+	// biome-ignore lint/correctness/useExhaustiveDependencies: search dependency triggers highlight reset when search value changes
 	useEffect(() => {
 		setHighlightedIndex(0);
 	}, [search]);
