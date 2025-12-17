@@ -1,5 +1,4 @@
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
 import { HomePageClient } from "@/components/home/home-page-client";
 import { auth } from "@/lib/auth";
 

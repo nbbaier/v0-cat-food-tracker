@@ -2,7 +2,6 @@
 
 import { Check, Plus, Search } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { FoodSummary } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -31,6 +30,7 @@ export function FoodCombobox({
 	const [highlightedIndex, setHighlightedIndex] = useState(0);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const listRef = useRef<HTMLDivElement>(null);
+	const blurTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
 	const selectedFood = foods.find((f) => f.id === value);
 
@@ -46,9 +46,18 @@ export function FoodCombobox({
 
 	const totalOptions = filtered.length + (showCreateOption ? 1 : 0);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: search is intentionally included to reset highlight when filtering
 	useEffect(() => {
 		setHighlightedIndex(0);
 	}, [search]);
+
+	useEffect(() => {
+		return () => {
+			if (blurTimeoutRef.current) {
+				clearTimeout(blurTimeoutRef.current);
+			}
+		};
+	}, []);
 
 	const handleSelect = (foodId: string) => {
 		onChange(foodId);
@@ -109,11 +118,14 @@ export function FoodCombobox({
 						if (value) onChange("");
 					}}
 					onFocus={() => setIsOpen(true)}
-					onBlur={() => setTimeout(() => setIsOpen(false), 200)}
+					onBlur={() => {
+						blurTimeoutRef.current = setTimeout(() => setIsOpen(false), 200);
+					}}
 					onKeyDown={handleKeyDown}
 					disabled={disabled || isLoading}
 					className={cn("pl-9", error && "border-destructive")}
 					aria-invalid={!!error}
+					aria-label="Search or add food"
 					autoComplete="off"
 				/>
 			</div>
