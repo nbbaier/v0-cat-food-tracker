@@ -7,7 +7,7 @@ This file provides context for AI assistants working with this codebase.
 A Next.js application for tracking cat food preferences, inventory, and meal logs. The app allows users to:
 
 - Track different cat food brands and types
-- Record preferences (likes, dislikes, unknown)
+- Record preferences (likes, neutral, dislikes, unknown)
 - Manage inventory quantities and archive foods
 - Add notes about specific foods
 - Track nutritional information (phosphorus, protein, fat, fiber on dry matter basis)
@@ -85,6 +85,9 @@ A Next.js application for tracking cat food preferences, inventory, and meal log
 │   │   ├── food-item.tsx             # Individual food item
 │   │   ├── food-list.tsx             # List container for foods
 │   │   └── foods-page-client.tsx     # Client-side foods page wrapper
+│   ├── home/                  # Home page components (meal-first UX)
+│   │   ├── food-combobox.tsx         # Searchable food selector w/ inline create
+│   │   └── home-page-client.tsx      # Main meal creation interface
 │   ├── layout/                # Layout components
 │   │   ├── app-header.tsx     # Application header
 │   │   ├── header-context.tsx # Header state management
@@ -123,7 +126,7 @@ A Next.js application for tracking cat food preferences, inventory, and meal log
 
 ### Enums
 
-- **preference**: `'likes'`, `'dislikes'`, `'unknown'`
+- **preference**: `'likes'`, `'neutral'`, `'dislikes'`, `'unknown'`
 - **meal_time_type**: `'morning'`, `'evening'`
 
 ### foods table
@@ -427,7 +430,7 @@ bunx drizzle-kit push      # Push schema directly to database
 ### Data Validation
 
 - **Foods:**
-   - Preference field is constrained to: 'likes', 'dislikes', or 'unknown'
+   - Preference field is constrained to: 'likes', 'neutral', 'dislikes', or 'unknown'
    - Inventory quantity defaults to 0 and cannot be null
    - Archived defaults to false and cannot be null
    - Nutrition fields (phosphorus_dmb, protein_dmb, fat_dmb, fiber_dmb) are stored as percentages on dry matter basis with 2 decimal precision, default to 0
@@ -448,7 +451,7 @@ bunx drizzle-kit push      # Push schema directly to database
 1. Use the `quick-add-dialog.tsx` component or the food form
 2. Required fields: name, preference
 3. Optional fields: notes, inventory_quantity, archived, nutrition fields (phosphorus_dmb, protein_dmb, fat_dmb, fiber_dmb)
-4. Preference must be one of: 'likes', 'dislikes', 'unknown'
+4. Preference must be one of: 'likes', 'neutral', 'dislikes', 'unknown'
 5. Nutrition fields are percentages on dry matter basis (0-100)
 
 ### Updating Food Records
@@ -459,12 +462,14 @@ bunx drizzle-kit push      # Push schema directly to database
 
 ### Adding a Meal Log
 
-1. Navigate to the meals page (`/meals`)
-2. Use the quick-add dialog or meal form
-3. Required fields: meal_date, meal_time, food_id, amount
-4. Optional fields: notes
-5. Meal time must be either 'morning' or 'evening'
-6. Each combination of (date, time, food) must be unique
+1. Home page (`/`) shows meal creation form by default (meal-first UX)
+2. Date auto-populates to today, time auto-selects AM (<2pm) or PM (>=2pm)
+3. Search/filter foods by typing; create new food inline if not found
+4. Last meal feedback prompt appears at top - quickly update preference
+5. Required fields: meal_date, meal_time, food_id, amount
+6. Optional fields: notes
+7. Meal time must be either 'morning' or 'evening'
+8. Each combination of (date, time, food) must be unique
 
 ### Authentication
 
@@ -478,7 +483,7 @@ bunx drizzle-kit push      # Push schema directly to database
 The `food-filters.tsx` component provides:
 
 - **Search**: Filter by text in notes field
-- **Preference Filter**: Toggle filters for likes/dislikes/unknown
+- **Preference Filter**: Toggle filters for likes/neutral/dislikes/unknown
 - **Inventory Filter**: Show all, in-stock only, or out-of-stock only
 - **Sort Options**: By name, preference, inventory quantity, or date added
 - **Sort Order**: Toggle between ascending and descending
