@@ -1,6 +1,6 @@
 "use client";
 
-import { Package, Plus, Utensils } from "lucide-react";
+import { Home, Package, Plus, Utensils } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import AuthButtons from "@/components/auth/auth-buttons";
@@ -24,6 +24,7 @@ export function AppHeader() {
 	};
 
 	const showQuickAddButton = pathname === "/meals" || pathname === "/foods";
+	const isHome = pathname === "/";
 
 	const getPageTitle = () => {
 		if (pathname === "/meals") {
@@ -58,9 +59,9 @@ export function AppHeader() {
 								</h1>
 							</div>
 						) : (
-							<h1 className="text-2xl font-bold tracking-tight text-balance sm:text-3xl">
+							<Link href="/" className="text-2xl font-bold tracking-tight text-balance sm:text-3xl hover:opacity-80">
 								Ygritte's Picky Picks
-							</h1>
+							</Link>
 						)}
 					</div>
 					<div className="flex flex-wrap gap-2 items-center sm:flex-nowrap">
@@ -75,21 +76,13 @@ export function AppHeader() {
 								</Button>
 							</ButtonGroup>
 						)}
-						{!isLoading && isAuthenticated && (
+						{!isLoading && isAuthenticated && !isHome && (
 							<ButtonGroup className="shrink-0">
-								{pathname === "/meals" ? (
-									<Button variant="outline" size="icon-lg" asChild>
-										<Link href="/foods">
-											<Package className="size-4" />
-										</Link>
-									</Button>
-								) : (
-									<Button variant="outline" size="icon-lg" asChild>
-										<Link href="/meals">
-											<Utensils className="size-4" />
-										</Link>
-									</Button>
-								)}
+								<Button variant="outline" size="icon-lg" asChild>
+									<Link href="/">
+										<Home className="size-4" />
+									</Link>
+								</Button>
 							</ButtonGroup>
 						)}
 						<ButtonGroup className="shrink-0">
