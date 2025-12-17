@@ -79,11 +79,14 @@ export function HomePageClient() {
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ preference }),
 			});
-			if (res.ok) {
-				setFeedbackGiven(true);
-				toast.success(`Marked as ${preference}`);
-				refresh();
+			if (!res.ok) {
+				const error = await res.json();
+				toast.error(error.error || "Failed to save feedback");
+				return;
 			}
+			setFeedbackGiven(true);
+			toast.success(`Marked as ${preference}`);
+			refresh();
 		} catch {
 			toast.error("Failed to save feedback");
 		}
@@ -245,18 +248,14 @@ export function HomePageClient() {
 									onChange={(e) => setMealDate(e.target.value)}
 									aria-invalid={!!errors.mealDate}
 								/>
-								{errors.mealDate && (
-									<FieldError>{errors.mealDate}</FieldError>
-								)}
+								{errors.mealDate && <FieldError>{errors.mealDate}</FieldError>}
 							</div>
 
 							<div className="space-y-2">
 								<Label>Time</Label>
 								<RadioGroup
 									value={mealTime}
-									onValueChange={(v) =>
-										setMealTime(v as "morning" | "evening")
-									}
+									onValueChange={(v) => setMealTime(v as "morning" | "evening")}
 									className="flex gap-4 pt-2"
 								>
 									<div className="flex items-center gap-1.5">
@@ -272,9 +271,7 @@ export function HomePageClient() {
 										</Label>
 									</div>
 								</RadioGroup>
-								{errors.mealTime && (
-									<FieldError>{errors.mealTime}</FieldError>
-								)}
+								{errors.mealTime && <FieldError>{errors.mealTime}</FieldError>}
 							</div>
 						</div>
 

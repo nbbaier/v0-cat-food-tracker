@@ -59,7 +59,10 @@ export function AppHeader() {
 								</h1>
 							</div>
 						) : (
-							<Link href="/" className="text-2xl font-bold tracking-tight text-balance sm:text-3xl hover:opacity-80">
+							<Link
+								href="/"
+								className="text-2xl font-bold tracking-tight text-balance sm:text-3xl hover:opacity-80"
+							>
 								Ygritte's Picky Picks
 							</Link>
 						)}
