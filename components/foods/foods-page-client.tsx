@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import { FoodFilters } from "@/components/foods/food-filters";
 import { FoodList } from "@/components/foods/food-list";
 import { QuickAddDialog } from "@/components/layout/quick-add-dialog";
@@ -56,6 +57,7 @@ export function FoodsPageClient() {
 	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 	const [isFiltersMinimized, setIsFiltersMinimized] = useState(false);
 	const [foodToDelete, setFoodToDelete] = useState<Food | null>(null);
+	const [isExporting, setIsExporting] = useState(false);
 	const handleAddFood = async (food: FoodInput) => {
 		const success = await addFood(food);
 		if (success) {
@@ -82,6 +84,32 @@ export function FoodsPageClient() {
 
 	const confirmDeleteFood = (food: Food) => {
 		setFoodToDelete(food);
+	};
+
+	const handleExport = async () => {
+		setIsExporting(true);
+		try {
+			const response = await fetch("/api/foods/export?archived=false");
+			if (!response.ok) {
+				throw new Error("Failed to export");
+			}
+			const blob = await response.blob();
+			const url = window.URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			a.href = url;
+			const contentDisposition = response.headers.get("Content-Disposition");
+			const filenameMatch = contentDisposition?.match(/filename="(.+)"/);
+			a.download = filenameMatch?.[1] ?? "cat-food-inventory.csv";
+			document.body.appendChild(a);
+			a.click();
+			window.URL.revokeObjectURL(url);
+			document.body.removeChild(a);
+			toast.success("Inventory exported successfully");
+		} catch {
+			toast.error("Failed to export inventory");
+		} finally {
+			setIsExporting(false);
+		}
 	};
 
 	const filteredAndSortedFoods = useMemo(() => {
@@ -189,6 +217,8 @@ export function FoodsPageClient() {
 						setSortOrder(sortOrder === "asc" ? "desc" : "asc")
 					}
 					onReset={resetFilters}
+					onExport={handleExport}
+					isExporting={isExporting}
 					isMinimized={isFiltersMinimized}
 					onToggleMinimize={() => setIsFiltersMinimized(!isFiltersMinimized)}
 				/>
