@@ -5,6 +5,7 @@ import {
 	ArrowUpAZ,
 	ChevronDown,
 	ChevronUp,
+	Download,
 	HelpCircle,
 	Minus,
 	RotateCcw,
@@ -36,6 +37,8 @@ type FoodFiltersProps = {
 	sortOrder: "asc" | "desc";
 	onSortOrderToggle: () => void;
 	onReset: () => void;
+	onExport: () => void;
+	isExporting?: boolean;
 	isMinimized: boolean;
 	onToggleMinimize: () => void;
 };
@@ -52,6 +55,8 @@ export function FoodFilters({
 	sortOrder,
 	onSortOrderToggle,
 	onReset,
+	onExport,
+	isExporting,
 	isMinimized,
 	onToggleMinimize,
 }: FoodFiltersProps) {
@@ -79,6 +84,17 @@ export function FoodFilters({
 				>
 					<RotateCcw className="size-4" />
 					<span className="">Reset</span>
+				</Button>
+				<Button
+					variant="outline"
+					size="default"
+					onClick={onExport}
+					disabled={isExporting}
+					title="Export to CSV"
+					className="shadow-none"
+				>
+					<Download className="size-4" />
+					<span className="">{isExporting ? "Exporting..." : "Export"}</span>
 				</Button>
 				<Button
 					variant="outline"
