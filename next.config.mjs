@@ -16,10 +16,6 @@ const nextConfig = {
 						value: "nosniff",
 					},
 					{
-						key: "X-XSS-Protection",
-						value: "1; mode=block",
-					},
-					{
 						key: "Referrer-Policy",
 						value: "strict-origin-when-cross-origin",
 					},
@@ -33,7 +29,7 @@ const nextConfig = {
 							"default-src 'self'",
 							"script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live https://va.vercel-scripts.com",
 							"style-src 'self' 'unsafe-inline'",
-							"img-src 'self' data: https:",
+							"img-src 'self' data: https://*",
 							"font-src 'self' data:",
 							"connect-src 'self' https://vercel.live https://va.vercel-scripts.com https://*.supabase.co wss://*.supabase.co",
 							"frame-ancestors 'none'",
