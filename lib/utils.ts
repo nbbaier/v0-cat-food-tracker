@@ -69,7 +69,11 @@ export function sanitizeErrorForClient(
 			const message = error.message;
 
 			// Remove potential credentials, tokens, or secrets
-			if (message.match(/api[_-]?key|token|secret|password|credential/i)) {
+			if (
+				message.match(
+					/api[_-]?key|token|secret|password|credential|bearer|authorization|private[_-]?key|client[_-]?secret|access[_-]?token|refresh[_-]?token/i,
+				)
+			) {
 				return "Authentication service temporarily unavailable";
 			}
 
