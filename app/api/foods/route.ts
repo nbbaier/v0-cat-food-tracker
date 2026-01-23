@@ -6,6 +6,11 @@ import { auth } from "@/lib/auth";
 import { PAGINATION } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { foods, meals } from "@/lib/db/schema";
+import {
+	getSecurityContext,
+	logDataCreation,
+	logUnauthorizedAccess,
+} from "@/lib/security-logger";
 import { getErrorDetails, safeLogError } from "@/lib/utils";
 import { foodInputSchema } from "@/lib/validations";
 
@@ -31,6 +36,9 @@ import { foodInputSchema } from "@/lib/validations";
 export async function GET(request: NextRequest) {
 	const session = await auth.api.getSession({ headers: await headers() });
 	if (!session) {
+		logUnauthorizedAccess(
+			getSecurityContext(request, { resourceType: "foods" }),
+		);
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 	try {
@@ -171,6 +179,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
 	const session = await auth.api.getSession({ headers: await headers() });
 	if (!session) {
+		logUnauthorizedAccess(
+			getSecurityContext(request, { resourceType: "foods" }),
+		);
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 	try {
@@ -203,6 +214,16 @@ export async function POST(request: NextRequest) {
 		};
 
 		const [newFood] = await db.insert(foods).values(insertValues).returning();
+
+		// Log food creation
+		logDataCreation(
+			getSecurityContext(request, {
+				userId: session.user.id,
+				userEmail: session.user.email,
+				resourceType: "food",
+				resourceId: newFood.id,
+			}),
+		);
 
 		const formattedFood = {
 			id: newFood.id,

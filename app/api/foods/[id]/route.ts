@@ -5,6 +5,12 @@ import { ZodError } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { foods } from "@/lib/db/schema";
+import {
+	getSecurityContext,
+	logDataDeletion,
+	logDataUpdate,
+	logUnauthorizedAccess,
+} from "@/lib/security-logger";
 import { getErrorDetails, safeLogError } from "@/lib/utils";
 import { foodUpdateSchema } from "@/lib/validations";
 
@@ -14,6 +20,13 @@ export async function PATCH(
 ) {
 	const session = await auth.api.getSession({ headers: await headers() });
 	if (!session) {
+		const { id } = await params;
+		logUnauthorizedAccess(
+			getSecurityContext(request, {
+				resourceType: "food",
+				resourceId: id,
+			}),
+		);
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 	try {
@@ -26,6 +39,16 @@ export async function PATCH(
 		const updates = { ...validatedData, updatedAt: new Date().toISOString() };
 
 		await db.update(foods).set(updates).where(eq(foods.id, id));
+
+		// Log food update
+		logDataUpdate(
+			getSecurityContext(request, {
+				userId: session.user.id,
+				userEmail: session.user.email,
+				resourceType: "food",
+				resourceId: id,
+			}),
+		);
 
 		return NextResponse.json({ success: true });
 	} catch (error) {
@@ -61,11 +84,28 @@ export async function DELETE(
 ) {
 	const session = await auth.api.getSession({ headers: await headers() });
 	if (!session) {
+		const { id } = await params;
+		logUnauthorizedAccess(
+			getSecurityContext(_request, {
+				resourceType: "food",
+				resourceId: id,
+			}),
+		);
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 	try {
 		const { id } = await params;
 		await db.delete(foods).where(eq(foods.id, id));
+
+		// Log food deletion
+		logDataDeletion(
+			getSecurityContext(_request, {
+				userId: session.user.id,
+				userEmail: session.user.email,
+				resourceType: "food",
+				resourceId: id,
+			}),
+		);
 
 		return NextResponse.json({ success: true });
 	} catch (error) {

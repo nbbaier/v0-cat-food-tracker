@@ -4,6 +4,10 @@ import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { foods } from "@/lib/db/schema";
+import {
+	getSecurityContext,
+	logUnauthorizedAccess,
+} from "@/lib/security-logger";
 import { safeLogError } from "@/lib/utils";
 
 /**
@@ -17,6 +21,9 @@ import { safeLogError } from "@/lib/utils";
 export async function GET(request: NextRequest) {
 	const session = await auth.api.getSession({ headers: await headers() });
 	if (!session) {
+		logUnauthorizedAccess(
+			getSecurityContext(request, { resourceType: "foods/export" }),
+		);
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 
@@ -58,7 +65,9 @@ export async function GET(request: NextRequest) {
 			"Created At",
 		];
 
-		const escapeCSVField = (value: string | number | boolean | null): string => {
+		const escapeCSVField = (
+			value: string | number | boolean | null,
+		): string => {
 			if (value === null || value === undefined) {
 				return "";
 			}
