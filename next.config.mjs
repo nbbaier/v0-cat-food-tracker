@@ -25,6 +25,8 @@ const nextConfig = {
 					},
 					{
 						key: "Content-Security-Policy",
+						// Note: 'unsafe-eval' and 'unsafe-inline' are required for Next.js to function properly
+						// https://* for img-src allows flexibility for user-uploaded or external cat food images
 						value: [
 							"default-src 'self'",
 							"script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live https://va.vercel-scripts.com",
