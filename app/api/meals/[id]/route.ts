@@ -5,7 +5,7 @@ import { ZodError } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { meals } from "@/lib/db/schema";
-import { getErrorDetails, safeLogError } from "@/lib/utils";
+import { sanitizeErrorForClient } from "@/lib/utils";
 import { mealUpdateSchema } from "@/lib/validations";
 
 export async function PATCH(
@@ -43,12 +43,10 @@ export async function PATCH(
 			);
 		}
 
-		safeLogError("PATCH /api/meals/[id]", error);
-		const details = getErrorDetails(error);
+		const errorMessage = sanitizeErrorForClient(error, "PATCH /api/meals/[id]");
 		return NextResponse.json(
 			{
-				error: "Failed to update meal",
-				...(details && { details }),
+				error: errorMessage,
 			},
 			{ status: 500 },
 		);
@@ -69,12 +67,13 @@ export async function DELETE(
 
 		return NextResponse.json({ success: true });
 	} catch (error) {
-		safeLogError("DELETE /api/meals/[id]", error);
-		const details = getErrorDetails(error);
+		const errorMessage = sanitizeErrorForClient(
+			error,
+			"DELETE /api/meals/[id]",
+		);
 		return NextResponse.json(
 			{
-				error: "Failed to delete meal",
-				...(details && { details }),
+				error: errorMessage,
 			},
 			{ status: 500 },
 		);

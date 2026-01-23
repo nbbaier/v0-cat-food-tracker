@@ -4,7 +4,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { foods } from "@/lib/db/schema";
-import { safeLogError } from "@/lib/utils";
+import { sanitizeErrorForClient } from "@/lib/utils";
 
 /**
  * GET /api/foods/export - Export foods as CSV
@@ -58,7 +58,9 @@ export async function GET(request: NextRequest) {
 			"Created At",
 		];
 
-		const escapeCSVField = (value: string | number | boolean | null): string => {
+		const escapeCSVField = (
+			value: string | number | boolean | null,
+		): string => {
 			if (value === null || value === undefined) {
 				return "";
 			}
@@ -102,10 +104,7 @@ export async function GET(request: NextRequest) {
 			},
 		});
 	} catch (error) {
-		safeLogError("GET /api/foods/export", error);
-		return NextResponse.json(
-			{ error: "Failed to export foods" },
-			{ status: 500 },
-		);
+		const errorMessage = sanitizeErrorForClient(error, "GET /api/foods/export");
+		return NextResponse.json({ error: errorMessage }, { status: 500 });
 	}
 }

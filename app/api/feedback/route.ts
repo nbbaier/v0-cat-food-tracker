@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { sanitizeErrorForClient } from "@/lib/utils";
 
 export async function POST(request: Request) {
 	try {
@@ -31,23 +32,23 @@ export async function POST(request: Request) {
 		);
 
 		if (!response.ok) {
-			const errorData = await response
-				.json()
-				.catch(() => ({ message: "Unknown error" }));
-			console.error("GitHub API error:", response.status, errorData);
+			const errorMessage = sanitizeErrorForClient(
+				new Error(`GitHub API error: ${response.status}`),
+				"POST /api/feedback - GitHub API",
+			);
 
 			if (response.status === 403) {
 				return NextResponse.json(
 					{
 						error:
-							"GitHub token lacks required permissions. Ensure it has 'repo' scope (or 'public_repo' for public repositories).",
+							"Unable to submit feedback at this time. Please try again later.",
 					},
 					{ status: 403 },
 				);
 			}
 
 			return NextResponse.json(
-				{ error: "Failed to submit feedback" },
+				{ error: errorMessage },
 				{ status: response.status },
 			);
 		}
@@ -55,10 +56,7 @@ export async function POST(request: Request) {
 		const data = await response.json();
 		return NextResponse.json(data, { status: 200 });
 	} catch (error) {
-		console.error(error);
-		return NextResponse.json(
-			{ error: "Failed to submit feedback" },
-			{ status: 500 },
-		);
+		const errorMessage = sanitizeErrorForClient(error, "POST /api/feedback");
+		return NextResponse.json({ error: errorMessage }, { status: 500 });
 	}
 }

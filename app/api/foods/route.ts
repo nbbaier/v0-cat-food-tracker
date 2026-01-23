@@ -6,7 +6,7 @@ import { auth } from "@/lib/auth";
 import { PAGINATION } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { foods, meals } from "@/lib/db/schema";
-import { getErrorDetails, safeLogError } from "@/lib/utils";
+import { sanitizeErrorForClient } from "@/lib/utils";
 import { foodInputSchema } from "@/lib/validations";
 
 /**
@@ -156,12 +156,10 @@ export async function GET(request: NextRequest) {
 			},
 		);
 	} catch (error) {
-		safeLogError("GET /api/foods", error);
-		const details = getErrorDetails(error);
+		const errorMessage = sanitizeErrorForClient(error, "GET /api/foods");
 		return NextResponse.json(
 			{
-				error: "Failed to fetch foods",
-				...(details && { details }),
+				error: errorMessage,
 			},
 			{ status: 500 },
 		);
@@ -235,12 +233,10 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		safeLogError("POST /api/foods", error);
-		const details = getErrorDetails(error);
+		const errorMessage = sanitizeErrorForClient(error, "POST /api/foods");
 		return NextResponse.json(
 			{
-				error: "Failed to create food",
-				...(details && { details }),
+				error: errorMessage,
 			},
 			{ status: 500 },
 		);
