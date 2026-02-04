@@ -358,6 +358,168 @@ app/
 | "2 cans friskies, wouldn't eat it" | Friskies, 2 cans, (current time), today, dislikes |
 | "breakfast" | (ask food), (ask amount), morning, today |
 
+## Appendix: LLM Provider Options
+
+Research into free and low-cost LLM options for the parsing task (February 2026).
+
+### Recommended: Groq (Free Tier)
+
+**Why it's ideal for this use case:**
+- Ultra-fast inference (~200ms) due to custom LPU hardware
+- OpenAI-compatible API (easy integration)
+- Generous free tier with no credit card required
+- Supports small, efficient models perfect for extraction
+
+**Free tier limits:**
+- Rate limits apply at organization level
+- Developer tier offers 10x higher limits with 25% cost discount
+- Batch processing available at 50% lower cost
+
+**Models to consider:**
+- Llama 3.3 70B (excellent for structured extraction)
+- Mixtral 8x7B (fast, good at following instructions)
+
+**Integration:**
+```typescript
+import Groq from "groq-sdk";
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+const response = await groq.chat.completions.create({
+  model: "llama-3.3-70b-versatile",
+  messages: [{ role: "user", content: prompt }],
+  response_format: { type: "json_object" },
+});
+```
+
+### Alternative: Cloudflare Workers AI
+
+**Pros:**
+- 10,000 free Neurons/day (resets at UTC midnight)
+- Runs on edge (low latency, 200+ cities)
+- 50+ models available
+- Already using Vercel, but CF Workers could be a serverless function
+
+**Pricing:**
+- Free: 10,000 Neurons/day
+- Paid: $0.011 per 1,000 Neurons
+
+**Best for:** If you want to avoid external API dependencies and run models at the edge.
+
+### Alternative: OpenRouter
+
+**Pros:**
+- Access to 300+ models through single API
+- Dedicated free model collection
+- No markup on provider pricing
+- `openrouter/free` auto-routes to available free models
+
+**Free tier limits:**
+- 50 requests/day (without credits)
+- 1,000 requests/day (with $10+ credits purchased)
+- 20 requests/minute
+
+**Free models available (Feb 2026):**
+- Meta Llama 3.3 70B
+- Qwen3-Coder-480B-A35B (for complex extraction)
+- Various community fine-tunes
+
+### Alternative: Ollama (Local/Self-Hosted)
+
+**Pros:**
+- Completely free (runs on your hardware)
+- No API costs ever
+- Privacy-preserving (data never leaves device)
+- Native structured output support with JSON schema
+
+**Best models for extraction:**
+- Qwen2.5-7B Instruct (excellent for structured tasks)
+- Gemma 3n (2-5B, designed for on-device)
+- Phi-4 (14B, punches above weight class)
+
+**Structured output example:**
+```typescript
+const response = await ollama.chat({
+  model: "qwen2.5:7b",
+  messages: [{ role: "user", content: prompt }],
+  format: mealSchema, // JSON schema
+  options: { temperature: 0 },
+});
+```
+
+**Cons:**
+- Requires server with GPU or decent CPU
+- Not suitable for serverless deployment
+- User would need to self-host
+
+### Alternative: Vercel AI SDK + AI Gateway
+
+**Pros:**
+- Native integration with Next.js
+- $5 free credits every 30 days
+- Access to 100+ models from all providers
+- Single API, switch providers with one line change
+
+**Integration:**
+```typescript
+import { generateObject } from "ai";
+import { openai } from "@ai-sdk/openai";
+
+const { object } = await generateObject({
+  model: openai("gpt-4o-mini"),
+  schema: mealSchema,
+  prompt: userInput,
+});
+```
+
+**Best for:** Staying within Vercel ecosystem, easy provider switching.
+
+### Small Language Models for Extraction
+
+Research shows small models (3-7B parameters) can achieve 86-96% accuracy on structured extraction tasks when fine-tuned or properly prompted:
+
+| Model | Parameters | Accuracy | Speed |
+|-------|------------|----------|-------|
+| Qwen2.5-7B | 7B | ~90% | Fast |
+| Gemma 3n | 2-5B | ~85% | Very fast |
+| Phi-4 | 14B | ~92% | Medium |
+| SmolLM3 | 3B | ~82% | Very fast |
+
+### Cost Comparison (1,000 meal parses/month)
+
+| Provider | Model | Est. Cost |
+|----------|-------|-----------|
+| Groq (free) | Llama 3.3 70B | $0 |
+| Cloudflare (free) | Workers AI | $0 |
+| OpenRouter (free) | Free models | $0 |
+| Ollama (self-host) | Qwen2.5-7B | $0 (+ hosting) |
+| Vercel AI Gateway | GPT-4o-mini | ~$0.50 |
+| OpenAI direct | GPT-4o-mini | ~$0.60 |
+
+### Recommendation
+
+For this cat food tracker use case, **Groq's free tier** is the best starting point:
+
+1. **Speed**: LPU inference is fast enough for real-time UX
+2. **Cost**: Free tier is generous for personal use
+3. **Quality**: Llama 3.3 70B handles extraction well
+4. **Integration**: OpenAI-compatible API, works with Vercel AI SDK
+
+**Fallback strategy:**
+1. Primary: Groq free tier
+2. Backup: OpenRouter free models (if Groq is down)
+3. Future: Consider Ollama for privacy-conscious users
+
+### References
+
+- [Groq Pricing](https://groq.com/pricing)
+- [Cloudflare Workers AI Pricing](https://developers.cloudflare.com/workers-ai/platform/pricing/)
+- [OpenRouter Free Models](https://openrouter.ai/collections/free-models)
+- [Ollama Structured Outputs](https://docs.ollama.com/capabilities/structured-outputs)
+- [Vercel AI SDK](https://ai-sdk.dev/)
+- [Free LLM API Resources (GitHub)](https://github.com/cheahjs/free-llm-api-resources)
+
+---
+
 ## References
 
 - Current meal schema: `lib/db/schema.ts`
