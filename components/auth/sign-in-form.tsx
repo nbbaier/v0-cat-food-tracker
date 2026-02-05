@@ -44,6 +44,7 @@ export function SignInForm({
 	onSubmit,
 	onGitHubSignIn,
 	isPending,
+	errorMessage,
 	redirectUrl,
 }: SignInFormProps) {
 	const form = useForm<SignInFormValues>({
@@ -103,6 +104,14 @@ export function SignInForm({
 						/>
 					</FieldGroup>
 				</form>
+				{errorMessage && (
+					<div
+						role="alert"
+						className="rounded-md border border-destructive bg-destructive/10 p-3 text-sm text-destructive"
+					>
+						{errorMessage}
+					</div>
+				)}
 				<Button
 					type="submit"
 					form="sign-in-form"
