@@ -116,15 +116,18 @@ export function NlpMealInput({ onMealLogged }: NlpMealInputProps) {
 
 				// Update food preference if sentiment was detected
 				if (parsed?.sentiment.preference && foodId) {
-					await fetch(`/api/foods/${foodId}`, {
-						method: "PATCH",
-						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({
-							preference: parsed.sentiment.preference,
-						}),
-					}).catch(() => {
+					try {
+						await fetch(`/api/foods/${foodId}`, {
+							method: "PATCH",
+							headers: { "Content-Type": "application/json" },
+							body: JSON.stringify({
+								preference: parsed.sentiment.preference,
+							}),
+						});
+						refresh();
+					} catch {
 						// Non-critical, don't block on this
-					});
+					}
 				}
 			} else {
 				const err = await res.json().catch(() => ({}));
