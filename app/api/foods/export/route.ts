@@ -58,7 +58,9 @@ export async function GET(request: NextRequest) {
 			"Created At",
 		];
 
-		const escapeCSVField = (value: string | number | boolean | null): string => {
+		const escapeCSVField = (
+			value: string | number | boolean | null,
+		): string => {
 			if (value === null || value === undefined) {
 				return "";
 			}
