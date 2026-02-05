@@ -15,10 +15,19 @@ import type { MealInput } from "@/lib/types";
 
 type NlpMealInputProps = {
 	onMealLogged: (meal: {
-		foodId: string;
-		foodName: string;
-		amount: string;
+		id: string;
+		mealDate: string;
 		mealTime: "morning" | "evening";
+		foodId: string;
+		food: {
+			id: string;
+			name: string;
+			preference: "likes" | "neutral" | "dislikes" | "unknown";
+		};
+		amount: string;
+		notes: string;
+		createdAt: string;
+		updatedAt: string;
 	}) => void;
 };
 
@@ -56,7 +65,6 @@ export function NlpMealInput({ onMealLogged }: NlpMealInputProps) {
 
 		try {
 			let foodId = data.foodId;
-			let foodName = "";
 
 			// Create new food if needed
 			if (!foodId && data.newFoodName) {
@@ -80,11 +88,8 @@ export function NlpMealInput({ onMealLogged }: NlpMealInputProps) {
 
 				const newFood = await foodRes.json();
 				foodId = newFood.id;
-				foodName = data.newFoodName;
 				invalidateFoodSummariesCache();
 				refresh();
-			} else {
-				foodName = foods.find((f) => f.id === foodId)?.name ?? "Unknown food";
 			}
 
 			// Create the meal
@@ -103,15 +108,11 @@ export function NlpMealInput({ onMealLogged }: NlpMealInputProps) {
 			});
 
 			if (res.ok) {
+				const meal = await res.json();
 				toast.success("Meal logged");
 				setParsed(null);
 				setInput("");
-				onMealLogged({
-					foodId,
-					foodName,
-					amount: data.amount,
-					mealTime: data.mealTime,
-				});
+				onMealLogged(meal);
 				inputRef.current?.focus();
 
 				// Update food preference if sentiment was detected

@@ -71,24 +71,23 @@ export function HomePageClient() {
 	};
 
 	const handleMealLogged = (meal: {
-		foodId: string;
-		foodName: string;
-		amount: string;
+		id: string;
+		mealDate: string;
 		mealTime: "morning" | "evening";
+		foodId: string;
+		food: {
+			id: string;
+			name: string;
+			preference: "likes" | "neutral" | "dislikes" | "unknown";
+		};
+		amount: string;
+		notes: string;
+		createdAt: string;
+		updatedAt: string;
 	}) => {
 		setLastMeal({
-			meal: {
-				id: "",
-				mealDate: new Date().toISOString().split("T")[0],
-				mealTime: meal.mealTime,
-				foodId: meal.foodId,
-				food: { id: meal.foodId, name: meal.foodName, preference: "unknown" },
-				amount: meal.amount,
-				notes: "",
-				createdAt: new Date().toISOString(),
-				updatedAt: new Date().toISOString(),
-			},
-			food: { id: meal.foodId, name: meal.foodName, preference: "unknown" },
+			meal,
+			food: meal.food,
 		});
 		setFeedbackGiven(false);
 	};

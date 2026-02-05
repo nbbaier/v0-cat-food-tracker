@@ -147,7 +147,7 @@ const amountString = z
 	.refine(
 		(val) => {
 			const amountRegex =
-				/^(\d+\/\d+|\d+(\.\d+)?)\s*(g|ml|oz|lb|kg|can|cans|cup|cups|tbsp|tsp|pouch|pouches)$/i;
+				/^(\d+\/\d+|\d+(\.\d+)?)\s*(g|ml|oz|lb|kg|can|cans|cup|cups|tbsp|tsp|pouch|pouches|packet|packets|sachet|sachets|bowl|bowls)$/i;
 			return amountRegex.test(val.trim());
 		},
 		{
