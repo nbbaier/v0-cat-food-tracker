@@ -31,6 +31,11 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Debug networking
+        run: |
+          curl -I https://claude.ai/install.sh || echo "Failed to reach claude.ai"
+          nslookup claude.ai || echo "DNS lookup failed"
+
       - name: Run Claude Code Review
         id: claude-review
         uses: anthropics/claude-code-action@v1
