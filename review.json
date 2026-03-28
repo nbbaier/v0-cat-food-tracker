@@ -1,0 +1,64 @@
+{
+	"reviews": [
+		{
+			"id": "PRR_kwDOQR299M7gCY_L",
+			"state": "COMMENTED",
+			"body": "<sub>5 files reviewed, 1 comment</sub>\n\n<sub>[Edit Code Review Agent Settings](https://app.greptile.com/review/github) | [Greptile](https://greptile.com?utm_source=greptile_expert&utm_medium=github&utm_campaign=code_reviews)</sub>",
+			"submitted_at": "2026-02-05T18:30:50Z",
+			"author_login": "greptile-apps",
+			"comments": [
+				{
+					"thread_id": "PRRT_kwDOQR299M5s8gY5",
+					"path": "components/home/nlp-meal-input.tsx",
+					"line": 131,
+					"author_login": "greptile-apps",
+					"body": "Preference update doesn't wait for completion or refresh UI state. The meal is logged successfully but the preference update happens in the background without waiting for the result. If it fails silently, the UI won't reflect the error, and `refresh()` isn't called to update the food list with the new preference.\n\n```suggestion\n\t\t\t\t// Update food preference if sentiment was detected\n\t\t\t\tif (parsed?.sentiment.preference && foodId) {\n\t\t\t\t\ttry {\n\t\t\t\t\t\tawait fetch(`/api/foods/${foodId}`, {\n\t\t\t\t\t\t\tmethod: \"PATCH\",\n\t\t\t\t\t\t\theaders: { \"Content-Type\": \"application/json\" },\n\t\t\t\t\t\t\tbody: JSON.stringify({\n\t\t\t\t\t\t\t\tpreference: parsed.sentiment.preference,\n\t\t\t\t\t\t\t}),\n\t\t\t\t\t\t});\n\t\t\t\t\t\trefresh();\n\t\t\t\t\t} catch {\n\t\t\t\t\t\t// Non-critical, don't block on this\n\t\t\t\t\t}\n\t\t\t\t}\n```\n\n<details><summary>Prompt To Fix With AI</summary>\n\n`````markdown\nThis is a comment left during a code review.\nPath: components/home/nlp-meal-input.tsx\nLine: 118:128\n\nComment:\nPreference update doesn't wait for completion or refresh UI state. The meal is logged successfully but the preference update happens in the background without waiting for the result. If it fails silently, the UI won't reflect the error, and `refresh()` isn't called to update the food list with the new preference.\n\n```suggestion\n\t\t\t\t// Update food preference if sentiment was detected\n\t\t\t\tif (parsed?.sentiment.preference && foodId) {\n\t\t\t\t\ttry {\n\t\t\t\t\t\tawait fetch(`/api/foods/${foodId}`, {\n\t\t\t\t\t\t\tmethod: \"PATCH\",\n\t\t\t\t\t\t\theaders: { \"Content-Type\": \"application/json\" },\n\t\t\t\t\t\t\tbody: JSON.stringify({\n\t\t\t\t\t\t\t\tpreference: parsed.sentiment.preference,\n\t\t\t\t\t\t\t}),\n\t\t\t\t\t\t});\n\t\t\t\t\t\trefresh();\n\t\t\t\t\t} catch {\n\t\t\t\t\t\t// Non-critical, don't block on this\n\t\t\t\t\t}\n\t\t\t\t}\n```\n\nHow can I resolve this? If you propose a fix, please make it concise.\n`````\n</details>",
+					"created_at": "2026-02-05T18:30:49Z",
+					"is_resolved": true,
+					"is_outdated": false,
+					"thread_comments": []
+				}
+			]
+		},
+		{
+			"id": "PRR_kwDOQR299M7gE94C",
+			"state": "COMMENTED",
+			"body": "<sub>10 files reviewed, 1 comment</sub>\n\n<sub>[Edit Code Review Agent Settings](https://app.greptile.com/review/github) | [Greptile](https://greptile.com?utm_source=greptile_expert&utm_medium=github&utm_campaign=code_reviews)</sub>",
+			"submitted_at": "2026-02-05T20:52:49Z",
+			"author_login": "greptile-apps",
+			"comments": [
+				{
+					"thread_id": "PRRT_kwDOQR299M5s-ERw",
+					"path": "components/home/home-page-client.tsx",
+					"line": 90,
+					"author_login": "greptile-apps",
+					"body": "**Fabricated last meal ID**\n\n`handleMealLogged` sets `lastMeal.meal.id` to `\"\"` and fills in timestamps locally (`components/home/home-page-client.tsx:79-90`). This guarantees an invalid meal id for anything that uses `lastMeal.meal.id` (now or future), and it can also desync the “last meal feedback” card from the canonical server-created meal. It should store the actual meal returned by `POST /api/meals` (or at least its real id) instead of fabricating one.\n\n<details><summary>Prompt To Fix With AI</summary>\n\n`````markdown\nThis is a comment left during a code review.\nPath: components/home/home-page-client.tsx\nLine: 79:90\n\nComment:\n**Fabricated last meal ID**\n\n`handleMealLogged` sets `lastMeal.meal.id` to `\"\"` and fills in timestamps locally (`components/home/home-page-client.tsx:79-90`). This guarantees an invalid meal id for anything that uses `lastMeal.meal.id` (now or future), and it can also desync the “last meal feedback” card from the canonical server-created meal. It should store the actual meal returned by `POST /api/meals` (or at least its real id) instead of fabricating one.\n\nHow can I resolve this? If you propose a fix, please make it concise.\n`````\n</details>",
+					"created_at": "2026-02-05T20:52:48Z",
+					"is_resolved": false,
+					"is_outdated": false,
+					"thread_comments": []
+				}
+			]
+		},
+		{
+			"id": "PRR_kwDOQR299M7gE_aB",
+			"state": "COMMENTED",
+			"body": "**Devin Review** found 1 potential issue.\n\nView 5 additional findings in Devin Review.\n\n<!-- devin-review-badge-begin -->\n<a href=\"https://app.devin.ai/review/nbbaier/v0-cat-food-tracker/pull/61\" target=\"_blank\">\n  <picture>\n    <source media=\"(prefers-color-scheme: dark)\" srcset=\"https://static.devin.ai/assets/gh-open-in-devin-review-dark.svg?v=1\">\n    <img src=\"https://static.devin.ai/assets/gh-open-in-devin-review-light.svg?v=1\" alt=\"Open in Devin Review\">\n  </picture>\n</a>\n<!-- devin-review-badge-end -->",
+			"submitted_at": "2026-02-05T20:53:45Z",
+			"author_login": "devin-ai-integration",
+			"comments": [
+				{
+					"thread_id": "PRRT_kwDOQR299M5s-FBY",
+					"path": "lib/nlp/meal-parser.ts",
+					"line": 60,
+					"author_login": "devin-ai-integration",
+					"body": "<!-- devin-review-comment {\"id\": \"BUG_pr-review-job-c4eb9895cb5343edbb4fec9c4b03d5b9_0001\", \"file_path\": \"lib/nlp/meal-parser.ts\", \"start_line\": 25, \"end_line\": 60, \"side\": \"RIGHT\"} -->\n\n🔴 **NLP parser produces amounts with units not accepted by API validation**\n\nThe NLP meal parser normalizes amounts with units like `packet`, `sachet`, and `bowl` (e.g., \"1/2 packet\", \"1 sachet\", \"2 bowl\"), but the API validation regex only accepts `g|ml|oz|lb|kg|can|cans|cup|cups|tbsp|tsp|pouch|pouches`. This causes meal submissions to fail with validation errors.\n\n<details>\n<summary>Root Cause</summary>\n\nThe NLP parser at `lib/nlp/meal-parser.ts:25-60` recognizes and normalizes amounts with units like `packet`, `sachet`, and `bowl`:\n\n```typescript\npattern: /\\bhalf\\s+(?:a\\s+)?(can|cup|pouch|packet|sachet|bowl)\\b/i,\nnormalize: (m) => `1/2 ${m[1].toLowerCase()}`,\n```\n\nHowever, the API validation at `lib/validations.ts:149-151` uses a stricter regex that doesn't include these units:\n\n```typescript\nconst amountRegex = /^(\\d+\\/\\d+|\\d+(\\.\\d+)?)\\s*(g|ml|oz|lb|kg|can|cans|cup|cups|tbsp|tsp|pouch|pouches)$/i;\n```\n\n**Impact:** When a user enters \"half a packet of food\" or \"a sachet this morning\", the NLP parser will show a valid-looking normalized amount (\"1/2 packet\" or \"1 sachet\"), but clicking \"Log Meal\" will result in a validation error from the API, confusing users who see their input accepted in the UI but rejected on submission.\n\n</details>\n\n<details>\n<summary>Prompt for agents</summary>\n\n```\nEither remove support for packet, sachet, and bowl units from the NLP parser in lib/nlp/meal-parser.ts (lines 25-60), OR add these units to the API validation regex in lib/validations.ts at line 150. The regex should be updated to: /^(\\d+\\/\\d+|\\d+(\\.\\d+)?)\\s*(g|ml|oz|lb|kg|can|cans|cup|cups|tbsp|tsp|pouch|pouches|packet|packets|sachet|sachets|bowl|bowls)$/i\n```\n\n</details>\n\n<!-- devin-review-badge-begin -->\n<a href=\"https://app.devin.ai/review/nbbaier/v0-cat-food-tracker/pull/61\" target=\"_blank\">\n  <picture>\n    <source media=\"(prefers-color-scheme: dark)\" srcset=\"https://static.devin.ai/assets/gh-open-in-devin-review-dark.svg?v=1\">\n    <img src=\"https://static.devin.ai/assets/gh-open-in-devin-review-light.svg?v=1\" alt=\"Open in Devin Review\">\n  </picture>\n</a>\n<!-- devin-review-badge-end -->\n\n---\n*Was this helpful? React with 👍 or 👎 to provide feedback.*",
+					"created_at": "2026-02-05T20:53:44Z",
+					"is_resolved": false,
+					"is_outdated": false,
+					"thread_comments": []
+				}
+			]
+		}
+	]
+}
